@@ -1049,9 +1049,9 @@ export default function DashboardClient() {
   };
 
   return (
-    <div className="w-full max-w-[1320px] mx-auto px-0 lg:px-4 xl:px-0 flex flex-col lg:flex-row items-start justify-center">
-      {/* Left Sidebar - 300px */}
-      <div className="hidden lg:block w-[300px] flex-none sticky top-4 h-[calc(100vh-32px)] overflow-y-auto no-scrollbar pb-10">
+    <div className="w-full max-w-[1090px] mx-auto px-0 lg:px-2 xl:px-0 flex flex-col lg:flex-row items-start justify-center">
+      {/* Left Sidebar - 180px */}
+      <div className="hidden lg:block w-[180px] flex-none sticky top-4 h-[calc(100vh-32px)] overflow-y-auto no-scrollbar pb-10">
         <div className="flex flex-col min-h-full space-y-4">
           <div className="flex-1 space-y-4">
             {/* 1. All Categories & Locations Card */}
@@ -1346,10 +1346,10 @@ export default function DashboardClient() {
       {/* Gap 1: 50px */}
       <div className="hidden lg:block w-[50px] flex-none"></div>
 
-      {/* Center Content - Feed / Ads: 565px */}
+      {/* Center Content - Feed / Ads: 580px */}
       <div
         id="center-feed-container"
-        className="w-full lg:w-[565px] flex-none space-y-4 pb-32 lg:pb-20"
+        className="w-full lg:w-[580px] flex-none space-y-4 pb-32 lg:pb-20"
       >
         {/* Secondary Filter Bar */}
         <div
