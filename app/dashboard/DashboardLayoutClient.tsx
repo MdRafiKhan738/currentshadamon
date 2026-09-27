@@ -425,6 +425,19 @@ export default function DashboardLayoutClient({
       handleOpenAccount as EventListener,
     );
 
+    const handleOpenMessage = () => {
+      const token = Cookies.get("token");
+      if (!token) {
+        setMobileEntryReason("message");
+        setIsMobileEntryModalOpen(true);
+        return;
+      }
+      setIsMessageModalOpen(true);
+      fetchUnreadCount();
+    };
+
+    window.addEventListener("open-message-modal", handleOpenMessage);
+
     const handleOpenMobileEntry = (e: any) => {
       if (e.detail?.reason) {
         setMobileEntryReason(e.detail.reason);
