@@ -601,7 +601,7 @@ export default function AdDetailsModal({
                             className="truncate cursor-pointer hover:text-[#0088cc] transition-colors"
                             onClick={() =>
                               router.push(
-                                `/d?subLocation=${encodeURIComponent(subLocName || "")}`,
+                                `/dashboard?subLocation=${encodeURIComponent(subLocName || "")}`,
                               )
                             }
                           >
@@ -616,7 +616,7 @@ export default function AdDetailsModal({
                             className="truncate cursor-pointer hover:text-[#0088cc] transition-colors"
                             onClick={() =>
                               router.push(
-                                `/d?location=${encodeURIComponent(locName || "")}`,
+                                `/dashboard?location=${encodeURIComponent(locName || "")}`,
                               )
                             }
                           >
@@ -662,7 +662,7 @@ export default function AdDetailsModal({
                             className="truncate cursor-pointer hover:text-[#0088cc] transition-colors"
                             onClick={() =>
                               router.push(
-                                `/d?subCategory=${encodeURIComponent(subCatName || "")}`,
+                                `/dashboard?subCategory=${encodeURIComponent(subCatName || "")}`,
                               )
                             }
                           >
@@ -677,7 +677,7 @@ export default function AdDetailsModal({
                             className="truncate cursor-pointer hover:text-[#0088cc] transition-colors"
                             onClick={() =>
                               router.push(
-                                `/d?category=${encodeURIComponent(catName || "")}`,
+                                `/dashboard?category=${encodeURIComponent(catName || "")}`,
                               )
                             }
                           >
@@ -1286,7 +1286,7 @@ I have sent my CV for your review.`;
                                 params.set("search", selectedValue);
                               }
 
-                              router.push(`/d?${params.toString()}`);
+                              router.push(`/dashboard?${params.toString()}`);
                             };
 
                             return (
@@ -1407,7 +1407,7 @@ I have sent my CV for your review.`;
                             window.location.search,
                           );
                           params.set("ad", pad._id);
-                          router.push(`/d?${params.toString()}`, {
+                          router.push(`/dashboard?${params.toString()}`, {
                             scroll: false,
                           });
                         }
@@ -1609,7 +1609,7 @@ I have sent my CV for your review.`;
                             window.location.search,
                           );
                           params.set("ad", sad._id);
-                          router.push(`/d?${params.toString()}`, {
+                          router.push(`/dashboard?${params.toString()}`, {
                             scroll: false,
                           });
                         }
@@ -1822,7 +1822,7 @@ I have sent my CV for your review.`;
                     if (sub) params.set("subCategory", sub);
                     if (loc) params.set("location", loc);
 
-                    window.location.href = `/d?${params.toString()}`;
+                    window.location.href = `/dashboard?${params.toString()}`;
                   }}
                   className="flex flex-col items-center gap-1 cursor-pointer group"
                 >
