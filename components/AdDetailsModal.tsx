@@ -895,14 +895,20 @@ export default function AdDetailsModal({
                     <div className="flex flex-col leading-none justify-center min-w-0">
                       <div
                         className="flex items-center gap-1 cursor-pointer"
-                        onClick={() => setShowPhone(!showPhone)}
+                        onClick={() => {
+                          if (!showPhone) handleRevealPhone();
+                          else setShowPhone(false);
+                        }}
                       >
                         <span className="text-slate-800 text-sm leading-none truncate">
                           {showPhone ? ad.phone || "N/A" : "017 XXXXXXXX"}
                         </span>
                       </div>
                       <button
-                        onClick={() => setShowPhone(!showPhone)}
+                        onClick={() => {
+                          if (!showPhone) handleRevealPhone();
+                          else setShowPhone(false);
+                        }}
                         className="text-[10px] text-slate-500 hover:text-blue-600 hover:underline text-left mt-0.5"
                       >
                         {showPhone ? "Hide number" : "Click to show number"}
@@ -1066,7 +1072,10 @@ export default function AdDetailsModal({
                           String(ad.phone) === "undefined"
                         ) && (
                           <button
-                            onClick={() => setShowPhone(!showPhone)}
+                            onClick={() => {
+                          if (!showPhone) handleRevealPhone();
+                          else setShowPhone(false);
+                        }}
                             className="flex-1 h-10 bg-[#1A202C] text-white text-xs px-1 rounded-md hover:bg-slate-800 transition-colors"
                           >
                             Call
