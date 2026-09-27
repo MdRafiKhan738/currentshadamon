@@ -21,6 +21,9 @@ export default function NotFound() {
           <button onClick={() => router.push("/dashboard")} className="inline-flex items-center gap-2 rounded-lg bg-slate-950 px-4 py-2 text-sm font-bold text-white">
             <Home className="h-4 w-4" /> Dashboard
           </button>
+          <a href="https://shadamoninvest.vercel.app" className="inline-flex items-center rounded-lg border border-emerald-200 px-4 py-2 text-sm font-bold text-emerald-700">
+            Investment Home
+          </a>
         </div>
       </section>
     </main>
