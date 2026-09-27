@@ -11,7 +11,7 @@ const isLocalApi = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?(?:\/.*)?$/i.test
   configuredApiUrl
 );
 
-const PRODUCTION_API_URL = "https://currentbackend.onrender.com";
+// Production is intentionally pinned to the new investment backend.\n// This prevents an old/local NEXT_PUBLIC_* value from being baked into a production build.\nconst PRODUCTION_API_URL = "https://currentbackend.onrender.com";
 
 export const API_BASE_URL =
   isProduction
