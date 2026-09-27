@@ -1422,7 +1422,7 @@ export default function DashboardLayoutClient({
           />
         )}
 
-        <div className="max-w-[1320px] mx-auto px-0 lg:px-4 pt-0 lg:pt-4">
+        <div className="max-w-[1090px] mx-auto px-0 lg:px-2 pt-0 lg:pt-4">
           {children}
         </div>
       </main>
