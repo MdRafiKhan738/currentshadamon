@@ -693,9 +693,9 @@ export default function PostAdModal({ isOpen, onClose, editAd, onSuccess, initia
             formData.append('priceType', priceType);
             formData.append('postRole', postRole);
             formData.append('businessStatus', postRole === 'business_owner' ? businessStatus : 'new');
-            formData.append('minInvestment', String(minValue));
-            formData.append('maxInvestment', String(maxValue));
-            formData.append('expectedReturn', String(returnValue));
+            formData.append('minInvestment', String(Number(minInvestment)));
+            formData.append('maxInvestment', String(Number(maxInvestment)));
+            formData.append('expectedReturn', String(Number(expectedReturn)));
 
             if (wasOtpVerified) {
                 formData.append('verificationInfo', JSON.stringify({
