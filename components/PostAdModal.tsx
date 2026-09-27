@@ -84,6 +84,11 @@ export default function PostAdModal({ isOpen, onClose, editAd, onSuccess, initia
     const [hidePhone, setHidePhone] = useState(false);
     const [price, setPrice] = useState("");
     const [priceType, setPriceType] = useState("Negotiable");
+    const [postRole, setPostRole] = useState<"investor" | "business_owner">("business_owner");
+    const [businessStatus, setBusinessStatus] = useState<"new" | "running" | "closed">("new");
+    const [minInvestment, setMinInvestment] = useState("");
+    const [maxInvestment, setMaxInvestment] = useState("");
+    const [expectedReturn, setExpectedReturn] = useState("");
     const [email, setEmail] = useState("");
     const [hasReadRules, setHasReadRules] = useState(true);
     const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
@@ -197,6 +202,11 @@ export default function PostAdModal({ isOpen, onClose, editAd, onSuccess, initia
         setSelectedSubLocation(ad.subLocation || "");
         setPrice(ad.price ? String(ad.price) : "");
         setPriceType(ad.priceType || "Negotiable");
+        setPostRole(ad.postRole === "investor" ? "investor" : "business_owner");
+        setBusinessStatus(ad.businessStatus === "running" ? "running" : ad.businessStatus === "closed" ? "closed" : "new");
+        setMinInvestment(ad.minInvestment !== undefined ? String(ad.minInvestment) : "");
+        setMaxInvestment(ad.maxInvestment !== undefined ? String(ad.maxInvestment) : "");
+        setExpectedReturn(ad.expectedReturn !== undefined ? String(ad.expectedReturn) : "");
         setExistingImages(ad.images || []);
         setFeatureValues(ad.features || {});
     };
@@ -254,6 +264,11 @@ export default function PostAdModal({ isOpen, onClose, editAd, onSuccess, initia
                 setExpandedCategory(null);
                 setPrice("");
                 setPriceType("Negotiable");
+                setPostRole("business_owner");
+                setBusinessStatus("new");
+                setMinInvestment("");
+                setMaxInvestment("");
+                setExpectedReturn("");
                 setFeatureValues({});
                 setImages([]);
                 setExistingImages([]);
@@ -676,6 +691,11 @@ export default function PostAdModal({ isOpen, onClose, editAd, onSuccess, initia
             formData.append('features', JSON.stringify(featureValues));
             formData.append('price', price);
             formData.append('priceType', priceType);
+            formData.append('postRole', postRole);
+            formData.append('businessStatus', postRole === 'business_owner' ? businessStatus : 'new');
+            formData.append('minInvestment', String(minValue));
+            formData.append('maxInvestment', String(maxValue));
+            formData.append('expectedReturn', String(returnValue));
 
             if (wasOtpVerified) {
                 formData.append('verificationInfo', JSON.stringify({
@@ -813,10 +833,25 @@ export default function PostAdModal({ isOpen, onClose, editAd, onSuccess, initia
             (images.length === 0 && existingImages.length === 0) ||
             !selectedCategory ||
             !selectedLocation ||
+            !minInvestment ||
+            !maxInvestment ||
+            !expectedReturn ||
             (subCat?.priceBoxShow && !price) ||
             !name
         ) {
             toast.error("Please fill in required fields");
+            return;
+        }
+
+        const minValue = Number(minInvestment);
+        const maxValue = Number(maxInvestment);
+        const returnValue = Number(expectedReturn);
+        if (!Number.isFinite(minValue) || !Number.isFinite(maxValue) || minValue < 0 || maxValue < 0 || minValue > maxValue) {
+            toast.error("Please enter a valid minimum and maximum investment.");
+            return;
+        }
+        if (!Number.isFinite(returnValue) || returnValue < 0) {
+            toast.error("Please enter a valid expected return percentage.");
             return;
         }
 
@@ -1547,6 +1582,38 @@ export default function PostAdModal({ isOpen, onClose, editAd, onSuccess, initia
                                             {showDescriptionHelp && (
                                                 <p className="text-[10px] text-black mt-2 px-1 leading-tight">{t('description_help_text')}</p>
                                             )}
+                                        </div>
+                                    </div>
+
+                                    {/* Investment fields */}
+                                    <div className="bg-white rounded-lg border border-slate-500 p-3 font-sans space-y-3">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                            <label className="text-xs font-bold text-black">I am
+                                                <select value={postRole} onChange={e => setPostRole(e.target.value as "investor" | "business_owner")} className="mt-1 w-full border border-slate-300 rounded px-2 py-2 text-sm bg-white">
+                                                    <option value="business_owner">Business Owner</option>
+                                                    <option value="investor">Investor</option>
+                                                </select>
+                                            </label>
+                                            {postRole === "business_owner" && (
+                                                <label className="text-xs font-bold text-black">Business Status
+                                                    <select value={businessStatus} onChange={e => setBusinessStatus(e.target.value as "new" | "running" | "closed")} className="mt-1 w-full border border-slate-300 rounded px-2 py-2 text-sm bg-white">
+                                                        <option value="new">New Business</option>
+                                                        <option value="running">Running Business</option>
+                                                        <option value="closed">Close / Closed Business</option>
+                                                    </select>
+                                                </label>
+                                            )}
+                                        </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                            <label className="text-xs font-bold text-black">Min Investment
+                                                <input type="number" min="0" value={minInvestment} onChange={e => setMinInvestment(e.target.value)} className="mt-1 w-full border border-slate-300 rounded px-2 py-2 text-sm" placeholder="1,00,000" />
+                                            </label>
+                                            <label className="text-xs font-bold text-black">Max Investment
+                                                <input type="number" min="0" value={maxInvestment} onChange={e => setMaxInvestment(e.target.value)} className="mt-1 w-full border border-slate-300 rounded px-2 py-2 text-sm" placeholder="50,00,000" />
+                                            </label>
+                                            <label className="text-xs font-bold text-black">Expected Return %
+                                                <input type="number" min="0" step="0.01" value={expectedReturn} onChange={e => setExpectedReturn(e.target.value)} className="mt-1 w-full border border-slate-300 rounded px-2 py-2 text-sm" placeholder="15" />
+                                            </label>
                                         </div>
                                     </div>
 
