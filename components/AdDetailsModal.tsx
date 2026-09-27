@@ -95,6 +95,8 @@ export default function AdDetailsModal({
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showPhone, setShowPhone] = useState(false);
+  const [revealingPhone, setRevealingPhone] = useState(false);
+  const [phoneRevealId, setPhoneRevealId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"details" | "shipping">("details");
   const [isExpanded, setIsExpanded] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(true);
@@ -402,6 +404,57 @@ export default function AdDetailsModal({
     typeof window !== "undefined"
       ? `${window.location.origin}/dashboard?ad=${ad?._id}`
       : "";
+  const handleRevealPhone = async () => {
+    if (showPhone) return;
+
+    const adId = ad?._id;
+    if (!adId) return;
+
+    const token = Cookies.get("token");
+    if (!token) {
+      window.dispatchEvent(new CustomEvent("open-mobile-entry-modal"));
+      return;
+    }
+
+    setRevealingPhone(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/connect/reveal-phone`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        credentials: "include",
+        body: JSON.stringify({ adId }),
+      });
+
+      const result = await response.json().catch(() => ({}));
+
+      if (response.ok && result.success && result.phone) {
+        setPhoneRevealId(result.revealId || null);
+        handleRevealPhone();
+        if (typeof result.balance === "number") {
+          window.dispatchEvent(new CustomEvent("connect-balance-updated", {
+            detail: { balance: result.balance },
+          }));
+        }
+        return;
+      }
+
+      if (result.code === "PACKAGE_REQUIRED") {
+        window.dispatchEvent(new CustomEvent("open-package-modal"));
+        return;
+      }
+
+      toast.error(result.message || "Unable to show this number.");
+    } catch (error) {
+      console.error("Phone reveal error:", error);
+      toast.error("Unable to show the contact number right now.");
+    } finally {
+      setRevealingPhone(false);
+    }
+  };
+
   const primaryPhone =
     ad?.phone && String(ad.phone) !== "undefined"
       ? String(ad.phone).trim()
@@ -732,7 +785,7 @@ export default function AdDetailsModal({
                       <button
                         onClick={() => {
                           if (!showPhone) {
-                            setShowPhone(true);
+                            handleRevealPhone();
                             return;
                           }
                           if (primaryPhone) {
@@ -747,7 +800,7 @@ export default function AdDetailsModal({
 
                     {!showPhone && primaryPhone && (
                       <button
-                        onClick={() => setShowPhone(true)}
+                        onClick={() => handleRevealPhone()}
                         className="text-[10px] text-slate-500 hover:text-blue-600 hover:underline text-left"
                       >
                         Click to show number
@@ -859,7 +912,7 @@ export default function AdDetailsModal({
                     <button
                       onClick={() => {
                         if (!showPhone) {
-                          setShowPhone(true);
+                          handleRevealPhone();
                           return;
                         }
                         if (primaryPhone) {
