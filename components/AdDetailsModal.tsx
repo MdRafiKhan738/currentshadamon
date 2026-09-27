@@ -432,7 +432,7 @@ export default function AdDetailsModal({
 
       if (response.ok && result.success && result.phone) {
         setPhoneRevealId(result.revealId || null);
-        handleRevealPhone();
+        setShowPhone(true);
         if (typeof result.balance === "number") {
           window.dispatchEvent(new CustomEvent("connect-balance-updated", {
             detail: { balance: result.balance },
