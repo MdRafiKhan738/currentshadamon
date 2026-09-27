@@ -33,6 +33,13 @@ const isRoleCategory = (name: string, role: Role) => {
     : n === "business owner" || n.includes("business owner");
 };
 
+const isRoleSubCategory = (name: string, role: Role) => {
+  const n = normalize(name);
+  return role === "investor"
+    ? n === "investor" || n.includes("investor")
+    : n === "business owner" || n.includes("business owner");
+};
+
 export default function PostAdPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -123,7 +130,12 @@ export default function PostAdPage() {
         typeof parent === "object"
           ? parent?._id === nextCategory._id || parent?.name === nextCategory.name
           : parent === nextCategory._id || parent === nextCategory.name;
-      return belongs;
+      return belongs && isRoleSubCategory(item.name, nextRole);
+    }) || subs.find((item) => {
+      const parent = item.category;
+      return typeof parent === "object"
+        ? parent?._id === nextCategory._id || parent?.name === nextCategory.name
+        : parent === nextCategory._id || parent === nextCategory.name;
     });
 
     if (nextSub) {
@@ -214,6 +226,7 @@ export default function PostAdPage() {
       form.append("minInvestment", String(minValue));
       form.append("maxInvestment", String(maxValue));
       form.append("expectedReturn", String(returnValue));
+      form.append("investmentReturnType", role === "investor" ? "expected" : "return");
       if (role === "business_owner") form.append("businessStatus", status);
       if (image) form.append("images", image);
 
