@@ -824,7 +824,7 @@ export default function PostAdModal({ isOpen, onClose, editAd, onSuccess, initia
         const headlineLower = headline.toLowerCase();
         const descLower = description.toLowerCase();
 
-        const blockedHeadlineFound = (settings.blockCheckInHeadline || []).find(word => headlineLower.includes(word.toLowerCase()));
+        const blockedHeadlineFound = (settings.blockCheckInHeadline || []).find((word: string) => headlineLower.includes(word.toLowerCase()));
         if (blockedHeadlineFound) {
             toast.error(`Headline contains restricted word: ${blockedHeadlineFound}`);
             return;
