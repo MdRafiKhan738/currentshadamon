@@ -1,1 +1,20 @@
-export const timeAgo=(date:string|Date)=>{const d=new Date(date);const diff=Math.max(0,Date.now()-d.getTime());const s=Math.floor(diff/1000);if(s<60)return "just now";const m=Math.floor(s/60);if(m<60)return `${m}m ago`;const h=Math.floor(m/60);if(h<24)return `${h}h ago`;const days=Math.floor(h/24);return days<30?`${days}d ago`:`${Math.floor(days/30)}mo ago`};export const formatDate=(date:string|Date)=>new Date(date).toLocaleDateString();
+import { formatDistanceToNow, format } from 'date-fns';
+import { bn, enUS } from 'date-fns/locale';
+
+export const timeAgo = (date: string | Date, language: 'en' | 'bn' = 'en') => {
+    const d = new Date(date);
+    const locale = language === 'bn' ? bn : enUS;
+
+    const distance = formatDistanceToNow(d, { addSuffix: true, locale });
+
+    // Custom replacements for Bengali to make it sound more natural if needed
+    // The date-fns bn locale is usually good, but sometimes 'about' is translated loosely
+
+    return distance;
+};
+
+export const formatDate = (date: string | Date, language: 'en' | 'bn' = 'en') => {
+    const d = new Date(date);
+    const locale = language === 'bn' ? bn : enUS;
+    return format(d, 'PP', { locale });
+};
