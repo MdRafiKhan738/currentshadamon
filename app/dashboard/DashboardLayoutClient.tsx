@@ -1019,10 +1019,12 @@ export default function DashboardLayoutClient({
           <div className="relative h-full flex flex-col items-center justify-end">
                               <button
                     onClick={() => setIsPackageModalOpen(true)}
-                    className="hidden md:flex h-10 items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 text-xs font-bold text-emerald-700"
-                    title="Connect credits"
+                    className="hidden md:flex h-10 items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 text-xs font-bold text-emerald-700"
+                    title="Package and connect credits"
                   >
-                    Credits: {Number(user?.connectsBalance || 0)}
+                    <span>{user?.activePackage?.name ? user.activePackage.name : "Package"}</span>
+                    <span className="h-4 w-px bg-emerald-200" />
+                    <span>Credits: {Number(user?.connectsBalance || 0)}</span>
                   </button>
 
 <button
