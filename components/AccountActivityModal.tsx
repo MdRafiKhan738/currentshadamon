@@ -870,9 +870,9 @@ I have sent my CV for your review.`;
                 if (isOpen && resolvedUser) {
                     const userIdVal = resolvedUser._id;
                     const params = new URLSearchParams(searchStr);
-                    if (params.get('profile') !== userIdVal && (currentPath === '/dashboard' || currentPath === '/d' || currentPath === '/')) {
+                    if (params.get('profile') !== userIdVal && (currentPath === '/dashboard' || currentPath === '/')) {
                         params.set('profile', userIdVal);
-                        router.push(`/d?${params.toString()}`, { scroll: false });
+                        router.push(`/dashboard?${params.toString()}`, { scroll: false });
                     }
                 }
 
@@ -1003,7 +1003,7 @@ I have sent my CV for your review.`;
         window.dispatchEvent(new Event('auth-change'));
         toast.success("Logged out successfully");
         onClose();
-        window.location.href = '/d';
+        window.location.href = '/dashboard';
     };
 
     const handleCheckUrl = async () => {
