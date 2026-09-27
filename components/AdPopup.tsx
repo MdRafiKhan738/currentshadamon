@@ -22,7 +22,7 @@ const AdPopup: React.FC = () => {
         }
     }, [adPositions.length, fetchAdPositions]);
 
-    const ad = adPositions.find(p => p.positionId === 5);
+    const ad = adPositions.find((p: any) => p.positionId === 5);
 
     useEffect(() => {
         if (ad && ad.status === 'Yes') {
