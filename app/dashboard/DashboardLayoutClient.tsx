@@ -1164,10 +1164,10 @@ export default function DashboardLayoutClient({
           )}
         >
           <header className="bg-white border-b border-slate-200 h-14 md:h-16 w-full">
-            <div className="max-w-[1320px] mx-auto px-2.5 md:px-4 h-full flex items-center justify-between md:justify-center">
+            <div className="max-w-[1090px] mx-auto px-2.5 md:px-2 h-full flex items-center justify-between md:justify-center">
               <div
                 className={cn(
-                  "md:w-[300px] flex-none flex items-center gap-1.5 md:gap-2",
+                  "md:w-[180px] flex-none flex items-center gap-1.5 md:gap-2",
                   isMobileSearchOpen && "hidden md:flex",
                 )}
               >
@@ -1203,7 +1203,7 @@ export default function DashboardLayoutClient({
 
               <div
                 className={cn(
-                  "md:w-[565px] flex-1 md:flex-none flex items-center gap-1.5 md:gap-4 relative",
+                  "md:w-[580px] flex-1 md:flex-none flex items-center gap-1.5 md:gap-4 relative",
                   !isMobileSearchOpen
                     ? "flex justify-end md:justify-center"
                     : "flex",
