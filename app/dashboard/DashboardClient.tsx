@@ -409,7 +409,7 @@ export default function DashboardClient() {
     setShortFilterParam(params, "c", "category", catName || undefined);
     setShortFilterParam(params, "sc", "subCategory", subCatName || undefined);
     const str = params.toString();
-    return str ? `/d?${str}` : "/d";
+    return str ? `/dashboard?${str}` : "/dashboard";
   };
 
   const getLocationUrl = (locName: string, subLocName: string = "") => {
@@ -417,7 +417,7 @@ export default function DashboardClient() {
     setShortFilterParam(params, "l", "location", locName || undefined);
     setShortFilterParam(params, "sl", "subLocation", subLocName || undefined);
     const str = params.toString();
-    return str ? `/d?${str}` : "/d";
+    return str ? `/dashboard?${str}` : "/dashboard";
   };
 
   // Initialize filters from URL on mount
@@ -482,7 +482,7 @@ export default function DashboardClient() {
     if (adParam) params.set("ad", adParam);
 
     const queryString = params.toString();
-    const newUrl = queryString ? `/d?${queryString}` : "/d";
+    const newUrl = queryString ? `/dashboard?${queryString}` : "/dashboard";
 
     const currentParams = new URLSearchParams(searchParams.toString());
     setShortFilterParam(
@@ -2219,7 +2219,7 @@ export default function DashboardClient() {
                                   "category",
                                   categoryToShow.name,
                                 );
-                                router.push(`/d?${params.toString()}`, {
+                                router.push(`/dashboard?${params.toString()}`, {
                                   scroll: false,
                                 });
                                 setFilters((prev) => ({
