@@ -140,9 +140,9 @@ export default function PostAdPage() {
 
     if (nextSub) {
       setSubCategory(nextSub.name);
-      if (Number(nextSub.minInvestment) > 0) setMin(String(nextSub.minInvestment));
-      if (Number(nextSub.maxInvestment) > 0) setMax(String(nextSub.maxInvestment));
-      if (Number(nextSub.returnProfit) > 0) setRet(String(nextSub.returnProfit));
+      setMin(Number(nextSub.minInvestment) > 0 ? String(nextSub.minInvestment) : "");
+      setMax(Number(nextSub.maxInvestment) > 0 ? String(nextSub.maxInvestment) : "");
+      setRet(Number(nextSub.returnProfit) > 0 ? String(nextSub.returnProfit) : "");
     } else {
       setSubCategory("");
     }
@@ -164,9 +164,9 @@ export default function PostAdPage() {
     setSubCategory(value);
     const selected = visibleSubCategories.find((item) => item.name === value);
     if (!selected) return;
-    if (Number(selected.minInvestment) > 0) setMin(String(selected.minInvestment));
-    if (Number(selected.maxInvestment) > 0) setMax(String(selected.maxInvestment));
-    if (Number(selected.returnProfit) > 0) setRet(String(selected.returnProfit));
+    setMin(Number(selected.minInvestment) > 0 ? String(selected.minInvestment) : "");
+    setMax(Number(selected.maxInvestment) > 0 ? String(selected.maxInvestment) : "");
+    setRet(Number(selected.returnProfit) > 0 ? String(selected.returnProfit) : "");
   };
 
   const onImage = (file: File | null) => {
