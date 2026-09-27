@@ -1692,7 +1692,7 @@ export default function DashboardLayoutClient({
           const params = new URLSearchParams(window.location.search);
           params.delete("profile");
           router.replace(
-            `/d${params.toString() ? `?${params.toString()}` : ""}`,
+            `/dashboard${params.toString() ? `?${params.toString()}` : ""}`,
             { scroll: false },
           );
         }}
