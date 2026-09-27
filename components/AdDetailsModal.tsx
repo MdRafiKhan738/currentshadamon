@@ -400,7 +400,7 @@ export default function AdDetailsModal({
 
   const adLink =
     typeof window !== "undefined"
-      ? `${window.location.origin}/d?ad=${ad?._id}`
+      ? `${window.location.origin}/dashboard?ad=${ad?._id}`
       : "";
   const primaryPhone =
     ad?.phone && String(ad.phone) !== "undefined"
