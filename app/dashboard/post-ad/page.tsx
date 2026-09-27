@@ -239,6 +239,9 @@ export default function PostAdPage() {
       router.replace("/dashboard?post=success");
     } catch (e: any) {
       setError(e?.message || "Unable to publish the post.");
+      window.setTimeout(() => {
+        window.location.href = INVESTMENT_HOME;
+      }, 1200);
     } finally {
       setBusy(false);
     }
