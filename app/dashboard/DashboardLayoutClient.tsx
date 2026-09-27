@@ -472,6 +472,13 @@ export default function DashboardLayoutClient({
     };
     window.addEventListener("open-package-modal", handleOpenPackage);
 
+    const handleConnectBalance = (e: CustomEvent) => {
+      if (typeof e.detail?.balance === "number") {
+        setUser((prev: any) => prev ? { ...prev, connectsBalance: e.detail.balance } : prev);
+      }
+    };
+    window.addEventListener("connect-balance-updated", handleConnectBalance as EventListener);
+
     const handleOpenPromote = (e: CustomEvent) => {
       setAdToPromote(e.detail?.ad || null);
       setIsPromoteModalOpen(true);
@@ -1010,7 +1017,15 @@ export default function DashboardLayoutClient({
 
           {/* Centered Floating Post Ad Button */}
           <div className="relative h-full flex flex-col items-center justify-end">
-            <button
+                              <button
+                    onClick={() => setIsPackageModalOpen(true)}
+                    className="hidden md:flex h-10 items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 text-xs font-bold text-emerald-700"
+                    title="Connect credits"
+                  >
+                    Credits: {Number(user?.connectsBalance || 0)}
+                  </button>
+
+<button
               onClick={handleAddAdClick}
               className="absolute -top-0.5 w-10 h-10 bg-[#0088cc] rounded-full flex items-center justify-center text-white shadow-[0_7px_14px_-6px_rgba(0,136,204,0.65)] active:scale-95 transition-transform"
             >
