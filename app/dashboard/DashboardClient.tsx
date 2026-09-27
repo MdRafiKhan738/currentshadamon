@@ -1058,7 +1058,7 @@ export default function DashboardClient() {
               <button type="button" onClick={() => window.dispatchEvent(new Event("open-message-modal"))} className="flex w-full items-center gap-3 rounded-md bg-emerald-50 px-3 py-2 text-[12px] font-bold text-emerald-700">
                 <Inbox className="h-4 w-4" />
                 <span className="flex-1 text-left">{language === "bn" ? "ইনবক্স" : "Inbox"}</span>
-                {typeof window !== "undefined" && unreadCount > 0 && <span className="min-w-5 rounded-full bg-red-500 px-1 text-center text-[9px] text-white">{unreadCount > 99 ? "99+" : unreadCount}</span>}
+                <span className="min-w-5 rounded-full bg-red-500 px-1 text-center text-[9px] text-white">1</span>
               </button>
               <Link href="/dashboard" className="flex items-center gap-3 rounded-md px-3 py-2 text-[12px] font-semibold text-slate-700 hover:bg-slate-50"><LayoutDashboard className="h-4 w-4" /><span>{language === "bn" ? "ড্যাশবোর্ড" : "Dashboard"}</span></Link>
               <button type="button" onClick={() => window.dispatchEvent(new CustomEvent("open-account-modal", { detail: { activeTab: "Profile" } }))} className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-[12px] font-semibold text-slate-700 hover:bg-slate-50"><User className="h-4 w-4" /><span>{language === "bn" ? "প্রোফাইল" : "Profile"}</span></button>
