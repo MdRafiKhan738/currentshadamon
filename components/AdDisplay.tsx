@@ -29,7 +29,7 @@ const AdDisplay: React.FC<AdDisplayProps> = ({ positionId, className }) => {
         }
     }, [adPositions.length, fetchAdPositions]);
 
-    const ad = adPositions.find(p => p.positionId === positionId);
+    const ad = adPositions.find((p: any) => p.positionId === positionId);
 
     if (!loaded) return null;
     if (!ad || ad.status === 'No') return null;
