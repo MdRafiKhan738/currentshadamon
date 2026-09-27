@@ -1050,298 +1050,38 @@ export default function DashboardClient() {
 
   return (
     <div className="w-full max-w-[1090px] mx-auto px-0 lg:px-2 xl:px-0 flex flex-col lg:flex-row items-start justify-center">
-      {/* Left Sidebar - 180px */}
-      <div className="hidden lg:block w-[180px] flex-none sticky top-4 h-[calc(100vh-32px)] overflow-y-auto no-scrollbar pb-10">
-        <div className="flex flex-col min-h-full space-y-4">
-          <div className="flex-1 space-y-4">
-            {/* 1. All Categories & Locations Card */}
-            <div className="bg-white rounded-lg overflow-hidden">
-              <div className="p-2 space-y-2">
-                {/* Categories Section */}
-                <div className="space-y-1">
-                  <div
-                    className="flex items-center justify-between group cursor-pointer"
-                    onClick={() =>
-                      setExpandedCategory(
-                        expandedCategory === "main" ? null : "main",
-                      )
-                    }
-                  >
-                    <h3 className="text-[13px] text-black">{t("category")}</h3>
-                    <ChevronDown
-                      className={cn(
-                        "w-5 h-5 text-black group-hover:text-black transition-all",
-                        (expandedCategory === "main" ||
-                          expandedCategory !== null) &&
-                          "rotate-180",
-                      )}
-                    />
-                  </div>
-
-                  {expandedCategory !== null && (
-                    <div className="pl-1 space-y-1">
-                      <Link
-                        href={getCategoryUrl("")}
-                        scroll={false}
-                        className="block text-[13px] text-black ml-4 tracking-wider cursor-pointer hover:text-[#0088cc] transition-colors"
-                        onClick={() => {
-                          setFilters({
-                            ...filters,
-                            category: "",
-                            subCategory: "",
-                          });
-                          // handleResetSavedSearch();
-                        }}
-                      >
-                        {t("all_categories")}
-                      </Link>
-
-                      {categories.map((cat, idx) => {
-                        // Assign icons based on name or index to match image
-                        const CategoryIcon =
-                          idx === 0 ? Smartphone : idx === 1 ? Grid : Package;
-
-                        return (
-                          <div key={cat._id} className="space-y-0.5">
-                            <Link
-                              href={getCategoryUrl(cat.name)}
-                              scroll={false}
-                              className="flex items-center justify-between group cursor-pointer"
-                              onClick={() => {
-                                toggleCategory(cat._id);
-                                setFilters({
-                                  ...filters,
-                                  category: cat.name,
-                                  subCategory: "",
-                                });
-                                setActiveSelectorTab("category");
-                              }}
-                            >
-                              <div className="flex items-center gap-1 text-[15px] text-[#0088cc] font-medium hover:underline">
-                                {cat.icon && getImageUrl(cat.icon) ? (
-                                  <img
-                                    src={getImageUrl(cat.icon) || undefined}
-                                    className="w-4 h-4 object-contain shrink-0"
-                                    alt=""
-                                    loading="lazy"
-                                  />
-                                ) : (
-                                  <CategoryIcon className="w-4 h-4 text-black shrink-0" />
-                                )}
-                                <span
-                                  className={cn(
-                                    (expandedCategory === cat._id ||
-                                      filters.category === cat.name) &&
-                                      "text-black",
-                                  )}
-                                >
-                                  {getLocalizedCategoryName(
-                                    cat.name,
-                                    cat.categoryNameBn,
-                                  )}
-                                </span>
-                                <span className="text-black font-normal ml-0.5">
-                                  (
-                                  {totalAds
-                                    .filter((ad) => ad.category === cat.name)
-                                    .length.toLocaleString()}
-                                  )
-                                </span>
-                              </div>
-                              {cat.subcategories.length > 0 && (
-                                <ChevronDown
-                                  className={cn(
-                                    "w-3.5 h-3.5 text-black transition-all",
-                                    expandedCategory === cat._id &&
-                                      "rotate-180",
-                                  )}
-                                />
-                              )}
-                            </Link>
-
-                            {/* Subcategories with correct indentation and bullet points */}
-                            {expandedCategory === cat._id &&
-                              cat.subcategories.length > 0 && (
-                                <div className="pl-6 space-y-0.5 border-l border-slate-100 ml-2 animate-in fade-in slide-in-from-top-1 duration-200">
-                                  {cat.subcategories.map((sub) => (
-                                    <Link
-                                      key={sub._id}
-                                      href={getCategoryUrl(cat.name, sub.name)}
-                                      scroll={false}
-                                      className="flex items-center gap-1 text-[13px] text-[#0088cc] hover:underline cursor-pointer group"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setFilters({
-                                          ...filters,
-                                          category: cat.name,
-                                          subCategory: sub.name,
-                                        });
-                                        setActiveSelectorTab("category");
-                                      }}
-                                    >
-                                      {sub.image && getImageUrl(sub.image) ? (
-                                        <img
-                                          src={
-                                            getImageUrl(sub.image) || undefined
-                                          }
-                                          className="w-4 h-4 object-contain shrink-0"
-                                          alt=""
-                                          loading="lazy"
-                                        />
-                                      ) : (
-                                        <div
-                                          className={cn(
-                                            "w-1.5 h-1.5 rounded-full bg-slate-300 group-hover:bg-[#0088cc] transition-colors",
-                                            filters.subCategory === sub.name &&
-                                              "bg-[#0088cc]",
-                                          )}
-                                        />
-                                      )}
-                                      <span
-                                        className={cn(
-                                          filters.subCategory === sub.name &&
-                                            "text-black",
-                                        )}
-                                      >
-                                        {getLocalizedCategoryName(
-                                          sub.name,
-                                          sub.subCategoryNameBn,
-                                        )}
-                                      </span>
-                                      <span className="text-black">
-                                        (
-                                        {totalAds
-                                          .filter(
-                                            (ad) => ad.subCategory === sub.name,
-                                          )
-                                          .length.toLocaleString()}
-                                        )
-                                      </span>
-                                    </Link>
-                                  ))}
-                                </div>
-                              )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-
-                <div className="h-[1px] bg-slate-100 w-full" />
-              </div>
-            </div>
-          </div>
-
-          {/* 3. Footer Links & Apps Card */}
-          <div className="bg-white rounded-lg p-3 space-y-4 mt-auto shadow-sm border border-slate-50">
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px] text-black font-medium">
-              <Link
-                href={INFO_PAGE_ROUTES.about}
-                className="hover:text-black transition-colors"
-              >
-                {t("about_us")}
-              </Link>
-              <span>•</span>
-              <Link
-                href={INFO_PAGE_ROUTES.terms}
-                className="hover:text-black transition-colors"
-              >
-                {t("terms_and_con")}
-              </Link>
-              <span>•</span>
-              <Link
-                href={INFO_PAGE_ROUTES.privacy}
-                className="hover:text-black transition-colors"
-              >
-                {t("privacy_policy")}
-              </Link>
-              <span>•</span>
-              <Link
-                href={INFO_PAGE_ROUTES.contact}
-                className="hover:text-black transition-colors"
-              >
-                {t("contact_us")}
-              </Link>
-              <span>•</span>
-              <Link
-                href={INFO_PAGE_ROUTES.safety}
-                className="hover:text-black transition-colors"
-              >
-                {language === "bn" ? "Safety Tips" : "Safety Tips"}
-              </Link>
-              <span>•</span>
-              <button
-                onClick={handleFooterPromoteClick}
-                className="hover:text-black transition-colors"
-              >
-                {t("promote")}
+      {/* Left Sidebar - 180px: investment marketplace navigation */}
+      <aside className="hidden lg:block w-[180px] flex-none sticky top-4 h-[calc(100vh-32px)] overflow-y-auto no-scrollbar pb-10">
+        <div className="space-y-4">
+          <div className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
+            <nav className="space-y-1">
+              <button type="button" onClick={() => window.dispatchEvent(new Event("open-message-modal"))} className="flex w-full items-center gap-3 rounded-md bg-emerald-50 px-3 py-2 text-[12px] font-bold text-emerald-700">
+                <Inbox className="h-4 w-4" />
+                <span className="flex-1 text-left">{language === "bn" ? "ইনবক্স" : "Inbox"}</span>
+                {typeof window !== "undefined" && unreadCount > 0 && <span className="min-w-5 rounded-full bg-red-500 px-1 text-center text-[9px] text-white">{unreadCount > 99 ? "99+" : unreadCount}</span>}
               </button>
+              <Link href="/dashboard" className="flex items-center gap-3 rounded-md px-3 py-2 text-[12px] font-semibold text-slate-700 hover:bg-slate-50"><LayoutDashboard className="h-4 w-4" /><span>{language === "bn" ? "ড্যাশবোর্ড" : "Dashboard"}</span></Link>
+              <button type="button" onClick={() => window.dispatchEvent(new CustomEvent("open-account-modal", { detail: { activeTab: "Profile" } }))} className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-[12px] font-semibold text-slate-700 hover:bg-slate-50"><User className="h-4 w-4" /><span>{language === "bn" ? "প্রোফাইল" : "Profile"}</span></button>
+              <Link href="/dashboard/post-ad" className="flex items-center gap-3 rounded-md px-3 py-2 text-[12px] font-semibold text-slate-700 hover:bg-slate-50"><FilePlus2 className="h-4 w-4" /><span>{language === "bn" ? "পোস্ট" : "Post"}</span></Link>
+              <button type="button" onClick={() => window.dispatchEvent(new CustomEvent("open-account-modal", { detail: { activeTab: "Activity" } }))} className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-[12px] font-semibold text-slate-700 hover:bg-slate-50"><Activity className="h-4 w-4" /><span>{language === "bn" ? "অ্যাক্টিভিটি" : "Activity"}</span></button>
+              <button type="button" onClick={() => window.dispatchEvent(new Event("show-saved-search"))} className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-[12px] font-semibold text-slate-700 hover:bg-slate-50"><Heart className="h-4 w-4" /><span>{language === "bn" ? "ফেভারিট" : "Favourite"}</span></button>
+              <button type="button" onClick={() => window.dispatchEvent(new CustomEvent("open-account-modal", { detail: { activeTab: "Page" } }))} className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-[12px] font-semibold text-slate-700 hover:bg-slate-50"><UserPlus className="h-4 w-4" /><span>{language === "bn" ? "ইনভাইট" : "Invite"}</span></button>
+              <button type="button" onClick={handleFooterPromoteClick} className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-[12px] font-semibold text-slate-700 hover:bg-slate-50"><Megaphone className="h-4 w-4" /><span>{language === "bn" ? "প্রমোট" : "Promote"}</span></button>
+            </nav>
+          </div>
+          <div className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
+            <h3 className="text-[11px] font-bold text-slate-700">{language === "bn" ? "আমাদের সম্পর্কে" : "About Shadamon"}</h3>
+            <div className="mt-2 space-y-1 text-[10px] leading-4 text-slate-500">
+              <Link href={INFO_PAGE_ROUTES.about} className="block hover:text-slate-900">{t("about_us")}</Link>
+              <Link href={INFO_PAGE_ROUTES.terms} className="block hover:text-slate-900">{t("terms_and_con")}</Link>
+              <Link href={INFO_PAGE_ROUTES.privacy} className="block hover:text-slate-900">{t("privacy_policy")}</Link>
+              <Link href={INFO_PAGE_ROUTES.safety} className="block hover:text-slate-900">Safety tips</Link>
+              <button type="button" onClick={handleFooterPromoteClick} className="block text-left hover:text-slate-900">{t("promote")}</button>
             </div>
-
-            <div className="space-y-2.5">
-              <p className="text-[12px] text-black font-semibold">
-                {t("follow_us")}
-              </p>
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() =>
-                    window.open(
-                      "https://www.facebook.com/ShadamonDotCom",
-                      "_blank",
-                    )
-                  }
-                  className="w-7 h-7 bg-[#1877F2] rounded-full flex items-center justify-center text-white hover:opacity-90 transition-opacity"
-                >
-                  <FaFacebookF className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  onClick={() =>
-                    window.open(
-                      "https://www.tiktok.com/@shadamondotcom",
-                      "_blank",
-                    )
-                  }
-                  className="w-7 h-7 bg-black rounded-full flex items-center justify-center text-white hover:opacity-90 transition-opacity"
-                >
-                  <FaTiktok className="w-3 h-3" />
-                </button>
-                <button
-                  onClick={() =>
-                    window.open(
-                      "https://www.instagram.com/shadamondotcom/",
-                      "_blank",
-                    )
-                  }
-                  className="w-7 h-7 bg-gradient-to-tr from-[#FFB344] via-[#F43C78] to-[#9932CC] rounded-full flex items-center justify-center text-white hover:opacity-90 transition-opacity"
-                >
-                  <FaInstagram className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  onClick={() =>
-                    window.open(
-                      "https://www.youtube.com/@ShadaMondotcom",
-                      "_blank",
-                    )
-                  }
-                  className="w-7 h-7 bg-[#FF0000] rounded-full flex items-center justify-center text-white hover:opacity-90 transition-opacity"
-                >
-                  <FaYoutube className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-
-            <div className="pt-2 flex flex-col gap-0.5 border-t border-slate-100">
-              <p className="text-[11px] text-slate-500 font-medium tracking-tight">
-                &copy; {new Date().getFullYear()} shadamon.com
-              </p>
-              <p className="text-[11px] text-slate-500 leading-tight">
-                Manage by Shadamon
-              </p>
-            </div>
+            <div className="mt-3 border-t border-slate-100 pt-2 text-[9px] text-slate-400">© {new Date().getFullYear()} shadamon.com</div>
           </div>
         </div>
-      </div>
+      </aside>
 
       {/* Gap 1: 50px */}
       <div className="hidden lg:block w-[50px] flex-none"></div>
