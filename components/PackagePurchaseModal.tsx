@@ -19,7 +19,7 @@ type PackageOption = {
   uncheckedFeatures?: string[];
 };
 
-export default function PackagePurchaseModal({ onClose }: { onClose: () => void }) {
+export default function PackagePurchaseModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const [packages, setPackages] = useState<PackageOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [buying, setBuying] = useState<string | null>(null);
@@ -38,6 +38,7 @@ export default function PackagePurchaseModal({ onClose }: { onClose: () => void 
       return;
     }
     setBuying(item._id);
+    const me = await fetch(API_BASE_URL + "/api/user/me", { headers: { Authorization: `Bearer ${token}` } }).then((r) => r.json()).catch(() => ({}));
     const response = await fetch(`${API_BASE_URL}/api/payment/init`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
@@ -45,8 +46,8 @@ export default function PackagePurchaseModal({ onClose }: { onClose: () => void 
         packageId: item._id,
         totalAmount: item.price,
         paymentType: "package",
-        userName: "Package customer",
-        userMobile: "01700000000",
+        userName: me?.name || me?.storeName || "Package customer",
+        userMobile: me?.mobile || "01700000000",
         description: `${item.name} package purchase`,
       }),
     });
@@ -54,6 +55,8 @@ export default function PackagePurchaseModal({ onClose }: { onClose: () => void 
     if (result.url) window.location.href = result.url;
     else setBuying(null);
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-[1400] flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
