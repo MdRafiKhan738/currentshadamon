@@ -44,6 +44,7 @@ import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { useSettings } from "../context/SettingsContext";
 import PostAdModal from "../../components/PostAdModal";
+import PackagePurchaseModal from "../../components/PackagePurchaseModal";
 import PromoteModal from "../../components/PromoteModal";
 import LoginModal from "../../components/LoginModal";
 import RegisterModal from "../../components/RegisterModal";
@@ -141,6 +142,7 @@ export default function DashboardLayoutClient({
 
   const [isPostAdModalOpen, setIsPostAdModalOpen] = useState(false);
   const [isPromoteModalOpen, setIsPromoteModalOpen] = useState(false);
+  const [isPackageModalOpen, setIsPackageModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const [isMobileEntryModalOpen, setIsMobileEntryModalOpen] = useState(false);
@@ -464,6 +466,11 @@ export default function DashboardLayoutClient({
       "open-post-ad-modal",
       handleOpenPostAd as EventListener,
     );
+
+    const handleOpenPackage = () => {
+      setIsPackageModalOpen(true);
+    };
+    window.addEventListener("open-package-modal", handleOpenPackage);
 
     const handleOpenPromote = (e: CustomEvent) => {
       setAdToPromote(e.detail?.ad || null);
@@ -1560,6 +1567,11 @@ export default function DashboardLayoutClient({
             router.replace("/dashboard");
           }
         }}
+      />
+
+      <PackagePurchaseModal
+        isOpen={isPackageModalOpen}
+        onClose={() => setIsPackageModalOpen(false)}
       />
 
       <PromoteModal
