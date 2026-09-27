@@ -1,0 +1,29 @@
+"use client";
+import { useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+
+export default function PaymentStatusPage() {
+  const params = useSearchParams();
+  const router = useRouter();
+  const status = params.get("status") || "success";
+  useEffect(() => {
+    if (status === "success") {
+      window.dispatchEvent(new Event("auth-change"));
+      const timer = window.setTimeout(() => router.replace("/dashboard"), 1200);
+      return () => window.clearTimeout(timer);
+    }
+  }, [router, status]);
+  const success = status === "success";
+  return (
+    <main className="min-h-screen bg-slate-50 flex items-center justify-center p-5">
+      <div className="w-full max-w-md rounded-2xl bg-white border border-slate-200 shadow-xl p-8 text-center">
+        <div className={success ? "mx-auto mb-4 h-14 w-14 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-2xl" : "mx-auto mb-4 h-14 w-14 rounded-full bg-rose-100 text-rose-700 flex items-center justify-center text-2xl"}>
+          {success ? "✓" : "!"}
+        </div>
+        <h1 className="text-2xl font-extrabold text-slate-900">{success ? "Payment successful" : "Payment not completed"}</h1>
+        <p className="mt-2 text-sm text-slate-500">{success ? "Your package credits have been activated. Returning to your dashboard…" : "The package was not activated. You can return to the dashboard and try again."}</p>
+        <button onClick={() => router.replace("/dashboard")} className="mt-6 w-full rounded-lg bg-emerald-600 py-3 font-bold text-white">Go to dashboard</button>
+      </div>
+    </main>
+  );
+}
