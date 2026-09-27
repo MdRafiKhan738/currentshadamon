@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type MouseEvent } from "react";
 import { BadgeCheck, Bookmark, MessageSquare, Phone, UserPlus } from "lucide-react";
 import { useLanguage } from "../app/context/LanguageContext";
 import { getImageUrl } from "../utils/imageUrl";
@@ -61,7 +61,7 @@ export default function InvestmentPostCard({
   );
   const returnValue = post.expectedReturn ?? post.expectedProfit;
 
-  const openAction = (event: React.MouseEvent) => {
+  const openAction = (event: MouseEvent) => {
     event.stopPropagation();
     onOpen();
   };
