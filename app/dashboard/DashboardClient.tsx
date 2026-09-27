@@ -239,7 +239,7 @@ export default function DashboardClient() {
       params.delete("adminLoginToken");
       params.delete("adminLogin");
       const query = params.toString();
-      router.replace(query ? `/d?${query}` : "/d", { scroll: false });
+      router.replace(query ? `/dashboard?${query}` : "/dashboard", { scroll: false });
     };
 
     const applyAdminLogin = async () => {
