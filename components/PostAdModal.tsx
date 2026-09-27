@@ -1535,7 +1535,7 @@ export default function PostAdModal({ isOpen, onClose, editAd, onSuccess, initia
                                                 onBlur={(e) => {
                                                     const val = e.target.value.toLowerCase();
                                                     const blocked = settings.blockCheckInDescription || [];
-                                                    const found = blocked.find(word => val.includes(word.toLowerCase()));
+                                                    const found = blocked.find((word: string) => val.includes(word.toLowerCase()));
                                                     if (found) {
                                                         toast.error(`Description contains restricted word: ${found}`);
                                                     }
