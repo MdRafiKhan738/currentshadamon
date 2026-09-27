@@ -13,10 +13,11 @@ type MarketplacePost = {
   location?: string;
   category?: string;
   postRole?: "investor" | "business_owner";
-  businessStatus?: "active" | "inactive";
+  businessStatus?: "new" | "running" | "closed" | "active" | "inactive";
   minInvestment?: number | string;
   maxInvestment?: number | string;
   expectedProfit?: number;
+  expectedReturn?: number;
   createdAt?: string;
   user?: { _id?: string; name?: string; storeName?: string; mVerified?: boolean; verifiedBy?: string };
 };
@@ -74,12 +75,12 @@ export default function InvestmentPostCard({ post, onOpen }: { post: Marketplace
           <div className="mt-3 grid grid-cols-3 overflow-hidden rounded-xl border border-violet-100 text-center text-xs">
             <div className="border-r border-violet-100 px-2 py-2"><p className="text-slate-500">Min investment</p><p className="mt-1 font-medium">{formatInvestmentAmount(post.minInvestment)}</p></div>
             <div className="border-r border-violet-100 px-2 py-2"><p className="text-slate-500">Max investment</p><p className="mt-1 font-medium">{formatInvestmentAmount(post.maxInvestment)}</p></div>
-            <div className="bg-violet-700 px-2 py-2 text-white"><p className="text-violet-100">{returnLabel}</p><p className="mt-1 font-semibold">{post.expectedProfit ?? "—"}{post.expectedProfit !== undefined ? "%" : ""}</p></div>
+            <div className="bg-violet-700 px-2 py-2 text-white"><p className="text-violet-100">{returnLabel}</p><p className="mt-1 font-semibold">{post.expectedReturn ?? post.expectedProfit ?? "—"}{(post.expectedReturn !== undefined || post.expectedProfit !== undefined) ? "%" : ""}</p></div>
           </div>
           <div className="mt-3 flex items-center justify-between gap-2 text-xs text-slate-500">
             <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />{post.location || "Bangladesh"}</span>
             {showBusinessStatus && (
-              <span className={post.businessStatus === "inactive" ? "text-rose-600" : "text-emerald-600"}>{post.businessStatus === "inactive" ? "Inactive Business" : "Active Business"}</span>
+              <span className={post.businessStatus === "inactive" ? "text-rose-600" : "text-emerald-600"}>{post.businessStatus === "new" ? "New Business" : post.businessStatus === "closed" || post.businessStatus === "inactive" ? "Closed Business" : "Running Business"}</span>
             )}
           </div>
         </div>
