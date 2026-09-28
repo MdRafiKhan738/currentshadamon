@@ -60,7 +60,6 @@ import Image from "next/image";
 import LatestFreeAdPromo from "../../components/LatestFreeAdPromo";
 import InvestmentPostCard from "../../components/InvestmentPostCard";
 
-import MerchantsModal from "../../components/MerchantsModal" 
 import FilterModal, { FilterState } from "../../components/FilterModal";
 import InfoModal from "../../components/InfoModal";
 import Cookies from "js-cookie";
