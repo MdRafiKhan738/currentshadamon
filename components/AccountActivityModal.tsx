@@ -1358,7 +1358,7 @@ I have sent my CV for your review.`;
                                             <div className="flex items-center justify-between mb-0.5">
                                                 <div className="flex items-center gap-1.5 flex-wrap">
                                                     <h3 className="text-lg font-bold text-black leading-tight truncate">
-                                                        {displayUser.storeName || displayUser.name}
+                                                        {displayUser.organizationName || displayUser.name}
                                                     </h3>
                                                     {displayUser.mVerified && (
                                                         <VerifiedBadge className="-mt-0.5 ml-1" iconClassName="w-5 h-5" tooltipWidthClassName="w-[240px]" />
@@ -1472,7 +1472,7 @@ I have sent my CV for your review.`;
                                 <span className="text-[12px] text-slate-500 italic">Promote your Business, <span className="font-bold text-slate-800 not-italic border-b border-transparent hover:border-slate-800">Create a post</span></span>
                             </button>
 
-                            {/* Products Section */}
+                            {/* Posts Section */}
                             <div className="bg-white pt-2 min-h-[400px]">
                                 <div className="px-4 flex items-center gap-3 mb-2 border-b border-slate-100">
                                     <button
@@ -2090,16 +2090,16 @@ I have sent my CV for your review.`;
 
                             {/* Business Information */}
                             <div>
-                                <h3 className="text-base text-slate-800 mb-2">Business Information</h3>
+                                <h3 className="text-base text-slate-800 mb-2">Organization Information</h3>
                                 <div className="grid grid-cols-2 gap-2 mb-3">
                                     {/* Shop Name */}
                                     <div className="col-span-1">
-                                        <label className="block text-xs text-slate-500 mb-0.5">Shop Name</label>
+                                        <label className="block text-xs text-slate-500 mb-0.5">Organization Name</label>
                                         <input
                                             type="text"
                                             readOnly={!isOwnAccount}
-                                            value={profileForm.storeName}
-                                            onChange={(e) => handleProfileChange('storeName', e.target.value)}
+                                            value={profileForm.organizationName}
+                                            onChange={(e) => handleProfileChange('organizationName', e.target.value)}
                                             className="w-full border border-slate-200 rounded px-2 py-1 text-sm text-black outline-none focus:border-blue-500 bg-slate-50/50"
                                         />
                                     </div>
@@ -2123,9 +2123,9 @@ I have sent my CV for your review.`;
 
 
 
-                                    {/* Seller Page Username */}
+                                    {/* Profile Username */}
                                     <div className="col-span-2">
-                                        <label className="block text-xs text-slate-500 mb-0.5">Seller Page User Name</label>
+                                        <label className="block text-xs text-slate-500 mb-0.5">Profile Username</label>
                                         <div className="flex rounded border border-slate-200 overflow-hidden bg-slate-50/50 focus-within:border-blue-500">
                                             <span className="px-2 py-1 text-slate-400 text-sm border-r border-slate-200 bg-slate-100 shrink-0">www.shadamon.com/</span>
                                             <input
@@ -2595,7 +2595,7 @@ I have sent my CV for your review.`;
                                                             {user.photo ? <img src={getImageUrl(user.photo) || ''} alt={user.name} className="w-full h-full object-contain" loading="lazy" /> : <div className="w-full h-full bg-slate-300" />}
                                                         </div>
                                                         <div className="min-w-0">
-                                                            <h4 className="text-xs text-slate-800 truncate">{user.storeName || user.name}</h4>
+                                                            <h4 className="text-xs text-slate-800 truncate">{user.organizationName || user.name}</h4>
                                                         </div>
                                                     </div>
                                                     <div className="flex items-center gap-1.5 shrink-0">
