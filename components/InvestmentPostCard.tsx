@@ -12,7 +12,7 @@ type MarketplacePost = {
   location?: string;
   category?: string;
   postRole?: "investor" | "business_owner";
-  businessStatus?: "active" | "inactive";
+  businessStatus?: "new" | "running" | "closed" | "active" | "inactive";
   minInvestment?: number | string;
   maxInvestment?: number | string;
   expectedProfit?: number;
@@ -87,7 +87,13 @@ export default function InvestmentPostCard({ post, onOpen }: { post: Marketplace
           <div className="mt-3 flex items-center justify-between gap-2 text-xs text-slate-500">
             <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />{post.location || "Bangladesh"}</span>
             {showBusinessStatus && (
-              <span className={post.businessStatus === "inactive" ? "text-rose-600" : "text-emerald-600"}>{post.businessStatus === "inactive" ? "Inactive Business" : "Active Business"}</span>
+              <span className={post.businessStatus === "closed" || post.businessStatus === "inactive" ? "text-rose-600" : "text-emerald-600"}>
+                {post.businessStatus === "closed" || post.businessStatus === "inactive"
+                  ? "Closed Business"
+                  : post.businessStatus === "new"
+                    ? "New Business"
+                    : "Running Business"}
+              </span>
             )}
           </div>
         </div>
