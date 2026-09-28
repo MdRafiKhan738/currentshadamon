@@ -1637,9 +1637,9 @@ I have sent my CV for your review.`;
                                 )
                               </span>
                             )}
-                          </
-                        )}div>
-                        </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}
