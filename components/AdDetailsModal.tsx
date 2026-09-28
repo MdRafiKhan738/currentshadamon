@@ -35,6 +35,7 @@ import {
   Inbox,
   Plus,
   Home,
+  UserPlus,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import {
