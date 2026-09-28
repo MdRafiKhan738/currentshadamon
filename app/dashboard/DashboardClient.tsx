@@ -63,6 +63,7 @@ import { INFO_PAGE_ROUTES } from "@/utils/infoContent";
 import Image from "next/image";
 import LatestFreeAdPromo from "../../components/LatestFreeAdPromo";
 import InvestmentPostCard from "../../components/InvestmentPostCard";
+import DashboardOverview from "../../components/DashboardOverview";
 
 import FilterModal, { FilterState } from "../../components/FilterModal";
 import InfoModal from "../../components/InfoModal";
@@ -149,6 +150,7 @@ export default function DashboardClient() {
   const searchParams = useSearchParams();
   const { t, language } = useLanguage();
   const { settings } = useSettings();
+  const isDashboardView = searchParams.get("view") === "dashboard";
 
   const getFilterQueryValue = (longKey: string, shortKey: string) => {
     return searchParams.get(longKey) || searchParams.get(shortKey);
@@ -244,6 +246,7 @@ export default function DashboardClient() {
     packageName: "Free",
     usedConnects: 0,
     availableConnects: 0,
+    pendingVerification: 0,
   });
   const hasHandledAdminLoginRef = useRef(false);
 
@@ -325,11 +328,13 @@ export default function DashboardClient() {
           fetch(`${API_BASE_URL}/api/user/me`, { headers }),
           fetch(`${API_BASE_URL}/api/proposals`, { headers }),
           fetch(`${API_BASE_URL}/api/invites`, { headers }),
+          fetch(`${API_BASE_URL}/api/ads/me`, { headers }),
         ]);
 
         const me = meRes.ok ? await meRes.json() : {};
         const proposals = proposalsRes.ok ? await proposalsRes.json() : {};
         const invites = invitesRes.ok ? await invitesRes.json() : {};
+        const myAds = adsRes.ok ? await adsRes.json() : {};
         const allProposals = Array.isArray(proposals.data)
           ? proposals.data
           : [...(proposals.received || []), ...(proposals.sent || [])];
@@ -342,6 +347,9 @@ export default function DashboardClient() {
           packageName: me.activePackage?.name || me.merchantType || "Free",
           usedConnects: Number(me.creditsUsed || me.activePackage?.usedCredits || 0),
           availableConnects: Number(me.connectsBalance || me.activePackage?.creditsRemaining || 0),
+          pendingVerification: Array.isArray(myAds.data)
+            ? myAds.data.filter((item: any) => ["review", "pending"].includes(item.status)).length
+            : 0,
         });
       } catch (error) {
         console.error("Failed to load dashboard summary:", error);
@@ -1194,33 +1202,24 @@ export default function DashboardClient() {
         id="center-feed-container"
         className="w-full lg:w-[580px] flex-none space-y-4 pb-32 lg:pb-20"
       >
-        <div className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
-          <div className="grid grid-cols-2 gap-px overflow-hidden rounded-md bg-slate-200 sm:grid-cols-4">
-            {[
-              { label: "Pending proposals", value: dashboardSummary.pendingProposals, icon: Clock3, action: () => window.dispatchEvent(new Event("open-proposal-modal")) },
-              { label: "Accepted proposals", value: dashboardSummary.acceptedProposals, icon: CheckCircle2, action: () => window.dispatchEvent(new Event("open-proposal-modal")) },
-              { label: "Pending invitations", value: dashboardSummary.pendingInvitations, icon: UserPlus, action: () => window.dispatchEvent(new Event("open-invite-modal")) },
-              { label: "Profile visitors", value: dashboardSummary.profileVisitors, icon: Eye, action: () => window.dispatchEvent(new CustomEvent("open-account-modal", { detail: { activeTab: "Profile" } })) },
-            ].map(({ label, value, icon: Icon, action }) => (
-              <button key={label} type="button" onClick={action} className="bg-white px-2 py-2.5 text-center hover:bg-slate-50">
-                <Icon className="mx-auto mb-1 h-4 w-4 text-emerald-600" />
-                <div className="text-base font-bold text-slate-900">{value}</div>
-                <div className="text-[9px] leading-3 text-slate-500">{label}</div>
-              </button>
-            ))}
+        {isDashboardView ? (
+          <DashboardOverview summary={dashboardSummary} />
+        ) : (
+          <>
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="mb-3">
+            <h2 className="text-base font-bold text-slate-900">What do you want to post?</h2>
+            <p className="mt-1 text-xs text-slate-500">Choose once. Your role and admin category will be selected automatically.</p>
           </div>
-          <div className="mt-2 grid grid-cols-3 gap-px overflow-hidden rounded-md bg-slate-200">
-            {[
-              { label: "Package", value: dashboardSummary.packageName, icon: Package, action: () => window.dispatchEvent(new Event("open-package-modal")) },
-              { label: "Used connects", value: dashboardSummary.usedConnects, icon: CreditCard, action: () => window.dispatchEvent(new Event("open-package-modal")) },
-              { label: "Available connects", value: dashboardSummary.availableConnects, icon: CreditCard, action: () => window.dispatchEvent(new Event("open-package-modal")) },
-            ].map(({ label, value, icon: Icon, action }) => (
-              <button key={label} type="button" onClick={action} className="bg-white px-2 py-2.5 text-center hover:bg-slate-50">
-                <Icon className="mx-auto mb-1 h-4 w-4 text-emerald-600" />
-                <div className="truncate text-sm font-bold text-slate-900">{value}</div>
-                <div className="text-[9px] leading-3 text-slate-500">{label}</div>
-              </button>
-            ))}
+          <div className="grid gap-3 sm:grid-cols-2">
+            <button type="button" onClick={() => router.push("/dashboard?role=business_owner")} className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-left transition hover:border-slate-400 hover:bg-white">
+              <div className="text-sm font-bold text-slate-900">I need money</div>
+              <div className="mt-1 text-[11px] leading-4 text-slate-500">Post your business opportunity as a Business Owner.</div>
+            </button>
+            <button type="button" onClick={() => router.push("/dashboard?role=investor")} className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-left transition hover:border-slate-400 hover:bg-white">
+              <div className="text-sm font-bold text-slate-900">I wanna invest</div>
+              <div className="mt-1 text-[11px] leading-4 text-slate-500">Create an Investor post without selecting the role again.</div>
+            </button>
           </div>
         </div>
 
@@ -2018,7 +2017,9 @@ export default function DashboardClient() {
             }
           }}
         />
-      </div>
+
+        </>
+        )}      </div>
 
       {/* Mobile Scroll-To-Top */}
       <div className="fixed md:hidden right-3 bottom-[70px] z-40">
