@@ -36,6 +36,16 @@ interface SubItem {
     icon?: string;
     priceBoxShow?: boolean;
     priceBoxName?: string;
+    priceBoxFields?: Array<{
+        key: string;
+        label?: string;
+        labelBn?: string;
+        placeholder?: string;
+        placeholderBn?: string;
+        inputType?: 'text' | 'number';
+        required?: boolean;
+        order?: number;
+    }>;
     features?: Feature[];
 }
 
@@ -117,6 +127,8 @@ export default function PostAdModal({ isOpen, onClose, editAd, onSuccess, initia
     const [newAdditionalType, setNewAdditionalType] = useState("whatsapp");
     const [additionalPhones, setAdditionalPhones] = useState<{ number: string, types: string[] }[]>([]);
     const [featureValues, setFeatureValues] = useState<Record<string, any>>({});
+    const [priceBoxFields, setPriceBoxFields] = useState<NonNullable<SubItem['priceBoxFields']>>([]);
+    const [priceBoxValues, setPriceBoxValues] = useState<Record<string, any>>({});
     const [attemptedSubmit, setAttemptedSubmit] = useState(false);
     const [showDescriptionHelp, setShowDescriptionHelp] = useState(true);
 
@@ -209,6 +221,8 @@ export default function PostAdModal({ isOpen, onClose, editAd, onSuccess, initia
         setExpectedReturn(ad.expectedReturn !== undefined ? String(ad.expectedReturn) : "");
         setExistingImages(ad.images || []);
         setFeatureValues(ad.features || {});
+        setPriceBoxValues(ad.priceBoxValues || ad.features?.priceBoxValues || {});
+
     };
 
     const fetchAdData = async (id: string) => {
@@ -270,6 +284,8 @@ export default function PostAdModal({ isOpen, onClose, editAd, onSuccess, initia
                 setMaxInvestment("");
                 setExpectedReturn("");
                 setFeatureValues({});
+                setPriceBoxFields([]);
+                setPriceBoxValues({});
                 setImages([]);
                 setExistingImages([]);
                 setShowOtpVerification(false);
@@ -688,7 +704,8 @@ export default function PostAdModal({ isOpen, onClose, editAd, onSuccess, initia
             formData.append('hidePhone', String(hidePhone));
             formData.append('additionalPhones', JSON.stringify(additionalPhones));
             formData.append('remainingImages', JSON.stringify(existingImages));
-            formData.append('features', JSON.stringify(featureValues));
+            formData.append('features', JSON.stringify({ ...featureValues, priceBoxValues, priceBoxFields }));
+            formData.append('priceBoxValues', JSON.stringify(priceBoxValues));
             formData.append('price', price);
             formData.append('priceType', priceType);
             formData.append('postRole', postRole);
@@ -833,9 +850,8 @@ export default function PostAdModal({ isOpen, onClose, editAd, onSuccess, initia
             (images.length === 0 && existingImages.length === 0) ||
             !selectedCategory ||
             !selectedLocation ||
-            !minInvestment ||
-            !maxInvestment ||
-            !expectedReturn ||
+            (priceBoxFields.length === 0 && (!minInvestment || !maxInvestment || !expectedReturn)) ||
+            (priceBoxFields.some((field:any) => field.required && !String(priceBoxValues[field.key] ?? '').trim())) ||
             (subCat?.priceBoxShow && !price) ||
             !name
         ) {
@@ -843,16 +859,18 @@ export default function PostAdModal({ isOpen, onClose, editAd, onSuccess, initia
             return;
         }
 
-        const minValue = Number(minInvestment);
-        const maxValue = Number(maxInvestment);
-        const returnValue = Number(expectedReturn);
-        if (!Number.isFinite(minValue) || !Number.isFinite(maxValue) || minValue < 0 || maxValue < 0 || minValue > maxValue) {
-            toast.error("Please enter a valid minimum and maximum investment.");
-            return;
-        }
-        if (!Number.isFinite(returnValue) || returnValue < 0) {
-            toast.error("Please enter a valid expected return percentage.");
-            return;
+        if (priceBoxFields.length === 0) {
+            const minValue = Number(minInvestment);
+            const maxValue = Number(maxInvestment);
+            const returnValue = Number(expectedReturn);
+            if (!Number.isFinite(minValue) || !Number.isFinite(maxValue) || minValue < 0 || maxValue < 0 || minValue > maxValue) {
+                toast.error("Please enter a valid minimum and maximum investment.");
+                return;
+            }
+            if (!Number.isFinite(returnValue) || returnValue < 0) {
+                toast.error("Please enter a valid expected return percentage.");
+                return;
+            }
         }
 
         // Check blocked words
@@ -972,6 +990,16 @@ export default function PostAdModal({ isOpen, onClose, editAd, onSuccess, initia
     const subCat = categories
         .find(c => c.name === selectedCategory)
         ?.subcategories.find(s => s.name === selectedSubCategory);
+
+    useEffect(() => {
+        const configured = [...(selectedSubCategoryMeta?.priceBoxFields || [])].sort((a:any,b:any)=>(a.order||0)-(b.order||0));
+        setPriceBoxFields(configured);
+        setPriceBoxValues(prev => {
+            const next: Record<string, any> = {};
+            configured.forEach((field:any) => { next[field.key] = prev[field.key] ?? ''; });
+            return next;
+        });
+    }, [selectedSubCategoryMeta?.name, selectedSubCategoryMeta?.priceBoxFields]);
 
     const selectedCategoryMeta = categories.find((c) => c.name === selectedCategory);
     const selectedSubCategoryMeta = selectedCategoryMeta?.subcategories.find((s) => s.name === selectedSubCategory);
@@ -1604,17 +1632,37 @@ export default function PostAdModal({ isOpen, onClose, editAd, onSuccess, initia
                                                 </label>
                                             )}
                                         </div>
-                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                                            <label className="text-xs font-bold text-black">Min Investment
-                                                <input type="number" min="0" value={minInvestment} onChange={e => setMinInvestment(e.target.value)} className="mt-1 w-full border border-slate-300 rounded px-2 py-2 text-sm" placeholder="1,00,000" />
-                                            </label>
-                                            <label className="text-xs font-bold text-black">Max Investment
-                                                <input type="number" min="0" value={maxInvestment} onChange={e => setMaxInvestment(e.target.value)} className="mt-1 w-full border border-slate-300 rounded px-2 py-2 text-sm" placeholder="50,00,000" />
-                                            </label>
-                                            <label className="text-xs font-bold text-black">Expected Return %
-                                                <input type="number" min="0" step="0.01" value={expectedReturn} onChange={e => setExpectedReturn(e.target.value)} className="mt-1 w-full border border-slate-300 rounded px-2 py-2 text-sm" placeholder="15" />
-                                            </label>
-                                        </div>
+                                        {priceBoxFields.length > 0 ? (
+                                            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                                                {priceBoxFields.map((field:any) => (
+                                                    <label key={field.key} className="text-xs font-bold text-black">
+                                                        {language === 'bn' ? (field.labelBn || field.label || field.key) : (field.label || field.labelBn || field.key)}
+                                                        <input
+                                                            type={field.inputType === 'text' ? 'text' : 'number'}
+                                                            min={field.inputType === 'number' ? '0' : undefined}
+                                                            step={field.inputType === 'number' ? '0.01' : undefined}
+                                                            value={priceBoxValues[field.key] ?? ''}
+                                                            required={Boolean(field.required)}
+                                                            onChange={e => setPriceBoxValues(prev => ({ ...prev, [field.key]: e.target.value }))}
+                                                            className="mt-1 w-full border border-slate-300 rounded px-2 py-2 text-sm"
+                                                            placeholder={language === 'bn' ? (field.placeholderBn || field.placeholder || '') : (field.placeholder || field.placeholderBn || '')}
+                                                        />
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                                <label className="text-xs font-bold text-black">Min Investment
+                                                    <input type="number" min="0" value={minInvestment} onChange={e => setMinInvestment(e.target.value)} className="mt-1 w-full border border-slate-300 rounded px-2 py-2 text-sm" placeholder="1,00,000" />
+                                                </label>
+                                                <label className="text-xs font-bold text-black">Max Investment
+                                                    <input type="number" min="0" value={maxInvestment} onChange={e => setMaxInvestment(e.target.value)} className="mt-1 w-full border border-slate-300 rounded px-2 py-2 text-sm" placeholder="50,00,000" />
+                                                </label>
+                                                <label className="text-xs font-bold text-black">Expected Return %
+                                                    <input type="number" min="0" step="0.01" value={expectedReturn} onChange={e => setExpectedReturn(e.target.value)} className="mt-1 w-full border border-slate-300 rounded px-2 py-2 text-sm" placeholder="15" />
+                                                </label>
+                                            </div>
+                                        )}
                                     </div>
 
                                     {/* Category & Location Selection Section */}
