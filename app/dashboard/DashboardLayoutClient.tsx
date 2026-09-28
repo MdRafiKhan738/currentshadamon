@@ -579,7 +579,7 @@ export default function DashboardLayoutClient({
         handleOpenPromote as EventListener,
       );
     };
-  }, [language, router]);
+  }, [language, router, user]);
 
   // Handle clicking outside of search to close suggestions
   useEffect(() => {
