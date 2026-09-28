@@ -19,6 +19,7 @@ import {
   X,
   // Plus,
   Inbox,
+  MessageSquare,
   User,
   Activity,
   Heart,
@@ -185,6 +186,7 @@ export default function DashboardClient() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
   const [premiumUsers, setPremiumUsers] = useState<PremiumUser[]>([]);
+  const [conversations, setConversations] = useState<any[]>([]);
   const [ads, setAds] = useState<ActiveAd[]>([]);
   const [totalAds, setTotalAds] = useState<ActiveAd[]>([]);
   const [loading, setLoading] = useState(true);
@@ -909,6 +911,29 @@ export default function DashboardClient() {
       console.error("Follow error", error);
     }
   };
+
+  useEffect(() => {
+    const loadDashboardConversations = async () => {
+      const token = Cookies.get("token");
+      if (!token) {
+        setConversations([]);
+        return;
+      }
+      try {
+        const res = await fetch(API_BASE_URL + "/api/messages/conversations", {
+          headers: { Authorization: "Bearer " + token },
+        });
+        const data = await res.json();
+        if (data.success && Array.isArray(data.data)) setConversations(data.data.slice(0, 6));
+      } catch (error) {
+        console.error("Failed to load dashboard conversations", error);
+      }
+    };
+    loadDashboardConversations();
+    const handler = () => loadDashboardConversations();
+    window.addEventListener("refresh-unread-count", handler);
+    return () => window.removeEventListener("refresh-unread-count", handler);
+  }, []);
 
   const observerOptions = {
     root: null,
@@ -2115,86 +2140,42 @@ export default function DashboardClient() {
         </div>
       </div>
 
-      {/* Right Sidebar - Popular Seller: 230px */}
+      {/* Right Sidebar - Messenger: 230px */}
       <div className="hidden xl:block w-[230px] flex-none sticky top-4 h-[calc(100vh-32px)] overflow-y-auto no-scrollbar pb-10 z-40">
-        <div className="bg-white rounded-lg w-full">
-          <div className="p-3 pb-1">
-            <h3 className="text-[13px] text-black">{t("popular_seller")}</h3>
+        <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+          <div className="flex items-center justify-between border-b border-slate-100 p-3">
+            <div>
+              <h3 className="text-[13px] font-bold text-slate-900">Messages</h3>
+              <p className="text-[10px] text-slate-400">Recent conversations</p>
+            </div>
+            <button onClick={() => window.dispatchEvent(new Event("open-message-modal"))} className="rounded-full bg-emerald-50 p-2 text-emerald-700 hover:bg-emerald-100">
+              <MessageSquare className="h-4 w-4" />
+            </button>
           </div>
-
-          <div className="space-y-3.5 px-3 pb-3">
-            {premiumUsers.length === 0 ? (
-              <div className="py-8 text-center text-black text-sm italic">
-                <p>{t("no_premium_merchants")}</p>
-              </div>
+          <div className="p-2">
+            {conversations.length === 0 ? (
+              <button onClick={() => window.dispatchEvent(new Event("open-message-modal"))} className="w-full rounded-lg border border-dashed border-slate-200 px-3 py-8 text-center text-xs text-slate-400 hover:bg-slate-50">
+                No conversations yet.<br /><span className="font-semibold text-emerald-600">Open Messenger</span>
+              </button>
             ) : (
-              premiumUsers.slice(0,9).map((user) => (
-                <div key={user._id} className="flex gap-3">
-                  <div
-                    className="shrink-0 cursor-pointer"
-                    onClick={() => handleProfileClick(user._id)}
-                  >
-                    <div className="w-14 h-14 rounded-full overflow-hidden border border-slate-100 bg-slate-200 relative group">
-                      {user.photo ? (
-                        <img
-                          src={getImageUrl(user.photo) || undefined}
-                          alt={user.storeName || user.name}
-                          className="w-full h-full object-contain group-hover:scale-110 transition-transform"
-                          loading="lazy"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-black font-bold text-xl uppercase">
-                          {(user.storeName || user.name).charAt(0)}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex-1 min-w-0 h-14 flex flex-col justify-between py-0.5">
-                    <div className="flex flex-col">
-                      <div
-                        className="flex items-center gap-1.5 leading-tight cursor-pointer group/name"
-                        onClick={() => handleProfileClick(user._id)}
-                      >
-                        <h4 className=" text-black text-[15px] truncate group-hover/name:text-[#0088cc] transition-colors">
-                          {user.storeName || user.name}
-                        </h4>
-                        {user.mVerified && (
-                          <VerifiedBadge className="translate-y-[0.5px]" />
-                        )}
+              <div className="space-y-1">
+                {conversations.map((conv:any) => {
+                  const other = conv.participants?.find((p:any) => p?._id !== conv.currentUserId) || conv.participants?.[0];
+                  return (
+                    <button key={conv._id} onClick={() => window.dispatchEvent(new Event("open-message-modal"))} className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left hover:bg-emerald-50">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-emerald-100 text-xs font-bold text-emerald-700">
+                        {other?.photo ? <img src={getImageUrl(other.photo) || undefined} className="h-full w-full object-cover" alt="" /> : String(other?.name || "U").charAt(0)}
                       </div>
-                      <p className="text-[10px] text-slate-500 -mt-0.5">
-                        {user.followers?.length || 0} {t("follower")}
-                      </p>
-                    </div>
-                    <button
-                      onClick={(e) => handleFollowUser(e, user._id)}
-                      className={cn(
-                        "flex items-center justify-center gap-1 px-2.5 h-5 border rounded-full text-[10px] font-bold transition-all w-fit",
-                        user.isFollowing
-                          ? "bg-slate-100 text-slate-500 border-slate-300"
-                          : "border-slate-300 text-slate-500 hover:bg-slate-50 hover:border-slate-400",
-                      )}
-                    >
-                      {!user.isFollowing && (
-                        <span className="text-sm leading-none -mt-0.5">+</span>
-                      )}
-                      {user.isFollowing ? t("Unfollow") : t("Follow")}
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-[11px] font-bold text-slate-800">{other?.name || other?.storeName || "Member"}</div>
+                        <div className="truncate text-[9px] text-slate-400">{conv.lastMessage?.text || conv.lastMessage?.message || "Open conversation"}</div>
+                      </div>
+                      {(conv.unreadCount || 0) > 0 && <span className="min-w-4 rounded-full bg-emerald-600 px-1 text-center text-[9px] text-white">{conv.unreadCount}</span>}
                     </button>
-                  </div>
-                </div>
-              ))
+                  );
+                })}
+              </div>
             )}
-            {!premiumUsers.length ? "" : (
-              <div className="flex justify-center pt-2">
-  <button
-    onClick={() => setIsMerchantsModalOpen(true)}
-    className="flex items-center justify-center w-full gap-1 px-4 py-2 border border-slate-300 rounded-full text-[11px] font-bold text-slate-600 hover:bg-slate-50 hover:border-slate-400 transition-all"
-  >
-    {language === "bn" ? "আরও বিক্রেতা" : "More Merchant"}
-    <ChevronRight className = "w-3.5 h-3.5 text-black"/>
-  </button>
-</div>
-            )  }
           </div>
         </div>
       </div>
