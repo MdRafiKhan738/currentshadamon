@@ -181,6 +181,9 @@ export default function AdDetailsModal({
   const images = ad?.images || [];
   const hasImages = images.length > 0;
   const dynamicPriceFields = [...(ad?.priceBoxFields || ad?.features?.priceBoxFields || [])].sort((a:any,b:any)=>(a.order||0)-(b.order||0));
+  const orderedPriceFields = dynamicPriceFields.length >= 3
+    ? [dynamicPriceFields[2], ...dynamicPriceFields.slice(0, 2), ...dynamicPriceFields.slice(3)]
+    : dynamicPriceFields;
   const dynamicPriceValues = ad?.priceBoxValues || ad?.features?.priceBoxValues || {};
 
   // Reset states when ad changes
@@ -695,8 +698,8 @@ export default function AdDetailsModal({
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-[10px] sm:text-xs text-slate-500 mb-1.5 font-medium gap-1 sm:gap-0">
               <div className="flex items-center gap-1 text-[#0088cc] sm:order-2">
                 <Eye className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                <span className="mr-1">{ad.deliveryCount || 0} Delivered</span>
-                <span>{ad.views || 0} Views</span>
+                <span className="mr-1">{ad.views || 0} Views</span>
+                
               </div>
               <div className="flex items-center gap-3 sm:order-1 min-w-0 overflow-hidden">
                 <div className="flex items-center gap-1 min-w-0">
@@ -1171,7 +1174,7 @@ export default function AdDetailsModal({
                         <button onClick={() => setProposalOpen(true)} className="flex-1 h-10 border border-emerald-200 bg-emerald-50 text-emerald-700 text-xs px-1 rounded-md hover:bg-emerald-100 transition-colors">Send Proposal</button>
                       )}
                       {String(ad.user?._id || ad.user) !== String(currentUserId) && (
-                        <button onClick={handleInvite} className="flex-1 h-10 border border-slate-200 bg-white text-slate-700 text-xs px-1 rounded-md hover:bg-slate-50 transition-colors">Invite</button>
+                        <button onClick={handleInvite} className="flex-1 h-10 border border-emerald-200 bg-emerald-50 text-emerald-700 text-xs px-1 rounded-md hover:bg-emerald-100 transition-colors">Invite</button>
                       )}
 
                       {/* Send CV Button - Only if requested */}
@@ -1361,12 +1364,12 @@ I have sent my CV for your review.`;
                           {ad.features?.priceBoxName || "Post Details"}
                         </div>
                         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                          {dynamicPriceFields.slice(0, 12).map((field: any) => (
-                            <div key={field.key} className="rounded-lg border border-violet-100 bg-white px-2.5 py-2">
-                              <p className="truncate text-[10px] font-medium text-slate-500">
+                          {orderedPriceFields.slice(0, 12).map((field: any, fieldIndex: number) => (
+                            <div key={field.key} className={cn("rounded-lg border px-2.5 py-2", fieldIndex === 0 ? "border-violet-600 bg-violet-600 text-white" : "border-violet-100 bg-white")}>
+                              <p className={cn("truncate text-[10px] font-medium", fieldIndex === 0 ? "text-white" : "text-slate-500")}>
                                 {language === "bn" ? (field.labelBn || field.label || field.key) : (field.label || field.labelBn || field.key)}
                               </p>
-                              <p className="mt-1 break-words text-sm font-bold text-slate-900">
+                              <p className={cn("mt-1 break-words text-sm font-bold", fieldIndex === 0 ? "text-white" : "text-slate-900")}>
 {field.inputType === "text" ? String(dynamicPriceValues[field.key] ?? "—") : formatInvestmentAmount(dynamicPriceValues[field.key])}
                               </p>
                             </div>
