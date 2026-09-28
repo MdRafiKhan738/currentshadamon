@@ -561,6 +561,7 @@ export default function DashboardLayoutClient({
           socket.disconnect();
           setSocket(null);
         }
+        window.location.replace("https://shadamoninvest.vercel.app");
         return;
       }
 
@@ -570,6 +571,7 @@ export default function DashboardLayoutClient({
         });
         if (!res.ok) {
           setUser(null);
+          window.location.replace("https://shadamoninvest.vercel.app");
           return;
         }
         const userData = await res.json();
