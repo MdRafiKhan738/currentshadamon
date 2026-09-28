@@ -17,6 +17,7 @@ type PriceField = {
   placeholderBn?: string;
   inputType?: "text" | "number";
   required?: boolean;
+  inputType?: "text" | "number";
   order?: number;
 };
 
@@ -51,6 +52,7 @@ interface InvestmentPostFormModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: (ad?: any) => void;
+  onFailure?: () => void;
   initialMobile?: string;
   initialRole?: InvestmentRole;
   initialCategory?: string;
@@ -298,6 +300,7 @@ export default function InvestmentPostFormModal({
         role === "investor" ? "expected" : "return",
       );
       formData.append("priceBoxValues", JSON.stringify(priceValues));
+      formData.append("priceBoxFields", JSON.stringify(priceFields));
       formData.append(
         "features",
         JSON.stringify({
@@ -325,6 +328,7 @@ export default function InvestmentPostFormModal({
 
       if (!response.ok || !data.success) {
         toast.error(data.message || "Could not submit your post.");
+        onFailure?.();
         return;
       }
 
@@ -344,6 +348,7 @@ export default function InvestmentPostFormModal({
     } catch (error) {
       console.error("Investment post submission failed:", error);
       toast.error("Could not submit your post. Please try again.");
+      onFailure?.();
     } finally {
       setSubmitting(false);
     }
