@@ -40,6 +40,13 @@ type Category = {
   subcategories: SubCategory[];
 };
 
+type SubLocation = {
+  _id: string;
+  name: string;
+  location?: string | { _id?: string };
+  order?: number;
+};
+
 type Location = {
   _id: string;
   name: string;
@@ -81,9 +88,12 @@ export default function InvestmentPostFormModal({
   const role = normalizeRole(initialRole);
   const [categories, setCategories] = useState<Category[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
+  const [subLocations, setSubLocations] = useState<SubLocation[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [selectedSubCategory, setSelectedSubCategory] = useState<SubCategory | null>(null);
   const [selectedLocation, setSelectedLocation] = useState("");
+  const [selectedSubLocation, setSelectedSubLocation] = useState("");
+  const [businessStatus, setBusinessStatus] = useState<"active" | "new" | "closed">("active");
   const [headline, setHeadline] = useState("");
   const [description, setDescription] = useState("");
   const [phone, setPhone] = useState(initialMobile);
@@ -119,10 +129,11 @@ export default function InvestmentPostFormModal({
         const token = Cookies.get("token");
         const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
 
-        const [catRes, subRes, locRes, meRes] = await Promise.all([
+        const [catRes, subRes, locRes, subLocRes, meRes] = await Promise.all([
           fetch(`${API_BASE_URL}/api/categories`).then((r) => r.json()),
           fetch(`${API_BASE_URL}/api/categories/sub`).then((r) => r.json()),
           fetch(`${API_BASE_URL}/api/locations`).then((r) => r.json()),
+          fetch(`${API_BASE_URL}/api/locations/sub`).then((r) => r.json()),
           token
             ? fetch(`${API_BASE_URL}/api/user/me`, { headers }).then((r) => r.json())
             : Promise.resolve({ success: false }),
@@ -151,8 +162,13 @@ export default function InvestmentPostFormModal({
           .filter((location: any) => location.status !== false)
           .sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
 
+        const nextSubLocations: SubLocation[] = (Array.isArray(subLocRes.data) ? subLocRes.data : [])
+          .filter((subLocation: any) => subLocation.status !== false)
+          .sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
+
         setCategories(nextCategories);
         setLocations(nextLocations);
+        setSubLocations(nextSubLocations);
 
         if (meRes?.success && meRes.data) {
           setUserName(meRes.data.name || "");
@@ -189,6 +205,9 @@ export default function InvestmentPostFormModal({
         if (!selectedLocation && meRes?.success && meRes.data?.lastPostLocation) {
           setSelectedLocation(meRes.data.lastPostLocation);
         }
+        if (!selectedSubLocation && meRes?.success && meRes.data?.lastPostSubLocation) {
+          setSelectedSubLocation(meRes.data.lastPostSubLocation);
+        }
       } catch (error) {
         console.error("Failed to load investment post data:", error);
         toast.error("Could not load categories and locations.");
@@ -224,6 +243,8 @@ export default function InvestmentPostFormModal({
       setDescription("");
       setImages([]);
       setPriceValues({});
+      setSelectedSubLocation("");
+      setBusinessStatus("active");
     }
   }, [isOpen]);
 
@@ -259,6 +280,10 @@ export default function InvestmentPostFormModal({
       toast.error("Please select your location.");
       return;
     }
+    if (!selectedSubLocation) {
+      toast.error("Please select your sublocation.");
+      return;
+    }
     if (!headline.trim()) {
       toast.error("Please enter a headline.");
       return;
@@ -288,13 +313,13 @@ export default function InvestmentPostFormModal({
       formData.append("category", selectedCategory.name);
       formData.append("subCategory", selectedSubCategory.name);
       formData.append("location", selectedLocation);
-      formData.append("subLocation", "");
+      formData.append("subLocation", selectedSubLocation);
       formData.append("phone", cleanPhone);
       formData.append("hidePhone", "false");
       formData.append("phoneTypes", JSON.stringify(["call"]));
       formData.append("additionalPhones", JSON.stringify([]));
       formData.append("postRole", role);
-      formData.append("businessStatus", role === "business_owner" ? "running" : "new");
+      if (role === "business_owner") formData.append("businessStatus", businessStatus);
       formData.append(
         "investmentReturnType",
         role === "investor" ? "expected" : "return",
