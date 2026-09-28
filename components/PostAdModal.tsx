@@ -888,10 +888,6 @@ export default function PostAdModal({ isOpen, onClose, editAd, onSuccess, initia
         const hasMissingDynamicField = hasDynamicPriceBox
             ? priceBoxFields.some((field: any) => field.required && !String(priceBoxValues[field.key] ?? '').trim())
             : false;
-        const hasMissingLegacyInvestmentField = Boolean(
-            postRole && !hasDynamicPriceBox && (minInvestment || maxInvestment || expectedReturn)
-        );
-
         if (
             !headline ||
             !phone ||
@@ -900,7 +896,6 @@ export default function PostAdModal({ isOpen, onClose, editAd, onSuccess, initia
             !selectedCategory ||
             !selectedLocation ||
             hasMissingDynamicField ||
-            (postRole && hasMissingLegacyInvestmentField && (!minInvestment || !maxInvestment || !expectedReturn)) ||
             (!postRole && !price) ||
             !name
         ) {
