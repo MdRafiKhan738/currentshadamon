@@ -1747,7 +1747,7 @@ I have sent my CV for your review.`;
                     );
                   }}
                 >
-                  {ad.postRole ? "View Profile" : "Visit Shop"}
+                  {ad.postRole ? "Visit Profile" : "Visit Shop"}
                 </button>
               </div>
             </div>
