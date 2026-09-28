@@ -24,6 +24,9 @@ interface PostAdModalProps {
     editAd?: any;
     onSuccess?: (ad?: any) => void;
     initialMobile?: string;
+    initialRole?: "investor" | "business_owner";
+    initialCategory?: string;
+    initialSubCategory?: string;
 }
 
 interface SubItem {
@@ -76,7 +79,7 @@ interface Location {
     subLocations: SubItem[];
 }
 
-export default function PostAdModal({ isOpen, onClose, editAd, onSuccess, initialMobile }: PostAdModalProps) {
+export default function PostAdModal({ isOpen, onClose, editAd, onSuccess, initialMobile, initialRole, initialCategory, initialSubCategory }: PostAdModalProps) {
     const [images, setImages] = useState<File[]>([]);
     const [existingImages, setExistingImages] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
@@ -278,7 +281,7 @@ export default function PostAdModal({ isOpen, onClose, editAd, onSuccess, initia
                 setExpandedCategory(null);
                 setPrice("");
                 setPriceType("Negotiable");
-                setPostRole("business_owner");
+                setPostRole(initialRole === "investor" ? "investor" : "business_owner");
                 setBusinessStatus("new");
                 setMinInvestment("");
                 setMaxInvestment("");
@@ -309,10 +312,16 @@ export default function PostAdModal({ isOpen, onClose, editAd, onSuccess, initia
                     setEmail("");
                 }
                 setSubmissionStatus(null);
+                // If the investment homepage supplied a role/category, preserve that
+                // context instead of making the user choose it again.
+                if (initialCategory) {
+                    setSelectedCategory(initialCategory);
+                    setSelectedSubCategory(initialSubCategory || "");
+                }
                 // View reset handled in checkUser
             }
         }
-    }, [isOpen, editAd, initialMobile]);
+    }, [isOpen, editAd, initialMobile, initialRole, initialCategory, initialSubCategory]);
 
     // OTP Timer
     useEffect(() => {
