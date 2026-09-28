@@ -53,6 +53,7 @@ import MobileEntryModal from "../../components/MobileEntryModal";
 import VerificationModal from "../../components/VerificationModal";
 import AdDetailsModal from "../../components/AdDetailsModal";
 import MessageModal from "../../components/MessageModal";
+import ProposalModal from "../../components/ProposalModal";
 import ChatMessageModal from "../../components/ChatMessageModal";
 import InfoModal from "../../components/InfoModal";
 import AdDisplay from "../../components/AdDisplay";
@@ -157,6 +158,7 @@ export default function DashboardLayoutClient({
     undefined,
   );
   const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
+  const [isProposalModalOpen, setIsProposalModalOpen] = useState(false);
   const [isChatMessageModalOpen, setIsChatMessageModalOpen] = useState(false);
   const [chatAd, setChatAd] = useState<any>(null);
   const [chatOtherUser, setChatOtherUser] = useState<any>(null);
@@ -437,6 +439,8 @@ export default function DashboardLayoutClient({
     };
 
     window.addEventListener("open-message-modal", handleOpenMessage);
+    const handleOpenProposal = () => setIsProposalModalOpen(true);
+    window.addEventListener("open-proposal-modal", handleOpenProposal);
 
     const handleOpenMobileEntry = (e: any) => {
       if (e.detail?.reason) {
@@ -1767,6 +1771,7 @@ export default function DashboardLayoutClient({
         initialReportOpen={shouldOpenReportAfterLogin}
       />
 
+      <ProposalModal isOpen={isProposalModalOpen} onClose={() => setIsProposalModalOpen(false)} />
       <MessageModal
         isOpen={isMessageModalOpen}
         onClose={() => setIsMessageModalOpen(false)}
