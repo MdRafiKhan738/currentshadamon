@@ -2157,13 +2157,7 @@ export default function DashboardClient() {
           </div>
         }
       />
-      <MerchantsModal
-  isOpen={isMerchantsModalOpen}
-  onClose={() => setIsMerchantsModalOpen(false)}
-  premiumUsers={premiumUsers}
-  onProfileClick={handleProfileClick}
-  onFollowUser={handleFollowUser}
-/>
+
     </div>
   );
 }
