@@ -611,7 +611,17 @@ export default function AccountActivityModal({ isOpen, onClose, userId, onOpenPo
         actionType: 'call',
         sellerPageUrl: '',
         aboutBusiness: '',
-        contact: ''
+        contact: '',
+        organizationName: '',
+        designation: '',
+        employeeCount: '',
+        investmentRole: '',
+        investmentType: '',
+        investmentReturnType: '',
+        investmentAmountMin: '',
+        investmentAmountMax: '',
+        investmentReturn: '',
+        businessProposal: ''
     });
 
     // Refs for file inputs
