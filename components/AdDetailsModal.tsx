@@ -830,23 +830,23 @@ export default function AdDetailsModal({
             >
               {ad.headline}
             </h1>
-            <div className="flex items-center gap-2 mb-1">
-              {/* <p className="text-xs text-slate-900 font-bold">
-                                {ad.price ? `৳ ${ad.price.toLocaleString()}` : t('price_on_ask')}
-                            </p> */}
-              {ad.price && (
-                <p className="text-xs text-slate-900 font-bold">
-                  ৳ {ad.price.toLocaleString()}
-                </p>
-              )}
-              {ad.price && (
-                <span className="text-[10px] text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
-                  {ad.priceType === "Negotiable"
-                    ? t("price_negotiable")
-                    : t("price_fixed")}
-                </span>
-              )}
-            </div>
+            {!ad.postRole && (
+              <div className="flex items-center gap-2 mb-1">
+                {ad.price && (
+                  <p className="text-xs text-slate-900 font-bold">
+                    ৳ {ad.price.toLocaleString()}
+                  </p>
+                )}
+                {ad.price && (
+                  <span className="text-[10px] text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
+                    {ad.priceType === "Negotiable"
+                      ? t("price_negotiable")
+                      : t("price_fixed")}
+                  </span>
+                )}
+              </div>
+            )}
+
 
             {/* 5. Contact Section */}
             <div className="bg-slate-200 rounded-lg mt-2 mb-2 p-3 border border-slate-100">
