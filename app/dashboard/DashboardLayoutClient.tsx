@@ -580,7 +580,8 @@ export default function DashboardLayoutClient({
           socket.disconnect();
           setSocket(null);
         }
-        window.location.replace("https://shadamoninvest.vercel.app");
+        setMobileEntryReason("post_ad");
+        setIsMobileEntryModalOpen(true);
         return;
       }
 
@@ -1609,7 +1610,16 @@ export default function DashboardLayoutClient({
         editAd={adToEdit}
         initialMobile={tempMobile}
         initialRole={requestedInvestmentRole}
-        initialCategory={requestedCategory}
+        initialCategory={
+          requestedCategory ||
+          (requestedInvestmentRole
+            ? categories.find((category) =>
+                requestedInvestmentRole === "investor"
+                  ? /investor/i.test(category.name)
+                  : /business\s*owner/i.test(category.name)
+              )?.name || ""
+            : "")
+        }
         initialSubCategory={requestedSubCategory}
         onSuccess={(newAd) => {
           setIsPostAdModalOpen(false);
