@@ -36,6 +36,7 @@ type MarketplacePost = {
       key: string;
       label?: string;
       labelBn?: string;
+      inputType?: "text" | "number";
       order?: number;
     }>;
     priceBoxEnabled?: boolean;
