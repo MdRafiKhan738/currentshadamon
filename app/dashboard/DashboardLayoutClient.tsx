@@ -175,8 +175,8 @@ export default function DashboardLayoutClient({
       : searchParams.get("cat") === "investor" || searchParams.get("cat") === "business_owner"
         ? searchParams.get("cat") as "investor" | "business_owner"
         : undefined;
-  const requestedCategory = searchParams.get("category") || searchParams.get("c") || "";
-  const requestedSubCategory = searchParams.get("subCategory") || searchParams.get("sc") || "";
+  const requestedCategory = searchParams.get("postCategory") || "";
+  const requestedSubCategory = searchParams.get("postSubCategory") || "";
 
   useEffect(() => {
     if (!requestedInvestmentRole && !requestedCategory) return;
