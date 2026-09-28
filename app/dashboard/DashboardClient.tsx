@@ -201,6 +201,56 @@ export default function DashboardClient() {
   const [feedAdsCategories, setFeedAdsCategories] = useState<any[]>([]);
   const [investmentPosts, setInvestmentPosts] = useState<any[]>([]);
 
+  // Load the same active investment/business-owner posts used by the
+  // Shadamon Invest homepage. These are shown in the Dashboard feed
+  // No Ads Yet area when there are no regular marketplace ads.
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadInvestmentPosts = async () => {
+      try {
+        const [investorRes, ownerRes] = await Promise.all([
+          fetch(
+            `${API_BASE_URL}/api/ads/public/all?postRole=investor&limit=12`,
+            { cache: "no-store" },
+          ).then((res) => res.json()),
+          fetch(
+            `${API_BASE_URL}/api/ads/public/all?postRole=business_owner&limit=12`,
+            { cache: "no-store" },
+          ).then((res) => res.json()),
+        ]);
+
+        if (cancelled) return;
+
+        const combined = [
+          ...(investorRes?.success ? investorRes.data || [] : []),
+          ...(ownerRes?.success ? ownerRes.data || [] : []),
+        ]
+          .filter(
+            (post, index, list) =>
+              post?._id &&
+              list.findIndex((item) => item?._id === post._id) === index,
+          )
+          .sort(
+            (a, b) =>
+              new Date(b.createdAt || 0).getTime() -
+              new Date(a.createdAt || 0).getTime(),
+          );
+
+        setInvestmentPosts(combined);
+      } catch (error) {
+        console.error("Failed to load active investment posts:", error);
+        if (!cancelled) setInvestmentPosts([]);
+      }
+    };
+
+    loadInvestmentPosts();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const [isMerchantsModalOpen, setIsMerchantsModalOpen] = useState(false);
 
   const [expandedCategory, setExpandedCategory] = useState<string | null>(
