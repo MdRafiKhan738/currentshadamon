@@ -533,10 +533,6 @@ export default function DashboardLayoutClient({
         "open-mobile-entry-modal",
         handleOpenMobileEntry,
       );
-      window.removeEventListener("open-message-modal", handleOpenMessage);
-      window.removeEventListener("open-proposal-modal", handleOpenProposal);
-      window.removeEventListener("open-invite-modal", handleOpenInvite);
-      window.removeEventListener("open-package-modal", handleOpenPackage);
       window.removeEventListener(
         "open-chat-modal",
         handleOpenChat as EventListener,
