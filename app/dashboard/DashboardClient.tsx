@@ -528,7 +528,11 @@ export default function DashboardClient() {
       return;
     }
 
-    const params = new URLSearchParams();
+    const params = new URLSearchParams(searchParams.toString());
+    ["role", "cat", "postCategory", "postSubCategory"].forEach((key) => {
+      const value = searchParams.get(key);
+      if (value) params.set(key, value);
+    
     if (filters.category) params.set("c", filters.category);
     if (filters.subCategory) params.set("sc", filters.subCategory);
     if (filters.location) params.set("l", filters.location);
@@ -641,8 +645,11 @@ export default function DashboardClient() {
           params.append("promoteTag", filters.promoteTag);
         if (filters.sort) params.append("sort", filters.sort);
         if (filters.search) params.append("search", filters.search);
-        const selectedPostRole = searchParams.get("cat");
-        if (selectedPostRole === "investor" || selectedPostRole === "business_owner") params.append("postRole", selectedPostRole);
+        params.append("status", "active");
+        const selectedPostRole = searchParams.get("role") || searchParams.get("cat");
+        if (selectedPostRole === "investor" || selectedPostRole === "business_owner") {
+          params.append("postRole", selectedPostRole);
+        }
 
         const shouldFetchMeta = !append && !hasFetchedMetaRef.current;
         const metaPromises: Promise<any>[] = [];
@@ -1149,7 +1156,7 @@ export default function DashboardClient() {
               <button type="button" onClick={() => window.dispatchEvent(new Event("open-proposal-modal"))} className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-[12px] font-semibold text-slate-700 hover:bg-slate-50"><UserPlus className="h-4 w-4" /><span>{language === "bn" ? "প্রস্তাব" : "Proposals"}</span></button>
               <Link href="/dashboard" className="flex items-center gap-3 rounded-md px-3 py-2 text-[12px] font-semibold text-slate-700 hover:bg-slate-50"><LayoutDashboard className="h-4 w-4" /><span>{language === "bn" ? "ড্যাশবোর্ড" : "Dashboard"}</span></Link>
               <button type="button" onClick={() => window.dispatchEvent(new CustomEvent("open-account-modal", { detail: { activeTab: "Profile" } }))} className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-[12px] font-semibold text-slate-700 hover:bg-slate-50"><User className="h-4 w-4" /><span>{language === "bn" ? "প্রোফাইল" : "Profile"}</span></button>
-              <Link href="/dashboard/post-ad" className="flex items-center gap-3 rounded-md px-3 py-2 text-[12px] font-semibold text-slate-700 hover:bg-slate-50"><FilePlus2 className="h-4 w-4" /><span>{language === "bn" ? "পোস্ট" : "Post"}</span></Link>
+              <button type="button" onClick={() => window.dispatchEvent(new CustomEvent("open-post-ad-modal"))} className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-[12px] font-semibold text-slate-700 hover:bg-slate-50"><FilePlus2 className="h-4 w-4" /><span>{language === "bn" ? "পোস্ট" : "Post"}</span></button>
               <button type="button" onClick={() => window.dispatchEvent(new CustomEvent("open-account-modal", { detail: { activeTab: "Activity" } }))} className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-[12px] font-semibold text-slate-700 hover:bg-slate-50"><Activity className="h-4 w-4" /><span>{language === "bn" ? "অ্যাক্টিভিটি" : "Activity"}</span></button>
               <button type="button" onClick={() => window.dispatchEvent(new Event("show-saved-search"))} className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-[12px] font-semibold text-slate-700 hover:bg-slate-50"><Heart className="h-4 w-4" /><span>{language === "bn" ? "ফেভারিট" : "Favourite"}</span></button>
               <button type="button" onClick={() => window.dispatchEvent(new CustomEvent("open-account-modal", { detail: { activeTab: "Page" } }))} className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-[12px] font-semibold text-slate-700 hover:bg-slate-50"><UserPlus className="h-4 w-4" /><span>{language === "bn" ? "ইনভাইট" : "Invite"}</span></button>
