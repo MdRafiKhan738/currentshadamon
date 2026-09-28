@@ -86,6 +86,10 @@ export default function InvestmentPostCard({
   const fields = [
     ...(post.priceBoxFields || post.features?.priceBoxFields || []),
   ].sort((a, b) => (a.order || 0) - (b.order || 0));
+  const orderedFields =
+    fields.length >= 3
+      ? [fields[2], ...fields.slice(0, 2), ...fields.slice(3)]
+      : fields;
   const showPriceBox =
     fields.length > 0 && post.features?.priceBoxEnabled !== false;
   const verified = Boolean(
@@ -139,15 +143,15 @@ export default function InvestmentPostCard({
 
           {showPriceBox ? (
             <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
-              {fields.slice(0, 6).map((field) => (
+              {orderedFields.slice(0, 6).map((field, fieldIndex) => (
                 <div
                   key={field.key}
-                  className="min-w-0 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2.5"
+                  className={`min-w-0 rounded-lg border px-2.5 py-2.5 ${fieldIndex === 0 ? "border-violet-600 bg-violet-600 text-white" : "border-slate-200 bg-slate-50"}`}
                 >
                   <div className="truncate text-[10px] font-medium text-slate-500">
-                    {field.label || field.labelBn || field.key}
+                    <span className={fieldIndex === 0 ? "text-white" : ""}>{field.label || field.labelBn || field.key}</span>
                   </div>
-                  <div className="mt-1 truncate text-base font-bold text-slate-900">
+                  <div className={`mt-1 truncate text-base font-bold ${fieldIndex === 0 ? "text-white" : "text-slate-900"}`}>
 {field.inputType === "text" ? String(values[field.key] ?? "—") : formatInvestmentAmount(values[field.key] as any)}
                   </div>
                 </div>
