@@ -1476,12 +1476,13 @@ export default function DashboardLayoutClient({
               <div className="w-[50px] flex-none hidden md:block"></div>
 
               <div className="w-[230px] flex-none hidden md:block">
-                <Link
-                  href="/dashboard/post-ad"
+                <button
+                  type="button"
+                  onClick={() => window.dispatchEvent(new CustomEvent("open-post-ad-modal"))}
                   className="w-full bg-[#EDF2F7] border border-slate-400 shadow-sm text-black py-1.5 rounded text-sm uppercase tracking-widest flex items-center justify-center"
                 >
                   {language === "bn" ? "ফ্রি বিজ্ঞাপন দিন" : "Post Free"}
-                </Link>
+                </button>
               </div>
               <div className="w-[70px] flex-none hidden lg:block"></div>
             </div>
