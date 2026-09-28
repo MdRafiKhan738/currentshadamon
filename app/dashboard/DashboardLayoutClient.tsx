@@ -172,6 +172,8 @@ export default function DashboardLayoutClient({
     string | undefined
   >(undefined);
   const [user, setUser] = useState<any>(null);
+  const [sidebarPostRole, setSidebarPostRole] = useState<"investor" | "business_owner" | undefined>(undefined);
+  const [isPostChoiceOpen, setIsPostChoiceOpen] = useState(false);
   const requestedInvestmentRole =
     searchParams.get("role") === "investor" || searchParams.get("role") === "business_owner"
       ? searchParams.get("role") as "investor" | "business_owner"
@@ -498,8 +500,32 @@ export default function DashboardLayoutClient({
     window.addEventListener("open-info-modal", handleOpenInfo as EventListener);
 
     const handleOpenPostAd = (e: CustomEvent) => {
+      const requestedRole =
+        e.detail?.role === "investor" || e.detail?.role === "business_owner"
+          ? e.detail.role
+          : undefined;
+
       setAdToEdit(e.detail?.ad || null);
-      setIsPostAdModalOpen(true);
+
+      if (requestedRole) {
+        setSidebarPostRole(requestedRole);
+        setIsPostChoiceOpen(false);
+        setIsPostAdModalOpen(true);
+        return;
+      }
+
+      const accountRole =
+        user?.investmentRole === "investor" || user?.investmentRole === "business_owner"
+          ? user.investmentRole
+          : undefined;
+
+      if (accountRole) {
+        setSidebarPostRole(accountRole);
+        setIsPostChoiceOpen(false);
+        setIsPostAdModalOpen(true);
+      } else {
+        setIsPostChoiceOpen(true);
+      }
     };
     window.addEventListener(
       "open-post-ad-modal",
@@ -1609,24 +1635,33 @@ export default function DashboardLayoutClient({
         </div>
       )}
 
-      {requestedInvestmentRole ? (
+      {(requestedInvestmentRole || sidebarPostRole) ? (
         <InvestmentPostFormModal
           isOpen={isPostAdModalOpen}
           onClose={() => {
             setIsPostAdModalOpen(false);
             setAdToEdit(null);
-            window.location.replace(INVEST_HOME_URL);
+            setSidebarPostRole(undefined);
+            if (searchParams.get("source") === "invest-home") {
+              window.location.replace(INVEST_HOME_URL);
+            }
           }}
           onFailure={() => {
-            window.location.replace(INVEST_HOME_URL);
+            setIsPostAdModalOpen(false);
+            setSidebarPostRole(undefined);
+            if (searchParams.get("source") === "invest-home") {
+              window.location.replace(INVEST_HOME_URL);
+            }
           }}
           initialMobile={tempMobile}
-          initialRole={requestedInvestmentRole}
+          initialRole={requestedInvestmentRole || sidebarPostRole}
           initialCategory={requestedCategory}
           initialSubCategory={requestedSubCategory}
           onSuccess={(newAd) => {
             setIsPostAdModalOpen(false);
             setAdToEdit(null);
+            setSidebarPostRole(undefined);
+            setIsPostChoiceOpen(false);
             window.dispatchEvent(new Event("refresh-ads"));
             setAccountModalInitialTab("Post");
             setIsAccountModalOpen(true);
@@ -1656,6 +1691,51 @@ export default function DashboardLayoutClient({
             }
           }}
         />
+      )}
+
+      {isPostChoiceOpen && !requestedInvestmentRole && !sidebarPostRole && (
+        <div className="fixed inset-0 z-[1500] flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-md">
+          <div className="relative w-full max-w-xl rounded-2xl bg-white p-5 shadow-2xl sm:p-6">
+            <button
+              type="button"
+              onClick={() => setIsPostChoiceOpen(false)}
+              className="absolute right-3 top-3 rounded-full p-2 text-slate-400 hover:bg-slate-100"
+              aria-label="Close"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <div className="pr-8">
+              <h2 className="text-xl font-extrabold text-slate-900">What do you want to post?</h2>
+              <p className="mt-1 text-xs text-slate-500">Choose once. The same Shadamon Invest post form will open with the correct role and admin category.</p>
+            </div>
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setSidebarPostRole("investor");
+                  setIsPostChoiceOpen(false);
+                  setIsPostAdModalOpen(true);
+                }}
+                className="rounded-xl border border-violet-200 bg-violet-50/60 p-4 text-left transition hover:border-violet-400 hover:bg-white"
+              >
+                <div className="text-sm font-extrabold text-slate-900">I wanna invest</div>
+                <div className="mt-1 text-[11px] leading-4 text-slate-500">Open the investor post form.</div>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSidebarPostRole("business_owner");
+                  setIsPostChoiceOpen(false);
+                  setIsPostAdModalOpen(true);
+                }}
+                className="rounded-xl border border-emerald-200 bg-emerald-50/60 p-4 text-left transition hover:border-emerald-400 hover:bg-white"
+              >
+                <div className="text-sm font-extrabold text-slate-900">I need money</div>
+                <div className="mt-1 text-[11px] leading-4 text-slate-500">Open the business-owner post form.</div>
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       <InviteModal
