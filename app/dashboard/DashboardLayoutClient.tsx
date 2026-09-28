@@ -44,6 +44,7 @@ import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { useSettings } from "../context/SettingsContext";
 import PostAdModal from "../../components/PostAdModal";
+import InvestmentPostFormModal from "../../components/InvestmentPostFormModal";
 import PackagePurchaseModal from "../../components/PackagePurchaseModal";
 import PromoteModal from "../../components/PromoteModal";
 import LoginModal from "../../components/LoginModal";
@@ -1602,40 +1603,48 @@ export default function DashboardLayoutClient({
         </div>
       )}
 
-      <PostAdModal
-        isOpen={isPostAdModalOpen}
-        onClose={() => {
-          setIsPostAdModalOpen(false);
-          setAdToEdit(null);
-          if (pathname === "/dashboard/post-ad" || pathname === "/dashboard/post-ad") {
-            router.push("/dashboard");
-          }
-        }}
-        editAd={adToEdit}
-        initialMobile={tempMobile}
-        initialRole={requestedInvestmentRole}
-        initialCategory={
-          requestedCategory ||
-          (requestedInvestmentRole
-            ? categories.find((category) =>
-                requestedInvestmentRole === "investor"
-                  ? /investor/i.test(category.name)
-                  : /business\s*owner/i.test(category.name)
-              )?.name || ""
-            : "")
-        }
-        initialSubCategory={requestedSubCategory}
-        onSuccess={(newAd) => {
-          setIsPostAdModalOpen(false);
-          window.dispatchEvent(new Event("refresh-ads"));
-          setAccountModalInitialTab("Post");
-          setIsAccountModalOpen(true);
+      {requestedInvestmentRole ? (
+        <InvestmentPostFormModal
+          isOpen={isPostAdModalOpen}
+          onClose={() => {
+            setIsPostAdModalOpen(false);
+            setAdToEdit(null);
+          }}
+          initialMobile={tempMobile}
+          initialRole={requestedInvestmentRole}
+          initialCategory={requestedCategory}
+          initialSubCategory={requestedSubCategory}
+          onSuccess={(newAd) => {
+            setIsPostAdModalOpen(false);
+            window.dispatchEvent(new Event("refresh-ads"));
+            setAccountModalInitialTab("Post");
+            setIsAccountModalOpen(true);
+          }}
+        />
+      ) : (
+        <PostAdModal
+          isOpen={isPostAdModalOpen}
+          onClose={() => {
+            setIsPostAdModalOpen(false);
+            setAdToEdit(null);
+            if (pathname === "/dashboard/post-ad" || pathname === "/dashboard/post-ad") {
+              router.push("/dashboard");
+            }
+          }}
+          editAd={adToEdit}
+          initialMobile={tempMobile}
+          onSuccess={(newAd) => {
+            setIsPostAdModalOpen(false);
+            window.dispatchEvent(new Event("refresh-ads"));
+            setAccountModalInitialTab("Post");
+            setIsAccountModalOpen(true);
 
-          if (pathname === "/dashboard/post-ad" || pathname === "/dashboard/post-ad") {
-            router.replace("/dashboard");
-          }
-        }}
-      />
+            if (pathname === "/dashboard/post-ad" || pathname === "/dashboard/post-ad") {
+              router.replace("/dashboard");
+            }
+          }}
+        />
+      )}
 
       <InviteModal
         isOpen={isInviteModalOpen}
