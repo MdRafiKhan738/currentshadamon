@@ -113,6 +113,9 @@ export default function AdDetailsModal({
   const [categories, setCategories] = useState<any[]>([]);
   const [locations, setLocations] = useState<any[]>([]);
   const [subLocations, setSubLocations] = useState<any[]>([]);
+  const [proposalMessage, setProposalMessage] = useState("");
+  const [proposalOpen, setProposalOpen] = useState(false);
+  const [proposalSending, setProposalSending] = useState(false);
 
   const [actionButtons, setActionButtons] = useState<string[]>([
     "Call",
@@ -176,6 +179,8 @@ export default function AdDetailsModal({
 
   const images = ad?.images || [];
   const hasImages = images.length > 0;
+  const dynamicPriceFields = [...(ad?.priceBoxFields || ad?.features?.priceBoxFields || [])].sort((a:any,b:any)=>(a.order||0)-(b.order||0));
+  const dynamicPriceValues = ad?.priceBoxValues || ad?.features?.priceBoxValues || {};
 
   // Reset states when ad changes
   useEffect(() => {
@@ -368,20 +373,91 @@ export default function AdDetailsModal({
     setShowOptionsPopup(false);
   };
 
-  const handleChatClick = () => {
+  const unlockPostConnection = async (actionType: "message" | "proposal") => {
     const token = Cookies.get("token");
     if (!token) {
-      window.dispatchEvent(
-        new CustomEvent("open-mobile-entry-modal", {
-          detail: { reason: "message", ad: ad },
-        }),
-      );
+      window.dispatchEvent(new CustomEvent("open-mobile-entry-modal", { detail: { reason: actionType, ad } }));
+      onClose();
+      return false;
+    }
+    const ownerId = typeof ad.user === "object" ? ad.user?._id : ad.user;
+    if (String(ownerId) === String(currentUserId)) return true;
+    try {
+      const response = await fetch(API_BASE_URL + "/api/connect/unlock-post", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+        body: JSON.stringify({ adId: ad._id, actionType }),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (response.ok && result.success) {
+        if (typeof result.balance === "number") window.dispatchEvent(new CustomEvent("connect-balance-updated", { detail: { balance: result.balance } }));
+        return true;
+      }
+      if (result.code === "PACKAGE_REQUIRED") {
+        window.dispatchEvent(new CustomEvent("open-package-modal"));
+        return false;
+      }
+      toast.error(result.message || "Unable to connect with this post.");
+      return false;
+    } catch (error) {
+      console.error("Post connection error:", error);
+      toast.error("Unable to connect with this post right now.");
+      return false;
+    }
+  };
+
+  const handleChatClick = async () => {
+    const unlocked = await unlockPostConnection("message");
+    if (!unlocked) return;
+    window.dispatchEvent(new CustomEvent("open-chat-modal", { detail: { ad } }));
+  };
+
+  const sendProposal = async () => {
+    if (!proposalMessage.trim()) return toast.error("Write a proposal message first.");
+    const unlocked = await unlockPostConnection("proposal");
+    if (!unlocked) return;
+    const token = Cookies.get("token");
+    if (!token) return;
+    setProposalSending(true);
+    try {
+      const response = await fetch(API_BASE_URL + "/api/proposals", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+        body: JSON.stringify({ adId: ad._id, message: proposalMessage.trim(), proposalType: "investment" }),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.message || "Unable to send proposal");
+      toast.success("Proposal sent successfully.");
+      setProposalMessage("");
+      setProposalOpen(false);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to send proposal.");
+    } finally {
+      setProposalSending(false);
+    }
+  };
+
+  const handleInvite = async () => {
+    const token = Cookies.get("token");
+    if (!token) {
+      window.dispatchEvent(new CustomEvent("open-mobile-entry-modal", { detail: { reason: "invite", ad } }));
       onClose();
       return;
     }
-    window.dispatchEvent(
-      new CustomEvent("open-chat-modal", { detail: { ad } }),
-    );
+    const receiverId = typeof ad.user === "object" ? ad.user?._id : ad.user;
+    if (!receiverId || String(receiverId) === String(currentUserId)) return;
+    try {
+      const response = await fetch(API_BASE_URL + "/api/invites/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+        body: JSON.stringify({ receiverId, adId: ad._id }),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.message || "Unable to send invite.");
+      toast.success("Invite sent.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to send invite.");
+    }
   };
 
   const nextImage = (e: React.MouseEvent) => {
@@ -1089,6 +1165,13 @@ export default function AdDetailsModal({
                       >
                         Chat
                       </button>
+
+                      {ad.postRole && String(ad.user?._id || ad.user) !== String(currentUserId) && (
+                        <button onClick={() => setProposalOpen(true)} className="flex-1 h-10 border border-emerald-200 bg-emerald-50 text-emerald-700 text-xs px-1 rounded-md hover:bg-emerald-100 transition-colors">Send Proposal</button>
+                      )}
+                      {String(ad.user?._id || ad.user) !== String(currentUserId) && (
+                        <button onClick={handleInvite} className="flex-1 h-10 border border-slate-200 bg-white text-slate-700 text-xs px-1 rounded-md hover:bg-slate-50 transition-colors">Invite</button>
+                      )}
 
                       {/* Send CV Button - Only if requested */}
                       {otherButtons.includes("Send CV") && (
@@ -2216,6 +2299,19 @@ Shadamon.com-এর নিরাপত্তা ব্যবস্থা
 • ব্যবহারকারীরা সতর্ক থাকবেন এবং ব্যক্তিগত/আর্থিক তথ্য শেয়ার করার আগে যাচাই করবেন।
 • ব্যবহারকারীর গোপনীয়তা রক্ষা করা হয়, তবে প্রতারণা বা অপরাধমূলক কার্যক্রমের ক্ষেত্রে আমরা আইন প্রয়োগকারীর সঙ্গে সহযোগিতা করি।`}
       />
+
+      {proposalOpen && (
+        <div className="fixed inset-0 z-[1200] flex items-center justify-center bg-black/50 p-3" onMouseDown={() => setProposalOpen(false)}>
+          <section className="w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl" onMouseDown={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between gap-3">
+              <div><h2 className="text-base font-bold text-slate-900">Send Investment Proposal</h2><p className="mt-1 text-xs text-slate-500">Your first connection to this post uses one connect. After that, message, proposal and number access are unlocked for this post.</p></div>
+              <button onClick={() => setProposalOpen(false)} className="rounded-full p-2 hover:bg-slate-100"><X className="h-5 w-5" /></button>
+            </div>
+            <textarea value={proposalMessage} onChange={e => setProposalMessage(e.target.value)} maxLength={3000} placeholder="Introduce yourself, investment amount, terms and next steps…" className="mt-4 min-h-32 w-full rounded-xl border border-slate-200 p-3 text-sm outline-none focus:border-emerald-500" />
+            <button disabled={proposalSending} onClick={sendProposal} className="mt-3 h-10 w-full rounded-xl bg-emerald-700 text-sm font-bold text-white hover:bg-emerald-800 disabled:opacity-60">{proposalSending ? "Sending…" : "Send Proposal"}</button>
+          </section>
+        </div>
+      )}
 
       <ReportModal
         isOpen={isReportModalOpen}
