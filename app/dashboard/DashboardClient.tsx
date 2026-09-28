@@ -2001,74 +2001,15 @@ export default function DashboardClient() {
                         </div>
                       )}
 
-                      {/* Popular Sellers for Mobile - Horizontal Scroll */}
-                     {chunk.showCategoryBatch && premiumUsers.length > 0 && (
-  <div className="lg:hidden mt-2 bg-white rounded-lg p-2 pb-4">
-    <div className="flex items-center justify-between px-2 mb-3">
-      <h3 className="text-[13px] text-slate-600">
-        {language === "bn" ? "জনপ্রিয় বিক্রেতা" : "Popular Seller"}
-      </h3>
-    </div>
-
-    <div className="relative">
-      <div
-        ref={sellerScrollRef}
-        className="flex gap-4 overflow-x-auto no-scrollbar pb-1 px-1 scroll-smooth"
-      >
-        {premiumUsers.slice(0,5).map((user) => (
-          <div
-            key={user._id}
-            className="flex-none flex flex-col items-center w-[90px] gap-2 cursor-pointer"
-            onClick={() => handleProfileClick(user._id)}
-          >
-            <div className="w-16 h-16 rounded-full overflow-hidden border border-slate-100 bg-slate-200 relative shrink-0">
-              {user.photo ? (
-                <img
-                  src={getImageUrl(user.photo) || undefined}
-                  alt={user.storeName || user.name}
-                  className="w-full h-full object-contain"
-                  loading="lazy"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-slate-500 font-bold text-lg uppercase">
-                  {(user.storeName || user.name).charAt(0)}
-                </div>
-              )}
-            </div>
-
-            <div className="flex flex-col items-center w-full text-center">
-              <h4 className="font-semibold text-slate-600 text-[11px] leading-tight line-clamp-1 w-full">
-                {user.storeName || user.name}
-              </h4>
-
-              <p className="text-[9px] text-slate-400 mt-0.5 mb-1">
-                {user.followers?.length || 0} {t("follower")}
-              </p>
-
-              <button
-                onClick={(e) => handleFollowUser(e, user._id)}
-                className="mt-1 px-3 py-1 rounded-full text-[10px] font-bold transition-all w-full bg-white text-slate-500 border border-slate-300 hover:bg-slate-50 hover:border-slate-400"
-              >
-                {user.isFollowing ? t("Unfollow") : t("Follow")}
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {premiumUsers.length > 5 && (
-        <button
-          onClick={() =>
-            setIsMerchantsModalOpen(true)
-          }
-          className="absolute -right-2 top-1/2 -translate-y-1/2 w-9 h-9 bg-white shadow-lg rounded-full flex items-center justify-center border border-slate-200 z-20"
-        >
-          <ChevronRight className="w-5 h-5" />
-        </button>
-      )}
-    </div>
-  </div>
-)}
+                      {chunk.showCategoryBatch && (
+                        <div className="lg:hidden mt-2 rounded-lg border border-slate-200 bg-white p-3">
+                          <div className="flex items-center justify-between">
+                            <div><h3 className="text-[13px] font-bold text-slate-800">Messages</h3><p className="text-[9px] text-slate-400">Chat with investors and business owners</p></div>
+                            <button onClick={() => window.dispatchEvent(new Event("open-message-modal"))} className="rounded-full bg-emerald-50 p-2 text-emerald-700"><MessageSquare className="h-4 w-4" /></button>
+                          </div>
+                          {conversations.length > 0 && <div className="mt-2 space-y-1">{conversations.slice(0,3).map((conv:any)=><button key={conv._id} onClick={() => window.dispatchEvent(new Event("open-message-modal"))} className="w-full rounded-lg px-2 py-2 text-left text-[10px] hover:bg-emerald-50">{conv.participants?.map((p:any)=>p?.name).filter(Boolean).join(" · ") || "Conversation"}{conv.unreadCount ? <span className="ml-2 rounded-full bg-emerald-600 px-1 text-white">{conv.unreadCount}</span> : null}</button>)}</div>}
+                        </div>
+                      )}
                     </div>
                   );
                 })}
