@@ -98,7 +98,7 @@ export default function PostAdModal({ isOpen, onClose, editAd, onSuccess, initia
     const [price, setPrice] = useState("");
     const [priceType, setPriceType] = useState("Negotiable");
     const [postRole, setPostRole] = useState<"investor" | "business_owner">("business_owner");
-    const [businessStatus, setBusinessStatus] = useState<"new" | "running" | "closed">("new");
+    const [businessStatus, setBusinessStatus] = useState<"active" | "new" | "closed">("active");
     const [minInvestment, setMinInvestment] = useState("");
     const [maxInvestment, setMaxInvestment] = useState("");
     const [expectedReturn, setExpectedReturn] = useState("");
@@ -218,7 +218,7 @@ export default function PostAdModal({ isOpen, onClose, editAd, onSuccess, initia
         setPrice(ad.price ? String(ad.price) : "");
         setPriceType(ad.priceType || "Negotiable");
         setPostRole(ad.postRole === "investor" ? "investor" : "business_owner");
-        setBusinessStatus(ad.businessStatus === "running" ? "running" : ad.businessStatus === "closed" ? "closed" : "new");
+        setBusinessStatus(ad.businessStatus === "closed" ? "closed" : ad.businessStatus === "new" ? "new" : "active");
         setMinInvestment(ad.minInvestment !== undefined ? String(ad.minInvestment) : "");
         setMaxInvestment(ad.maxInvestment !== undefined ? String(ad.maxInvestment) : "");
         setExpectedReturn(ad.expectedReturn !== undefined ? String(ad.expectedReturn) : "");
@@ -282,7 +282,7 @@ export default function PostAdModal({ isOpen, onClose, editAd, onSuccess, initia
                 setPrice("");
                 setPriceType("Negotiable");
                 setPostRole(initialRole === "investor" ? "investor" : "business_owner");
-                setBusinessStatus("new");
+                setBusinessStatus("active");
                 setMinInvestment("");
                 setMaxInvestment("");
                 setExpectedReturn("");
@@ -747,7 +747,7 @@ export default function PostAdModal({ isOpen, onClose, editAd, onSuccess, initia
             if (postRole) {
                 formData.append('priceBoxValues', JSON.stringify(investmentPriceValues));
                 formData.append('postRole', postRole);
-                formData.append('businessStatus', postRole === 'business_owner' ? businessStatus : 'new');
+                formData.append('businessStatus', postRole === 'business_owner' ? businessStatus : '');
                 if (investmentPriceBoxEnabled) {
                     if (minInvestment.trim()) formData.append('minInvestment', String(Number(minInvestment)));
                     if (maxInvestment.trim()) formData.append('maxInvestment', String(Number(maxInvestment)));
@@ -894,15 +894,20 @@ export default function PostAdModal({ isOpen, onClose, editAd, onSuccess, initia
         if (
             !headline ||
             !phone ||
-            (isNewPhone && !password) ||
+            (!isUserLoggedIn && !password) ||
             (images.length === 0 && existingImages.length === 0) ||
             !selectedCategory ||
             !selectedLocation ||
             hasMissingDynamicField ||
             (!postRole && !price) ||
-            !name
+            (!isUserLoggedIn && !name) ||
+            (!isUserLoggedIn && additionalPhones.length === 0)
         ) {
-            toast.error("Please fill in required fields");
+            toast.error(
+                !isUserLoggedIn && additionalPhones.length === 0
+                    ? "Please add at least one additional number for your new account."
+                    : "Please fill in required fields"
+            );
             return;
         }
 
@@ -1663,10 +1668,10 @@ export default function PostAdModal({ isOpen, onClose, editAd, onSuccess, initia
                                             </label>
                                             {postRole === "business_owner" && (
                                                 <label className="text-xs font-bold text-black">Business Status
-                                                    <select value={businessStatus} onChange={e => setBusinessStatus(e.target.value as "new" | "running" | "closed")} className="mt-1 w-full border border-slate-300 rounded px-2 py-2 text-sm bg-white">
+                                                    <select value={businessStatus} onChange={e => setBusinessStatus(e.target.value as "active" | "new" | "closed")} className="mt-1 w-full border border-slate-300 rounded px-2 py-2 text-sm bg-white">
+                                                        <option value="active">Active Business</option>
                                                         <option value="new">New Business</option>
-                                                        <option value="running">Running Business</option>
-                                                        <option value="closed">Close / Closed Business</option>
+                                                        <option value="closed">Close Business</option>
                                                     </select>
                                                 </label>
                                             )}
@@ -1758,21 +1763,33 @@ export default function PostAdModal({ isOpen, onClose, editAd, onSuccess, initia
 
                                     <div className={cn(
                                         "bg-white rounded-lg border p-3.5 space-y-2 shadow-sm font-sans",
-                                        attemptedSubmit && (!name.trim() || !phone.trim() || (!isUserLoggedIn && !password.trim())) ? "border-red-500" : "border-slate-500"
+                                        attemptedSubmit && (
+                                            !phone.trim() ||
+                                            (!isUserLoggedIn && !name.trim()) ||
+                                            (!isUserLoggedIn && !password.trim()) ||
+                                            (!isUserLoggedIn && additionalPhones.length === 0)
+                                        ) ? "border-red-500" : "border-slate-500"
                                     )}>
-                                        {attemptedSubmit && (!name.trim() || !phone.trim() || (!isUserLoggedIn && !password.trim())) && <p className="text-[9px] text-red-500 font-bold uppercase">{t('field_required')}</p>}
-                                        <div className="space-y-1">
-                                            <input
-                                                type="text"
-                                                value={name}
-                                                onChange={(e) => setName(e.target.value)}
-                                                placeholder={t('name_placeholder')}
-                                                className={cn(
-                                                    "w-full text-[13px] text-black focus:outline-none placeholder:text-black px-1 border-b pb-1",
-                                                    attemptedSubmit && !name.trim() ? "border-red-300" : "border-slate-500"
-                                                )}
-                                            />
-                                        </div>
+                                        {attemptedSubmit && (
+                                            !phone.trim() ||
+                                            (!isUserLoggedIn && !name.trim()) ||
+                                            (!isUserLoggedIn && !password.trim()) ||
+                                            (!isUserLoggedIn && additionalPhones.length === 0)
+                                        ) && <p className="text-[9px] text-red-500 font-bold uppercase">{t('field_required')}</p>}
+                                        {!isUserLoggedIn && (
+                                            <div className="space-y-1">
+                                                <input
+                                                    type="text"
+                                                    value={name}
+                                                    onChange={(e) => setName(e.target.value)}
+                                                    placeholder={t('name_placeholder')}
+                                                    className={cn(
+                                                        "w-full text-[13px] text-black focus:outline-none placeholder:text-black px-1 border-b pb-1",
+                                                        attemptedSubmit && !name.trim() ? "border-red-300" : "border-slate-500"
+                                                    )}
+                                                />
+                                            </div>
+                                        )}
 
                                         <div className={cn(
                                             "flex items-center gap-2 border-b pb-1",
@@ -1854,7 +1871,7 @@ export default function PostAdModal({ isOpen, onClose, editAd, onSuccess, initia
                                                         htmlFor="additional_phone"
                                                         className="absolute text-[12px] text-slate-400 duration-300 transform -translate-y-3 scale-90 top-1 z-10 origin-[0] bg-white px-2 peer-focus:px-2 peer-focus:text-black peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-1 peer-focus:scale-90 peer-focus:-translate-y-3 left-2"
                                                     >
-                                                        {additionalPhones.length >= 5 ? t('limit_reached_max_5') : t('add_another_number')}
+                                                        {additionalPhones.length >= 5 ? t('limit_reached_max_5') : (isUserLoggedIn ? 'Add another number (optional)' : 'Add another number (required)')}
                                                     </label>
                                                 </div>
 
