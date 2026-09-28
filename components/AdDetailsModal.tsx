@@ -606,7 +606,7 @@ export default function AdDetailsModal({
               onClick={onClose}
               className="w-8 h-8 flex items-center justify-center text-black hover:bg-slate-50 rounded-full transition-colors"
             >
-              <ArrowLeft className="w-4 h-4 stroke-[2.5]" />
+              <Home className="w-4 h-4 stroke-[2.5]" />
             </button>
             <h2 className="text-[16px] text-black font-medium">Ad Details</h2>
           </div>
