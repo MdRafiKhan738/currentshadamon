@@ -991,6 +991,14 @@ export default function PostAdModal({ isOpen, onClose, editAd, onSuccess, initia
         .find(c => c.name === selectedCategory)
         ?.subcategories.find(s => s.name === selectedSubCategory);
 
+
+    const selectedCategoryMeta = categories.find((c) => c.name === selectedCategory);
+    const selectedSubCategoryMeta = selectedCategoryMeta?.subcategories.find((s) => s.name === selectedSubCategory);
+
+    const selectedLocationMeta = locations.find((l) => l.name === selectedLocation);
+    const selectedSubLocationMeta = selectedLocationMeta?.subLocations.find((s) => s.name === selectedSubLocation);
+    const tempLocationMeta = locations.find((l) => l.name === tempLocation);
+
     useEffect(() => {
         const configured = [...(selectedSubCategoryMeta?.priceBoxFields || [])].sort((a:any,b:any)=>(a.order||0)-(b.order||0));
         setPriceBoxFields(configured);
@@ -1001,12 +1009,6 @@ export default function PostAdModal({ isOpen, onClose, editAd, onSuccess, initia
         });
     }, [selectedSubCategoryMeta?.name, selectedSubCategoryMeta?.priceBoxFields]);
 
-    const selectedCategoryMeta = categories.find((c) => c.name === selectedCategory);
-    const selectedSubCategoryMeta = selectedCategoryMeta?.subcategories.find((s) => s.name === selectedSubCategory);
-
-    const selectedLocationMeta = locations.find((l) => l.name === selectedLocation);
-    const selectedSubLocationMeta = selectedLocationMeta?.subLocations.find((s) => s.name === selectedSubLocation);
-    const tempLocationMeta = locations.find((l) => l.name === tempLocation);
 
     if (!isOpen) return null;
 
