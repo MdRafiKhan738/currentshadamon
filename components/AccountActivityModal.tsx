@@ -1395,7 +1395,7 @@ I have sent my CV for your review.`;
                                             <div className="flex items-center gap-2 text-sm text-black leading-tight mb-0.5">
                                                 <div className="text-black flex items-center">
                                                     {displayUser.rating || 0}
-                                                    <span className="text-black font-normal ml-0.5">☆ Seller</span>
+                                                    <span className="text-black font-normal ml-0.5">☆ Member</span>
                                                 </div>
 
                                                 {!isOwnAccount && (
@@ -1410,7 +1410,7 @@ I have sent my CV for your review.`;
                                                         }}
                                                         className="px-2 py-[1px] bg-white text-xs text-black rounded-full border border-slate-200 shadow-sm hover:bg-slate-50 transition-colors"
                                                     >
-                                                        Ratings Seller
+                                                        Profile rating
                                                     </button>
                                                 )}
                                             </div>
@@ -1748,11 +1748,11 @@ I have sent my CV for your review.`;
                                     ) : (
                                         productTab === 'Popular' ? (
                                             <div className="py-20 text-center text-slate-400 text-sm">
-                                                No popular products found.
+                                                No popular posts found.
                                             </div>
                                         ) : (
                                             <div className="py-20 text-center text-slate-400 text-sm">
-                                                No products found.
+                                                No posts found.
                                             </div>
                                         )
                                     )}
@@ -2756,13 +2756,13 @@ I have sent my CV for your review.`;
                                 )}
                             </div>
 
-                            {/* Set 'Notify Me' Product */}
+                            {/* Set 'Notify Me' Post */}
                             <div className="bg-white rounded border border-slate-200 overflow-hidden">
                                 <div
                                     className="flex items-center justify-between p-3 cursor-pointer hover:bg-slate-50"
                                     onClick={() => toggleActivitySection('notify')}
                                 >
-                                    <span className="text-sm text-slate-800">Set 'Notify Me' Product</span>
+                                    <span className="text-sm text-slate-800">Set 'Notify Me' Post</span>
                                     <ChevronDown className={cn("w-4 h-4 text-slate-400 transition-transform", expandedActivity === 'notify' && "rotate-180")} />
                                 </div>
                                 {expandedActivity === 'notify' && (
@@ -2882,7 +2882,7 @@ I have sent my CV for your review.`;
                         </button>
 
                         <div className="text-center mb-8">
-                            <h3 className="text-xl font-bold text-slate-900 mb-2">Rate this Seller</h3>
+                            <h3 className="text-xl font-bold text-slate-900 mb-2">Rate this Profile</h3>
                             <p className="text-sm text-slate-500">How would you rate your experience?</p>
                         </div>
 
