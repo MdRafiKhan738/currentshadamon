@@ -9,8 +9,12 @@ import {
   MessageCircle,
   Phone,
   UserRound,
+  UserPlus,
 } from "lucide-react";
 import { getImageUrl } from "../utils/imageUrl";
+import { API_BASE_URL } from "../utils/apiConfig";
+import Cookies from "js-cookie";
+import toast from "react-hot-toast";
 import { formatInvestmentAmount } from "../utils/formatInvestmentAmount";
 
 type MarketplacePost = {
@@ -97,6 +101,46 @@ export default function InvestmentPostCard({
     post.user?.mVerified ||
       (post.user?.verifiedBy && post.user.verifiedBy !== "Not Verified"),
   );
+
+  const handleInvite = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+
+    const token = Cookies.get("token");
+    if (!token) {
+      window.dispatchEvent(
+        new CustomEvent("open-mobile-entry-modal", {
+          detail: { reason: "invite", ad: post },
+        }),
+      );
+      return;
+    }
+
+    const receiverId = post.user?._id;
+    if (!receiverId) {
+      toast.error("This post owner could not be identified.");
+      return;
+    }
+
+    try {
+      const response = await fetch(API_BASE_URL + "/api/invites/send", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + token,
+        },
+        body: JSON.stringify({ receiverId, adId: post._id }),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(result.message || "Unable to send invite.");
+      }
+      toast.success("Invite sent.");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Unable to send invite.",
+      );
+    }
+  };
 
   return (
     <article
@@ -185,6 +229,14 @@ export default function InvestmentPostCard({
             </div>
 
             <div className="flex items-center gap-1.5 text-slate-500">
+              <button
+                type="button"
+                onClick={handleInvite}
+                className="flex items-center gap-1 rounded-lg border border-violet-200 bg-violet-50 px-2 py-1.5 text-[10px] font-bold text-violet-700 hover:bg-violet-100"
+              >
+                <UserPlus className="h-3.5 w-3.5" />
+                Invite
+              </button>
               <span className="rounded-lg border border-slate-200 p-2">
                 <Phone className="h-3.5 w-3.5" />
               </span>
