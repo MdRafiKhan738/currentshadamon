@@ -1206,23 +1206,6 @@ export default function DashboardClient() {
           <DashboardOverview summary={dashboardSummary} />
         ) : (
           <>
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-          <div className="mb-3">
-            <h2 className="text-base font-bold text-slate-900">What do you want to post?</h2>
-            <p className="mt-1 text-xs text-slate-500">Choose once. Your role and admin category will be selected automatically.</p>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <button type="button" onClick={() => router.push("/dashboard?role=business_owner")} className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-left transition hover:border-slate-400 hover:bg-white">
-              <div className="text-sm font-bold text-slate-900">I need money</div>
-              <div className="mt-1 text-[11px] leading-4 text-slate-500">Post your business opportunity as a Business Owner.</div>
-            </button>
-            <button type="button" onClick={() => router.push("/dashboard?role=investor")} className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-left transition hover:border-slate-400 hover:bg-white">
-              <div className="text-sm font-bold text-slate-900">I wanna invest</div>
-              <div className="mt-1 text-[11px] leading-4 text-slate-500">Create an Investor post without selecting the role again.</div>
-            </button>
-          </div>
-        </div>
-
         {/* Secondary Filter Bar */}
         <div
           className={cn(
