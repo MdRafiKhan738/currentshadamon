@@ -26,6 +26,35 @@ function cn(...inputs: (string | undefined | null | false)[]) {
 
 
 
+interface ProfileFormData {
+    name: string;
+    dob: string;
+    gender: string;
+    location: string;
+    education: string;
+    aboutYourself: string;
+    profession: string;
+    professionalExperience: string;
+    email: string;
+    mobile: string;
+    additionalMobiles: string[];
+    storeName: string;
+    actionType: string;
+    sellerPageUrl: string;
+    aboutBusiness: string;
+    contact: string;
+    organizationName: string;
+    designation: string;
+    employeeCount: string;
+    investmentRole: string;
+    investmentType: string;
+    investmentReturnType: string;
+    investmentAmountMin: string;
+    investmentAmountMax: string;
+    investmentReturn: string;
+    businessProposal: string;
+}
+
 interface AccountActivityModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -566,7 +595,7 @@ export default function AccountActivityModal({ isOpen, onClose, userId, onOpenPo
     };
 
     // Profile Form State
-    const [profileForm, setProfileForm] = useState({
+    const [profileForm, setProfileForm] = useState<ProfileFormData>({
         name: '',
         dob: '',
         gender: '',
@@ -629,6 +658,17 @@ export default function AccountActivityModal({ isOpen, onClose, userId, onOpenPo
                 sellerPageUrl: '',
                 aboutBusiness: '',
                 contact: ''
+                organizationName: '',
+                designation: '',
+                employeeCount: '',
+                investmentRole: '',
+                investmentType: '',
+                investmentReturnType: '',
+                investmentAmountMin: '',
+                investmentAmountMax: '',
+                investmentReturn: '',
+                businessProposal: '',
+
             });
         }
     }, [userData, isOwnAccount]);
