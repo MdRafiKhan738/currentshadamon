@@ -11,6 +11,7 @@ import {
   Package,
   Send,
   UserPlus,
+  ArrowLeft,
 } from "lucide-react";
 
 type DashboardSummary = {
@@ -29,6 +30,10 @@ type Props = {
 };
 
 export default function DashboardOverview({ summary }: Props) {
+  const goHome = () => {
+    window.location.href = "/dashboard";
+  };
+
   const open = (eventName: string, detail?: any) => {
     window.dispatchEvent(
       detail
@@ -101,6 +106,14 @@ export default function DashboardOverview({ summary }: Props) {
     <section className="w-full rounded-2xl border border-slate-200 bg-white shadow-sm">
       <div className="border-b border-slate-100 px-4 py-4 sm:px-6">
         <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={goHome}
+            aria-label="Back to home"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </button>
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 text-white">
             <Inbox className="h-5 w-5" />
           </div>
