@@ -170,9 +170,16 @@ export default function InvestmentPostCard({
                   <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-emerald-600" />
                 ) : null}
               </div>
-              <div className="mt-1 flex items-center gap-1.5 text-[10px] text-slate-400">
+              <div className="mt-1 flex flex-wrap items-center gap-2 text-[10px] text-slate-400">
+                <span className="font-medium text-slate-500">Post by</span>
+                <span className="font-semibold text-slate-700">{post.user?.name || post.user?.storeName || "Member"}</span>
                 <CalendarDays className="h-3 w-3" />
                 {formatPostedAgo(post.createdAt, now)}
+              </div>
+              <div className="mt-1 flex flex-wrap items-center gap-2 text-[10px] text-slate-400">
+                {post.location ? <span>{post.location}</span> : null}
+                {post.location && post.subLocation ? <span>•</span> : null}
+                {post.subLocation ? <span>{post.subLocation}</span> : null}
               </div>
             </div>
 
