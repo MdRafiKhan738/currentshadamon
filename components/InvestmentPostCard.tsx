@@ -79,7 +79,7 @@ export default function InvestmentPostCard({ post, onOpen }: { post: Marketplace
             <span>{roleLabel} {language === "bn" ? "পোস্ট" : "Post"}</span>
             <time className="shrink-0 normal-case tracking-normal text-slate-500">{formatPostedAgo(post.createdAt, now, language)}</time>
           </div>
-          {hasDynamicFields ? (
+          {hasDynamicFields && (
             <div className="mt-3 grid grid-cols-2 gap-2 overflow-hidden rounded-xl border border-violet-100 text-center text-xs sm:grid-cols-3">
               {dynamicFields.slice(0, 6).map((field) => (
                 <div key={field.key} className="border-r border-violet-100 px-2 py-2 last:border-r-0">
@@ -87,12 +87,6 @@ export default function InvestmentPostCard({ post, onOpen }: { post: Marketplace
                   <p className="mt-1 truncate font-medium">{String(dynamicValues[field.key] ?? "—")}</p>
                 </div>
               ))}
-            </div>
-          ) : (
-            <div className="mt-3 grid grid-cols-3 overflow-hidden rounded-xl border border-violet-100 text-center text-xs">
-              <div className="border-r border-violet-100 px-2 py-2"><p className="text-slate-500">Min investment</p><p className="mt-1 font-medium">{formatInvestmentAmount(post.minInvestment)}</p></div>
-              <div className="border-r border-violet-100 px-2 py-2"><p className="text-slate-500">Max investment</p><p className="mt-1 font-medium">{formatInvestmentAmount(post.maxInvestment)}</p></div>
-              <div className="bg-violet-700 px-2 py-2 text-white"><p className="text-violet-100">{returnLabel}</p><p className="mt-1 font-semibold">{returnValue ?? "—"}{returnValue !== undefined ? "%" : ""}</p></div>
             </div>
           )}
           <div className="mt-3 flex items-center justify-between gap-2 text-xs text-slate-500">
