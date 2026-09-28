@@ -18,6 +18,7 @@ type MarketplacePost = {
   headline: string;
   images?: string[];
   location?: string;
+  subLocation?: string;
   category?: string;
   subCategory?: string;
   postRole?: "investor" | "business_owner";
