@@ -655,6 +655,9 @@ export default function PostAdModal({ isOpen, onClose, editAd, onSuccess, initia
                     otp: otpValue,
                     name: name || trimmedPhone.split('').slice(0, 5).join(''),
                     storeName: name || trimmedPhone.split('').slice(0, 5).join(''),
+                    category: selectedCategory,
+                    subCategory: selectedSubCategory,
+                    actionType: 'call',
                 };
 
                 if (email) {
