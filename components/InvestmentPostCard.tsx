@@ -22,7 +22,7 @@ type MarketplacePost = {
   category?: string;
   subCategory?: string;
   postRole?: "investor" | "business_owner";
-  businessStatus?: "new" | "running" | "closed" | "active" | "inactive";
+  businessStatus?: "new" | "closed" | "active" | "inactive";
   priceBoxValues?: Record<string, unknown>;
   priceBoxFields?: Array<{
     key: string;
