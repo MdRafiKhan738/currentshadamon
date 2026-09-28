@@ -869,9 +869,14 @@ export default function DashboardClient() {
   const fetchInitialData = React.useCallback(async () => {
     try {
       // 1. Fetch All Ads for global state
-      const allAdsRes = await fetch(`${API_BASE_URL}/api/ads/public/all`).then(
-        (res) => res.json(),
-      );
+      const allAdsParams = new URLSearchParams();
+      const allAdsRole = searchParams.get("role") || searchParams.get("cat");
+      if (allAdsRole === "investor" || allAdsRole === "business_owner") {
+        allAdsParams.set("postRole", allAdsRole);
+      }
+      const allAdsRes = await fetch(
+        `${API_BASE_URL}/api/ads/public/all?${allAdsParams.toString()}`,
+      ).then((res) => res.json());
       if (allAdsRes.success) {
         setTotalAds(allAdsRes.data);
       }
