@@ -17,7 +17,6 @@ type PriceField = {
   placeholderBn?: string;
   inputType?: "text" | "number";
   required?: boolean;
-  inputType?: "text" | "number";
   order?: number;
 };
 
