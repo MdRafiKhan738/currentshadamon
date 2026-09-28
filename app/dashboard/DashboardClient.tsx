@@ -1199,7 +1199,7 @@ export default function DashboardClient() {
             {[
               { label: "Pending proposals", value: dashboardSummary.pendingProposals, icon: Clock3, action: () => window.dispatchEvent(new Event("open-proposal-modal")) },
               { label: "Accepted proposals", value: dashboardSummary.acceptedProposals, icon: CheckCircle2, action: () => window.dispatchEvent(new Event("open-proposal-modal")) },
-              { label: "Pending invitations", value: dashboardSummary.pendingInvitations, icon: UserPlus, action: () => window.dispatchEvent(new CustomEvent("open-account-modal", { detail: { activeTab: "Page" } })) },
+              { label: "Pending invitations", value: dashboardSummary.pendingInvitations, icon: UserPlus, action: () => window.dispatchEvent(new Event("open-invite-modal")) },
               { label: "Profile visitors", value: dashboardSummary.profileVisitors, icon: Eye, action: () => window.dispatchEvent(new CustomEvent("open-account-modal", { detail: { activeTab: "Profile" } })) },
             ].map(({ label, value, icon: Icon, action }) => (
               <button key={label} type="button" onClick={action} className="bg-white px-2 py-2.5 text-center hover:bg-slate-50">
