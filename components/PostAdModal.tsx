@@ -746,9 +746,9 @@ export default function PostAdModal({ isOpen, onClose, editAd, onSuccess, initia
                 formData.append('postRole', postRole);
                 formData.append('businessStatus', postRole === 'business_owner' ? businessStatus : 'new');
                 if (investmentPriceBoxEnabled) {
-                    formData.append('minInvestment', String(Number(minInvestment)));
-                    formData.append('maxInvestment', String(Number(maxInvestment)));
-                    formData.append('expectedReturn', String(Number(expectedReturn)));
+                    if (minInvestment.trim()) formData.append('minInvestment', String(Number(minInvestment)));
+                    if (maxInvestment.trim()) formData.append('maxInvestment', String(Number(maxInvestment)));
+                    if (expectedReturn.trim()) formData.append('expectedReturn', String(Number(expectedReturn)));
                 }
             } else {
                 formData.append('price', price);
