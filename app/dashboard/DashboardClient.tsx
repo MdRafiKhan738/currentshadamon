@@ -324,7 +324,7 @@ export default function DashboardClient() {
 
     const loadDashboardSummary = async () => {
       try {
-        const [meRes, proposalsRes, invitesRes] = await Promise.all([
+        const [meRes, proposalsRes, invitesRes, adsRes] = await Promise.all([
           fetch(`${API_BASE_URL}/api/user/me`, { headers }),
           fetch(`${API_BASE_URL}/api/proposals`, { headers }),
           fetch(`${API_BASE_URL}/api/invites`, { headers }),
