@@ -1352,12 +1352,35 @@ I have sent my CV for your review.`;
               {isDetailsOpen && (
                 <div className="animate-in slide-in-from-top-2 duration-200 min-h-[80px]">
                   <div className="space-y-3">
+                    {ad.postRole && dynamicPriceFields.length > 0 && ad.features?.priceBoxEnabled !== false && (
+                      <section className="rounded-xl border border-violet-100 bg-violet-50/40 p-3">
+                        <div className="mb-2 text-xs font-extrabold text-slate-900">
+                          {ad.features?.priceBoxName || "Post Details"}
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                          {dynamicPriceFields.slice(0, 12).map((field: any) => (
+                            <div key={field.key} className="rounded-lg border border-violet-100 bg-white px-2.5 py-2">
+                              <p className="truncate text-[10px] font-medium text-slate-500">
+                                {language === "bn" ? (field.labelBn || field.label || field.key) : (field.label || field.labelBn || field.key)}
+                              </p>
+                              <p className="mt-1 break-words text-sm font-bold text-slate-900">
+                                {String(dynamicPriceValues[field.key] ?? "—")}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </section>
+                    )}
+
+
                     {(() => {
                       const featuresObj =
                         typeof ad.features === "string"
                           ? JSON.parse(ad.features)
                           : ad.features || {};
-                      if (Object.keys(featuresObj).length === 0) return null;
+                      const hiddenInvestmentKeys = new Set(["priceBoxValues", "priceBoxFields", "priceBoxEnabled", "priceBoxName"]);
+                      const visibleFeatureEntries = Object.entries(featuresObj).filter(([key]) => !hiddenInvestmentKeys.has(key));
+                      if (visibleFeatureEntries.length === 0) return null;
 
                       // Find subcategory to get feature order
                       const subCatIdentifier =
@@ -1373,7 +1396,7 @@ I have sent my CV for your review.`;
                         matchedSub?.features?.map((f: any) => f.name) || [];
 
                       // Sort features based on subcategory feature order
-                      const sortedFeatures = Object.entries(featuresObj).sort(
+                      const sortedFeatures = visibleFeatureEntries.sort(
                         ([keyA], [keyB]) => {
                           const indexA = orderedFeatureNames.indexOf(keyA);
                           const indexB = orderedFeatureNames.indexOf(keyB);
@@ -1668,7 +1691,7 @@ I have sent my CV for your review.`;
                 {/* Info Column */}
                 <div className="flex-1 flex flex-col pt-0.5">
                   <span className="text-[10px] text-slate-500 leading-none mb-0.5">
-                    Seller Information
+                    {ad.postRole ? "Profile Information" : "Seller Information"}
                   </span>
 
                   <div className="flex items-center gap-1.5 mb-0.5">
@@ -1704,7 +1727,7 @@ I have sent my CV for your review.`;
                     <div className="text-black flex items-center font-medium">
                       {(ad as any).user?.rating || 0}
                       <span className="text-black font-normal ml-0.5">
-                        ☆ Seller
+                        ☆ {ad.postRole ? "Profile" : "Seller"}
                       </span>
                     </div>
                   </div>
@@ -1722,7 +1745,7 @@ I have sent my CV for your review.`;
                     );
                   }}
                 >
-                  Visit Shop
+                  {ad.postRole ? "View Profile" : "Visit Shop"}
                 </button>
               </div>
             </div>
@@ -1731,7 +1754,7 @@ I have sent my CV for your review.`;
             {/* 10. Similar Product */}
             {similarAds.length > 0 && (
               <div className="">
-                <h3 className="text-black text-sm mb-1">Similar Product</h3>
+                <h3 className="text-black text-sm mb-1">{ad.postRole ? "Similar Posts" : "Similar Product"}</h3>
                 <div className="space-y-3">
                   {similarAds.slice(0, 5).map((sad) => (
                     <div
@@ -2263,7 +2286,7 @@ I have sent my CV for your review.`;
       )}
       {/* Shipping & Safety Info Modal */}
       <InfoModal
-        isOpen={showShippingModal}
+        isOpen={showShippingModal && !ad?.postRole}
         onClose={() => setShowShippingModal(false)}
         title="সেফটি টিপস (Safety Tips)"
         content={`Shadamon.com-এ আপনার নিরাপত্তা আমাদের প্রথম অগ্রাধিকার। প্ল্যাটফর্ম ব্যবহার করার সময় নিরাপদ থাকার জন্য কিছু পরামর্শ:
