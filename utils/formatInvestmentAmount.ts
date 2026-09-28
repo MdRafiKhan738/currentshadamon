@@ -49,10 +49,16 @@ export function formatInvestmentAmount(amount: number | string | null | undefine
 
     // When the remainder is an exact thousand, use a decimal lakh
     // (450000 -> 4.5 lakh; 475000 -> 4.75 lakh).
-    if (remainder % 1000 === 0) {
-      const lakhValue = parsed / 100_000;
+    const lakhFractionThousands = Math.floor(remainder / 1_000);
+    const lakhFraction = lakhFractionThousands / 100;
+    const exactRemainder = remainder - lakhFractionThousands * 1_000;
+
+    if (lakhFraction > 0) {
+      const lakhValue = lakh + lakhFraction;
       const decimalPart = lakhValue.toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
-      return `${decimalPart} lakh`;
+      return exactRemainder
+        ? `${decimalPart} lakh ${trim(exactRemainder)}`
+        : `${decimalPart} lakh`;
     }
 
     return `${trim(lakh)} lakh ${trim(remainder)}`;
