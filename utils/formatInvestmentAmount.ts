@@ -28,28 +28,42 @@ export function formatInvestmentAmount(amount: number | string | null | undefine
     const lakh = Math.floor(remainder / 100_000);
     remainder -= lakh * 100_000;
     const parts = [`${trim(crore)} crore`];
+
     if (lakh) parts.push(`${trim(lakh)} lakh`);
-    if (remainder) parts.push(trim(remainder));
+    if (remainder) {
+      if (remainder % 1000 === 0) {
+        parts.push(`${trim(remainder / 1000)} thousand`);
+      } else {
+        parts.push(trim(remainder));
+      }
+    }
+
     return parts.join(" ");
   }
 
   const lakh = Math.floor(parsed / 100_000);
   if (lakh > 0) {
     remainder = parsed - lakh * 100_000;
-    const parts = [`${trim(lakh)} lakh`];
-    if (remainder) {
-      const thousand = Math.floor(remainder / 1_000);
-      remainder -= thousand * 1_000;
-      if (thousand) parts.push(`${trim(thousand)} thousand`);
-      if (remainder) parts.push(trim(remainder));
+
+    if (remainder === 0) return `${trim(lakh)} lakh`;
+
+    // When the remainder is an exact thousand, use a decimal lakh
+    // (450000 -> 4.5 lakh; 475000 -> 4.75 lakh).
+    if (remainder % 1000 === 0) {
+      const lakhValue = parsed / 100_000;
+      const decimalPart = lakhValue.toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
+      return `${decimalPart} lakh`;
     }
-    return parts.join(" ");
+
+    return `${trim(lakh)} lakh ${trim(remainder)}`;
   }
 
   if (parsed >= 1_000) {
     const thousand = Math.floor(parsed / 1_000);
     const remainder = parsed - thousand * 1_000;
-    return remainder ? `${trim(thousand)} thousand ${trim(remainder)}` : `${trim(thousand)} thousand`;
+    return remainder
+      ? `${trim(thousand)} thousand ${trim(remainder)}`
+      : `${trim(thousand)} thousand`;
   }
 
   return trim(parsed);
