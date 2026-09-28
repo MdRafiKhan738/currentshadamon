@@ -1173,9 +1173,6 @@ export default function AdDetailsModal({
                       {ad.postRole && String(ad.user?._id || ad.user) !== String(currentUserId) && (
                         <button onClick={() => setProposalOpen(true)} className="flex-1 h-10 border border-emerald-200 bg-emerald-50 text-emerald-700 text-xs px-1 rounded-md hover:bg-emerald-100 transition-colors">Send Proposal</button>
                       )}
-                      {String(ad.user?._id || ad.user) !== String(currentUserId) && (
-                        <button onClick={handleInvite} className="flex-1 h-10 border border-emerald-200 bg-emerald-50 text-emerald-700 text-xs px-1 rounded-md hover:bg-emerald-100 transition-colors">Invite</button>
-                      )}
 
                       {/* Send CV Button - Only if requested */}
                       {otherButtons.includes("Send CV") && (
