@@ -11,6 +11,7 @@ import {
   UserRound,
 } from "lucide-react";
 import { getImageUrl } from "../utils/imageUrl";
+import { formatInvestmentAmount } from "../utils/formatInvestmentAmount";
 
 type MarketplacePost = {
   _id: string;
@@ -26,6 +27,7 @@ type MarketplacePost = {
     key: string;
     label?: string;
     labelBn?: string;
+    inputType?: "text" | "number";
     order?: number;
   }>;
   features?: {
@@ -145,7 +147,7 @@ export default function InvestmentPostCard({
                     {field.label || field.labelBn || field.key}
                   </div>
                   <div className="mt-1 truncate text-base font-bold text-slate-900">
-                    {String(values[field.key] ?? "—")}
+{field.inputType === "text" ? String(values[field.key] ?? "—") : formatInvestmentAmount(values[field.key] as any)}
                   </div>
                 </div>
               ))}
