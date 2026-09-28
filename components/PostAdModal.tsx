@@ -884,6 +884,14 @@ export default function PostAdModal({ isOpen, onClose, editAd, onSuccess, initia
         const isNewPhone = isUserLoggedIn ? (trimmedPhone !== userData?.mobile) : true;
 
         // Basic validation before OTP
+        const hasDynamicPriceBox = Boolean(postRole && subCat?.priceBoxShow && priceBoxFields.length > 0);
+        const hasMissingDynamicField = hasDynamicPriceBox
+            ? priceBoxFields.some((field: any) => field.required && !String(priceBoxValues[field.key] ?? '').trim())
+            : false;
+        const hasMissingLegacyInvestmentField = Boolean(
+            postRole && !hasDynamicPriceBox && (minInvestment || maxInvestment || expectedReturn)
+        );
+
         if (
             !headline ||
             !phone ||
@@ -891,9 +899,9 @@ export default function PostAdModal({ isOpen, onClose, editAd, onSuccess, initia
             (images.length === 0 && existingImages.length === 0) ||
             !selectedCategory ||
             !selectedLocation ||
-            (priceBoxFields.length === 0 && (!minInvestment || !maxInvestment || !expectedReturn)) ||
-            (priceBoxFields.some((field:any) => field.required && !String(priceBoxValues[field.key] ?? '').trim())) ||
-            (subCat?.priceBoxShow && !price) ||
+            hasMissingDynamicField ||
+            (postRole && hasMissingLegacyInvestmentField && (!minInvestment || !maxInvestment || !expectedReturn)) ||
+            (!postRole && !price) ||
             !name
         ) {
             toast.error("Please fill in required fields");
