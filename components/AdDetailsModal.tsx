@@ -1334,12 +1334,14 @@ I have sent my CV for your review.`;
                   >
                     Details
                   </button>
+                  {!ad.postRole && (
                   <button
                     onClick={() => setShowShippingModal(true)}
                     className="px-3 py-1.5 text-xs font-bold border border-transparent text-slate-400 hover:bg-slate-50 rounded-md transition-all"
                   >
                     Shipping & Safety
                   </button>
+                  )}
                 </div>
                 <button onClick={() => setIsDetailsOpen(!isDetailsOpen)}>
                   <ChevronUp
