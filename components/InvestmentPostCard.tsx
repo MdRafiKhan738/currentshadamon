@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { BadgeCheck, Building2, MapPin, UserRound } from "lucide-react";
 import { useLanguage } from "../app/context/LanguageContext";
 import { getImageUrl } from "../utils/imageUrl";
-import { formatInvestmentAmount } from "../utils/formatInvestmentAmount";
 
 type MarketplacePost = {
   _id: string;
@@ -55,13 +54,9 @@ export default function InvestmentPostCard({ post, onOpen }: { post: Marketplace
   const verified = Boolean(post.user?.mVerified || (post.user?.verifiedBy && post.user.verifiedBy !== "Not Verified"));
   const image = getImageUrl(post.images?.[0]);
   const showBusinessStatus = normalizedRole === "business_owner";
-  const returnValue = post.expectedReturn ?? post.expectedProfit;
   const dynamicValues = post.priceBoxValues || post.features?.priceBoxValues || {};
   const dynamicFields = [...(post.priceBoxFields || post.features?.priceBoxFields || [])].sort((a, b) => (a.order || 0) - (b.order || 0));
   const hasDynamicFields = dynamicFields.length > 0 && post.features?.priceBoxEnabled !== false;
-  const returnLabel = normalizedRole === "business_owner"
-    ? (language === "bn" ? "রিটার্ন প্রফিট" : "Return profit")
-    : (language === "bn" ? "প্রত্যাশিত মুনাফা" : "Expected profit");
 
   return (
     <article onClick={onOpen} className="group cursor-pointer overflow-hidden rounded-2xl border border-violet-100 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg">
