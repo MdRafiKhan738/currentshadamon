@@ -169,6 +169,21 @@ export default function DashboardLayoutClient({
     string | undefined
   >(undefined);
   const [user, setUser] = useState<any>(null);
+  const requestedInvestmentRole =
+    searchParams.get("role") === "investor" || searchParams.get("role") === "business_owner"
+      ? searchParams.get("role") as "investor" | "business_owner"
+      : searchParams.get("cat") === "investor" || searchParams.get("cat") === "business_owner"
+        ? searchParams.get("cat") as "investor" | "business_owner"
+        : undefined;
+  const requestedCategory = searchParams.get("category") || searchParams.get("c") || "";
+  const requestedSubCategory = searchParams.get("subCategory") || searchParams.get("sc") || "";
+
+  useEffect(() => {
+    if (!requestedInvestmentRole && !requestedCategory) return;
+    setIsPostAdModalOpen(true);
+  }, [requestedInvestmentRole, requestedCategory]);
+
+
 
   const [mobileEntryReason, setMobileEntryReason] = useState<
     "post_ad" | "account" | "message" | "report" | "promote" | "send_cv"
@@ -1593,6 +1608,9 @@ export default function DashboardLayoutClient({
         }}
         editAd={adToEdit}
         initialMobile={tempMobile}
+        initialRole={requestedInvestmentRole}
+        initialCategory={requestedCategory}
+        initialSubCategory={requestedSubCategory}
         onSuccess={(newAd) => {
           setIsPostAdModalOpen(false);
           window.dispatchEvent(new Event("refresh-ads"));
