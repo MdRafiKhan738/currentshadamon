@@ -588,6 +588,8 @@ export default function DashboardClient() {
           params.append("promoteTag", filters.promoteTag);
         if (filters.sort) params.append("sort", filters.sort);
         if (filters.search) params.append("search", filters.search);
+        const selectedPostRole = searchParams.get("cat");
+        if (selectedPostRole === "investor" || selectedPostRole === "business_owner") params.append("postRole", selectedPostRole);
 
         const shouldFetchMeta = !append && !hasFetchedMetaRef.current;
         const metaPromises: Promise<any>[] = [];
