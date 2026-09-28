@@ -180,6 +180,8 @@ export default function DashboardLayoutClient({
         : undefined;
   const requestedCategory = searchParams.get("postCategory") || "";
   const requestedSubCategory = searchParams.get("postSubCategory") || "";
+  const isPublicInvestmentEntry = Boolean(requestedInvestmentRole || requestedCategory);
+  const INVEST_HOME_URL = "https://shadamoninvest.vercel.app";
 
   useEffect(() => {
     if (!requestedInvestmentRole && !requestedCategory) return;
@@ -585,8 +587,9 @@ export default function DashboardLayoutClient({
           socket.disconnect();
           setSocket(null);
         }
-        setMobileEntryReason("post_ad");
-        setIsMobileEntryModalOpen(true);
+        if (!isPublicInvestmentEntry) {
+          window.location.replace(INVEST_HOME_URL);
+        }
         return;
       }
 
@@ -595,8 +598,11 @@ export default function DashboardLayoutClient({
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) {
+          Cookies.remove("token");
           setUser(null);
-          window.location.replace("https://shadamoninvest.vercel.app");
+          if (!isPublicInvestmentEntry) {
+            window.location.replace(INVEST_HOME_URL);
+          }
           return;
         }
         const userData = await res.json();
@@ -634,7 +640,7 @@ export default function DashboardLayoutClient({
     return () => {
       window.removeEventListener("auth-change", handleAuthChange);
     };
-  }, []);
+  }, [isPublicInvestmentEntry]);
 
   // Mobile Sidebar State
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -1609,6 +1615,10 @@ export default function DashboardLayoutClient({
           onClose={() => {
             setIsPostAdModalOpen(false);
             setAdToEdit(null);
+            window.location.replace(INVEST_HOME_URL);
+          }}
+          onFailure={() => {
+            window.location.replace(INVEST_HOME_URL);
           }}
           initialMobile={tempMobile}
           initialRole={requestedInvestmentRole}
@@ -1616,9 +1626,11 @@ export default function DashboardLayoutClient({
           initialSubCategory={requestedSubCategory}
           onSuccess={(newAd) => {
             setIsPostAdModalOpen(false);
+            setAdToEdit(null);
             window.dispatchEvent(new Event("refresh-ads"));
             setAccountModalInitialTab("Post");
             setIsAccountModalOpen(true);
+            window.history.replaceState(null, "", "/dashboard?view=dashboard");
           }}
         />
       ) : (
