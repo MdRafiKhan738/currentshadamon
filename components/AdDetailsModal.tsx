@@ -1620,6 +1620,7 @@ I have sent my CV for your review.`;
                             </span>
                           </div>
                         </div>
+                        {!pad.postRole && (
                         <div className="text-sm text-black flex items-center justify-between gap-1.5 flex-wrap">
                           <div className="flex items-center gap-1.5 flex-wrap">
                             <span>
@@ -1636,7 +1637,8 @@ I have sent my CV for your review.`;
                                 )
                               </span>
                             )}
-                          </div>
+                          </
+                        )}div>
                         </div>
                       </div>
                     </div>
