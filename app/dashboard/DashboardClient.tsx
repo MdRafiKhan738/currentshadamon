@@ -199,6 +199,7 @@ export default function DashboardClient() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [feedAdsCategories, setFeedAdsCategories] = useState<any[]>([]);
+  const [investmentPosts, setInvestmentPosts] = useState<any[]>([]);
 
   const [isMerchantsModalOpen, setIsMerchantsModalOpen] = useState(false);
 
@@ -1612,13 +1613,29 @@ export default function DashboardClient() {
             <p className="text-black text-sm">{t("loading_feed")}</p>
           </div>
         ) : ads.length === 0 ? (
-          <div className="bg-white rounded-none lg:rounded-2xl p-8 border border-slate-200 shadow-sm min-h-[400px] flex flex-col items-center justify-center text-black">
-            <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mb-4">
-              <Home className="w-8 h-8 text-black" />
+          investmentPosts.length > 0 ? (
+            <div className="space-y-4">
+              {investmentPosts.map((post) => (
+                <InvestmentPostCard
+                  key={post._id}
+                  post={post}
+                  onOpen={() => {
+                    const params = new URLSearchParams(searchParams.toString());
+                    params.set("ad", post._id);
+                    router.push("/dashboard?" + params.toString(), { scroll: false });
+                  }}
+                />
+              ))}
             </div>
-            <h3 className="text-lg font-bold text-black">{t("no_ads_yet")}</h3>
-          </div>
-        ) : (
+          ) : (
+            <div className="bg-white rounded-none lg:rounded-2xl p-8 border border-slate-200 shadow-sm min-h-[400px] flex flex-col items-center justify-center text-black">
+              <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mb-4">
+                <Home className="w-8 h-8 text-black" />
+              </div>
+              <h3 className="text-lg font-bold text-black">{t("no_ads_yet")}</h3>
+            </div>
+          )
+        ) : ( (
           (() => {
             const displayAdsList = isViewingSavedSearch ? savedAdsData : ads;
 
