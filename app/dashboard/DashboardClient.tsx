@@ -1178,6 +1178,36 @@ export default function DashboardClient() {
         id="center-feed-container"
         className="w-full lg:w-[580px] flex-none space-y-4 pb-32 lg:pb-20"
       >
+        <div className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
+          <div className="grid grid-cols-2 gap-px overflow-hidden rounded-md bg-slate-200 sm:grid-cols-4">
+            {[
+              { label: "Pending proposals", value: dashboardSummary.pendingProposals, icon: Clock3, action: () => window.dispatchEvent(new Event("open-proposal-modal")) },
+              { label: "Accepted proposals", value: dashboardSummary.acceptedProposals, icon: CheckCircle2, action: () => window.dispatchEvent(new Event("open-proposal-modal")) },
+              { label: "Pending invitations", value: dashboardSummary.pendingInvitations, icon: UserPlus, action: () => window.dispatchEvent(new CustomEvent("open-account-modal", { detail: { activeTab: "Page" } })) },
+              { label: "Profile visitors", value: dashboardSummary.profileVisitors, icon: Eye, action: () => window.dispatchEvent(new CustomEvent("open-account-modal", { detail: { activeTab: "Profile" } })) },
+            ].map(({ label, value, icon: Icon, action }) => (
+              <button key={label} type="button" onClick={action} className="bg-white px-2 py-2.5 text-center hover:bg-slate-50">
+                <Icon className="mx-auto mb-1 h-4 w-4 text-emerald-600" />
+                <div className="text-base font-bold text-slate-900">{value}</div>
+                <div className="text-[9px] leading-3 text-slate-500">{label}</div>
+              </button>
+            ))}
+          </div>
+          <div className="mt-2 grid grid-cols-3 gap-px overflow-hidden rounded-md bg-slate-200">
+            {[
+              { label: "Package", value: dashboardSummary.packageName, icon: Package, action: () => window.dispatchEvent(new Event("open-package-modal")) },
+              { label: "Used connects", value: dashboardSummary.usedConnects, icon: CreditCard, action: () => window.dispatchEvent(new Event("open-package-modal")) },
+              { label: "Available connects", value: dashboardSummary.availableConnects, icon: CreditCard, action: () => window.dispatchEvent(new Event("open-package-modal")) },
+            ].map(({ label, value, icon: Icon, action }) => (
+              <button key={label} type="button" onClick={action} className="bg-white px-2 py-2.5 text-center hover:bg-slate-50">
+                <Icon className="mx-auto mb-1 h-4 w-4 text-emerald-600" />
+                <div className="truncate text-sm font-bold text-slate-900">{value}</div>
+                <div className="text-[9px] leading-3 text-slate-500">{label}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Secondary Filter Bar */}
         <div
           className={cn(
