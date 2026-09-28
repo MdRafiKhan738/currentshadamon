@@ -532,7 +532,7 @@ export default function DashboardClient() {
       return;
     }
 
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams();
     ["role", "cat", "postCategory", "postSubCategory"].forEach((key) => {
       const value = searchParams.get(key);
       if (value) params.set(key, value);
