@@ -532,7 +532,7 @@ export default function DashboardClient() {
     ["role", "cat", "postCategory", "postSubCategory"].forEach((key) => {
       const value = searchParams.get(key);
       if (value) params.set(key, value);
-    
+    });
     if (filters.category) params.set("c", filters.category);
     if (filters.subCategory) params.set("sc", filters.subCategory);
     if (filters.location) params.set("l", filters.location);
