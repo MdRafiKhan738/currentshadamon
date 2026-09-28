@@ -637,7 +637,17 @@ export default function AccountActivityModal({ isOpen, onClose, userId, onOpenPo
                 actionType: userData.actionType || 'call',
                 sellerPageUrl: userData.sellerPageUrl || '',
                 aboutBusiness: userData.aboutBusiness || '',
-                contact: userData.contact || ''
+                contact: userData.contact || '',
+                organizationName: userData.organizationName || '',
+                designation: userData.designation || '',
+                employeeCount: userData.employeeCount || '',
+                investmentRole: userData.investmentRole || '',
+                investmentType: userData.investmentType || '',
+                investmentReturnType: userData.investmentReturnType || '',
+                investmentAmountMin: userData.investmentAmountMin || '',
+                investmentAmountMax: userData.investmentAmountMax || '',
+                investmentReturn: userData.investmentReturn || '',
+                businessProposal: userData.businessProposal || ''
             });
         } else if (!userData) {
             // Reset to empty values when no user is selected or logged in
@@ -657,7 +667,7 @@ export default function AccountActivityModal({ isOpen, onClose, userId, onOpenPo
                 actionType: 'call',
                 sellerPageUrl: '',
                 aboutBusiness: '',
-                contact: ''
+                contact: '',
                 organizationName: '',
                 designation: '',
                 employeeCount: '',
@@ -667,8 +677,7 @@ export default function AccountActivityModal({ isOpen, onClose, userId, onOpenPo
                 investmentAmountMin: '',
                 investmentAmountMax: '',
                 investmentReturn: '',
-                businessProposal: '',
-
+                businessProposal: ''
             });
         }
     }, [userData, isOwnAccount]);
