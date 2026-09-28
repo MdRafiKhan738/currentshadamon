@@ -76,6 +76,9 @@ import { useSettings } from "../context/SettingsContext";
 // DashboardLayoutClient before it reopens the Ad Details modal, so the
 // modal's close button can restore the exact scroll spot the user was at
 // instead of the (possibly already-reset) live scrollTop.
+
+
+// new vercel check
 const PENDING_AD_SCROLL_KEY = "pending_ad_scroll_top";
 
 interface SubItem {
