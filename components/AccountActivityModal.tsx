@@ -2451,6 +2451,20 @@ I have sent my CV for your review.`;
                                                                     Publish {ad.createdAt ? new Date(ad.createdAt).toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }).replace(',', '') : 'N/A'}
                                                                 </div>
                                                             </div>
+                                                            {ad.postRole && ((ad.features?.priceBoxFields || ad.priceBoxFields || []).length > 0) && (
+                                                                <div className="mt-1 grid grid-cols-2 gap-1.5 md:grid-cols-3">
+                                                                    {[...(ad.features?.priceBoxFields || ad.priceBoxFields || [])]
+                                                                        .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
+                                                                        .slice(0, 6)
+                                                                        .map((field: any) => (
+                                                                            <div key={field.key} className="rounded border border-violet-100 bg-violet-50/40 px-1.5 py-1">
+                                                                                <div className="truncate text-[9px] text-slate-500">{language === 'bn' ? (field.labelBn || field.label || field.key) : (field.label || field.labelBn || field.key)}</div>
+                                                                                <div className="truncate text-[11px] font-bold text-slate-900">{String((ad.features?.priceBoxValues || ad.priceBoxValues || {})[field.key] ?? '—')}</div>
+                                                                            </div>
+                                                                        ))}
+                                                                </div>
+                                                            )}
+
                                                             {getNonHighlightLabels(ad).length > 0 && (
                                                                 <div className="shrink-0 flex flex-col items-end gap-1">
                                                                     {getNonHighlightLabels(ad).map((label: string) => (
