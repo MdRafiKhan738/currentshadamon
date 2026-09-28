@@ -730,15 +730,30 @@ export default function PostAdModal({ isOpen, onClose, editAd, onSuccess, initia
             formData.append('hidePhone', String(hidePhone));
             formData.append('additionalPhones', JSON.stringify(additionalPhones));
             formData.append('remainingImages', JSON.stringify(existingImages));
-            formData.append('features', JSON.stringify({ ...featureValues, priceBoxValues, priceBoxFields }));
-            formData.append('priceBoxValues', JSON.stringify(priceBoxValues));
-            formData.append('price', price);
-            formData.append('priceType', priceType);
-            formData.append('postRole', postRole);
-            formData.append('businessStatus', postRole === 'business_owner' ? businessStatus : 'new');
-            formData.append('minInvestment', String(Number(minInvestment)));
-            formData.append('maxInvestment', String(Number(maxInvestment)));
-            formData.append('expectedReturn', String(Number(expectedReturn)));
+            const investmentPriceBoxEnabled = Boolean(postRole && subCat?.priceBoxShow && priceBoxFields.length > 0);
+            const investmentPriceValues = investmentPriceBoxEnabled ? priceBoxValues : {};
+            formData.append('features', JSON.stringify({
+                ...featureValues,
+                ...(postRole ? {
+                    priceBoxEnabled: investmentPriceBoxEnabled,
+                    priceBoxName: investmentPriceBoxEnabled ? (subCat?.priceBoxName || '') : '',
+                    priceBoxValues: investmentPriceValues,
+                    priceBoxFields: investmentPriceEnabledFields
+                } : {})
+            }));
+            if (postRole) {
+                formData.append('priceBoxValues', JSON.stringify(investmentPriceValues));
+                formData.append('postRole', postRole);
+                formData.append('businessStatus', postRole === 'business_owner' ? businessStatus : 'new');
+                if (investmentPriceBoxEnabled) {
+                    formData.append('minInvestment', String(Number(minInvestment)));
+                    formData.append('maxInvestment', String(Number(maxInvestment)));
+                    formData.append('expectedReturn', String(Number(expectedReturn)));
+                }
+            } else {
+                formData.append('price', price);
+                formData.append('priceType', priceType);
+            }
 
             if (wasOtpVerified) {
                 formData.append('verificationInfo', JSON.stringify({
@@ -885,20 +900,6 @@ export default function PostAdModal({ isOpen, onClose, editAd, onSuccess, initia
             return;
         }
 
-        if (priceBoxFields.length === 0) {
-            const minValue = Number(minInvestment);
-            const maxValue = Number(maxInvestment);
-            const returnValue = Number(expectedReturn);
-            if (!Number.isFinite(minValue) || !Number.isFinite(maxValue) || minValue < 0 || maxValue < 0 || minValue > maxValue) {
-                toast.error("Please enter a valid minimum and maximum investment.");
-                return;
-            }
-            if (!Number.isFinite(returnValue) || returnValue < 0) {
-                toast.error("Please enter a valid expected return percentage.");
-                return;
-            }
-        }
-
         // Check blocked words
         const headlineLower = headline.toLowerCase();
         const descLower = description.toLowerCase();
@@ -1016,6 +1017,8 @@ export default function PostAdModal({ isOpen, onClose, editAd, onSuccess, initia
     const subCat = categories
         .find(c => c.name === selectedCategory)
         ?.subcategories.find(s => s.name === selectedSubCategory);
+    const investmentPriceEnabled = Boolean(postRole && subCat?.priceBoxShow && priceBoxFields.length > 0);
+    const investmentPriceEnabledFields = investmentPriceEnabled ? priceBoxFields : [];
 
 
     const selectedCategoryMeta = categories.find((c) => c.name === selectedCategory);
@@ -1026,7 +1029,9 @@ export default function PostAdModal({ isOpen, onClose, editAd, onSuccess, initia
     const tempLocationMeta = locations.find((l) => l.name === tempLocation);
 
     useEffect(() => {
-        const configured = [...(selectedSubCategoryMeta?.priceBoxFields || [])].sort((a:any,b:any)=>(a.order||0)-(b.order||0));
+        const configured = selectedSubCategoryMeta?.priceBoxShow
+            ? [...(selectedSubCategoryMeta?.priceBoxFields || [])].sort((a:any,b:any)=>(a.order||0)-(b.order||0))
+            : [];
         setPriceBoxFields(configured);
         setPriceBoxValues(prev => {
             const next: Record<string, any> = {};
@@ -1660,35 +1665,26 @@ export default function PostAdModal({ isOpen, onClose, editAd, onSuccess, initia
                                                 </label>
                                             )}
                                         </div>
-                                        {priceBoxFields.length > 0 ? (
-                                            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-                                                {priceBoxFields.map((field:any) => (
-                                                    <label key={field.key} className="text-xs font-bold text-black">
-                                                        {language === 'bn' ? (field.labelBn || field.label || field.key) : (field.label || field.labelBn || field.key)}
-                                                        <input
-                                                            type={field.inputType === 'text' ? 'text' : 'number'}
-                                                            min={field.inputType === 'number' ? '0' : undefined}
-                                                            step={field.inputType === 'number' ? '0.01' : undefined}
-                                                            value={priceBoxValues[field.key] ?? ''}
-                                                            required={Boolean(field.required)}
-                                                            onChange={e => setPriceBoxValues(prev => ({ ...prev, [field.key]: e.target.value }))}
-                                                            className="mt-1 w-full border border-slate-300 rounded px-2 py-2 text-sm"
-                                                            placeholder={language === 'bn' ? (field.placeholderBn || field.placeholder || '') : (field.placeholder || field.placeholderBn || '')}
-                                                        />
-                                                    </label>
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                                                <label className="text-xs font-bold text-black">Min Investment
-                                                    <input type="number" min="0" value={minInvestment} onChange={e => setMinInvestment(e.target.value)} className="mt-1 w-full border border-slate-300 rounded px-2 py-2 text-sm" placeholder="1,00,000" />
-                                                </label>
-                                                <label className="text-xs font-bold text-black">Max Investment
-                                                    <input type="number" min="0" value={maxInvestment} onChange={e => setMaxInvestment(e.target.value)} className="mt-1 w-full border border-slate-300 rounded px-2 py-2 text-sm" placeholder="50,00,000" />
-                                                </label>
-                                                <label className="text-xs font-bold text-black">Expected Return %
-                                                    <input type="number" min="0" step="0.01" value={expectedReturn} onChange={e => setExpectedReturn(e.target.value)} className="mt-1 w-full border border-slate-300 rounded px-2 py-2 text-sm" placeholder="15" />
-                                                </label>
+                                        {investmentPriceEnabled && (
+                                            <div className="rounded-xl border border-violet-100 bg-violet-50/40 p-3">
+                                                <div className="mb-2 text-xs font-extrabold text-slate-900">{subCat?.priceBoxName || "Post Details"}</div>
+                                                <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                                                    {investmentPriceEnabledFields.map((field:any) => (
+                                                        <label key={field.key} className="text-xs font-bold text-black">
+                                                            {language === 'bn' ? (field.labelBn || field.label || field.key) : (field.label || field.labelBn || field.key)}
+                                                            <input
+                                                                type={field.inputType === 'text' ? 'text' : 'number'}
+                                                                min={field.inputType === 'number' ? '0' : undefined}
+                                                                step={field.inputType === 'number' ? '0.01' : undefined}
+                                                                value={priceBoxValues[field.key] ?? ''}
+                                                                required={Boolean(field.required)}
+                                                                onChange={e => setPriceBoxValues(prev => ({ ...prev, [field.key]: e.target.value }))}
+                                                                className="mt-1 w-full border border-slate-300 rounded px-2 py-2 text-sm"
+                                                                placeholder={language === 'bn' ? (field.placeholderBn || field.placeholder || '') : (field.placeholder || field.placeholderBn || '')}
+                                                            />
+                                                        </label>
+                                                    ))}
+                                                </div>
                                             </div>
                                         )}
                                     </div>
@@ -1753,40 +1749,6 @@ export default function PostAdModal({ isOpen, onClose, editAd, onSuccess, initia
                                             </div>
                                         )}
                                     </div>
-
-                                    {subCat?.priceBoxShow && (
-                                        <div className={cn(
-                                            "bg-slate-100 rounded-lg border flex items-center overflow-hidden h-10 px-3",
-                                            attemptedSubmit && !price.trim() ? "border-red-500" : "border-slate-500"
-                                        )}>
-                                            <div className="flex-1 flex items-center pr-2">
-                                                <span className={cn(
-                                                    "text-[13px] pr-2 border-r whitespace-nowrap",
-                                                    attemptedSubmit && !price.trim() ? "text-red-500 border-red-500" : "text-slate-800 border-slate-300"
-                                                )}>
-                                                    {subCat.priceBoxName || "দাম"}
-                                                </span>
-                                                <input
-                                                    type="number"
-                                                    placeholder=""
-                                                    value={price}
-                                                    onChange={(e) => setPrice(e.target.value)}
-                                                    className="w-full bg-transparent pl-2 text-[13px] text-black placeholder:text-slate-400 focus:outline-none"
-                                                />
-                                            </div>
-                                            <div className="relative h-full flex items-center pl-2 border-l border-slate-300">
-                                                <select
-                                                    value={priceType}
-                                                    onChange={(e) => setPriceType(e.target.value)}
-                                                    className="bg-transparent text-[12px] text-slate-700 font-medium pr-6 focus:outline-none appearance-none cursor-pointer"
-                                                >
-                                                    <option value="Negotiable">{t('price_negotiable')}</option>
-                                                    <option value="Fixed">{t('price_fixed')}</option>
-                                                </select>
-                                                <ChevronDown className="absolute right-0 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
-                                            </div>
-                                        </div>
-                                    )}
 
                                     <div className={cn(
                                         "bg-white rounded-lg border p-3.5 space-y-2 shadow-sm font-sans",
