@@ -40,7 +40,7 @@ export default function InviteModal({
     if (isOpen) load();
   }, [isOpen]);
 
-  const update = async (id: string, status: "accepted" | "rejected") => {
+  const update = async (id: string, status: "accepted" | "rejected" | "cancelled") => {
     const token = Cookies.get("token");
     if (!token) return;
 
@@ -146,7 +146,7 @@ export default function InviteModal({
                         className={`rounded-full px-2 py-1 text-[10px] font-bold ${
                           invite.status === "accepted"
                             ? "bg-emerald-100 text-emerald-700"
-                            : invite.status === "rejected"
+                            : invite.status === "rejected" || invite.status === "cancelled"
                               ? "bg-red-100 text-red-700"
                               : "bg-amber-100 text-amber-700"
                         }`}
@@ -155,22 +155,34 @@ export default function InviteModal({
                       </span>
                     </div>
 
-                    {tab === "received" && invite.status === "pending" && (
+                    {invite.status === "pending" && (
                       <div className="mt-3 flex gap-2">
-                        <button
-                          onClick={() => update(invite._id, "accepted")}
-                          className="flex-1 rounded-lg bg-emerald-700 px-3 py-2 text-xs font-bold text-white"
-                        >
-                          <Check className="mr-1 inline h-4 w-4" />
-                          Accept
-                        </button>
-                        <button
-                          onClick={() => update(invite._id, "rejected")}
-                          className="flex-1 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-700"
-                        >
-                          <X className="mr-1 inline h-4 w-4" />
-                          Reject
-                        </button>
+                        {tab === "received" ? (
+                          <>
+                            <button
+                              onClick={() => update(invite._id, "accepted")}
+                              className="flex-1 rounded-lg bg-emerald-700 px-3 py-2 text-xs font-bold text-white"
+                            >
+                              <Check className="mr-1 inline h-4 w-4" />
+                              Accept
+                            </button>
+                            <button
+                              onClick={() => update(invite._id, "rejected")}
+                              className="flex-1 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-700"
+                            >
+                              <X className="mr-1 inline h-4 w-4" />
+                              Cancel
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            onClick={() => update(invite._id, "cancelled")}
+                            className="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-700"
+                          >
+                            <X className="mr-1 inline h-4 w-4" />
+                            Cancel Invitation
+                          </button>
+                        )}
                       </div>
                     )}
                   </article>
