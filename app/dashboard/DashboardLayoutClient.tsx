@@ -54,6 +54,7 @@ import VerificationModal from "../../components/VerificationModal";
 import AdDetailsModal from "../../components/AdDetailsModal";
 import MessageModal from "../../components/MessageModal";
 import ProposalModal from "../../components/ProposalModal";
+import InviteModal from "../../components/InviteModal";
 import ChatMessageModal from "../../components/ChatMessageModal";
 import InfoModal from "../../components/InfoModal";
 import AdDisplay from "../../components/AdDisplay";
@@ -159,6 +160,7 @@ export default function DashboardLayoutClient({
   );
   const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
   const [isProposalModalOpen, setIsProposalModalOpen] = useState(false);
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isChatMessageModalOpen, setIsChatMessageModalOpen] = useState(false);
   const [chatAd, setChatAd] = useState<any>(null);
   const [chatOtherUser, setChatOtherUser] = useState<any>(null);
@@ -456,6 +458,8 @@ export default function DashboardLayoutClient({
     window.addEventListener("open-message-modal", handleOpenMessage);
     const handleOpenProposal = () => setIsProposalModalOpen(true);
     window.addEventListener("open-proposal-modal", handleOpenProposal);
+    const handleOpenInvite = () => setIsInviteModalOpen(true);
+    window.addEventListener("open-invite-modal", handleOpenInvite);
 
     const handleOpenMobileEntry = (e: any) => {
       if (e.detail?.reason) {
@@ -1631,6 +1635,11 @@ export default function DashboardLayoutClient({
             router.replace("/dashboard");
           }
         }}
+      />
+
+      <InviteModal
+        isOpen={isInviteModalOpen}
+        onClose={() => setIsInviteModalOpen(false)}
       />
 
       <PackagePurchaseModal
