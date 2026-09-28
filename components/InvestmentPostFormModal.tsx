@@ -414,11 +414,23 @@ export default function InvestmentPostFormModal({
                   <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">
                     Post as
                   </div>
-                  <div className="mt-1 flex items-center gap-2 text-base font-bold text-slate-900">
-                    {roleLabel}
-                    <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
-                      {role === "business_owner" ? "Active Business" : "Looking to Invest"}
-                    </span>
+                  <div className="mt-1 flex flex-wrap items-center gap-2 text-base font-bold text-slate-900">
+                    <span>{roleLabel}</span>
+                    {role === "business_owner" ? (
+                      <select
+                        value={businessStatus}
+                        onChange={(event) => setBusinessStatus(event.target.value as "active" | "new" | "closed")}
+                        className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold text-emerald-700 outline-none"
+                      >
+                        <option value="active">Active Business</option>
+                        <option value="new">New Business</option>
+                        <option value="closed">Close Business</option>
+                      </select>
+                    ) : (
+                      <span className="rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-semibold text-violet-700">
+                        Looking to Invest
+                      </span>
+                    )}
                   </div>
                   {userName && (
                     <div className="mt-1 text-xs text-slate-500">
@@ -427,19 +439,45 @@ export default function InvestmentPostFormModal({
                   )}
                 </div>
 
-                <div className="flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs text-slate-600">
-                  <MapPin className="h-4 w-4 text-slate-500" />
+                <div className="flex flex-wrap items-center justify-end gap-1.5">
+                  <div className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs text-slate-600">
+                    <MapPin className="h-4 w-4 text-slate-500" />
+                    <select
+                      value={selectedLocation}
+                      onChange={(event) => {
+                        setSelectedLocation(event.target.value);
+                        setSelectedSubLocation("");
+                      }}
+                      className="max-w-[150px] bg-transparent font-semibold outline-none"
+                      required
+                    >
+                      <option value="">Select location *</option>
+                      {locations.map((location) => (
+                        <option key={location._id} value={location.name}>
+                          {location.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                   <select
-                    value={selectedLocation}
-                    onChange={(event) => setSelectedLocation(event.target.value)}
-                    className="max-w-[150px] bg-transparent font-semibold outline-none"
+                    value={selectedSubLocation}
+                    onChange={(event) => setSelectedSubLocation(event.target.value)}
+                    className="max-w-[150px] rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs font-semibold text-slate-600 outline-none"
+                    required
+                    disabled={!selectedLocation}
                   >
-                    <option value="">Select location</option>
-                    {locations.map((location) => (
-                      <option key={location._id} value={location.name}>
-                        {location.name}
-                      </option>
-                    ))}
+                    <option value="">Select sublocation *</option>
+                    {subLocations
+                      .filter((item) => {
+                        const parent = typeof item.location === "object" ? item.location?._id : item.location;
+                        const selected = locations.find((location) => location.name === selectedLocation);
+                        return !parent || parent === selected?._id;
+                      })
+                      .map((item) => (
+                        <option key={item._id} value={item.name}>
+                          {item.name}
+                        </option>
+                      ))}
                   </select>
                 </div>
               </div>
