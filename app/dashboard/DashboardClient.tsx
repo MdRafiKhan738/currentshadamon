@@ -35,6 +35,10 @@ import {
   ArrowUp,
   SlidersHorizontal,
   Bookmark,
+  Clock3,
+  Eye,
+  CreditCard,
+  CheckCircle2,
 } from "lucide-react";
 import {
   FaAndroid,
