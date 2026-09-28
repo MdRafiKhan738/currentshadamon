@@ -1635,7 +1635,7 @@ export default function DashboardClient() {
               <h3 className="text-lg font-bold text-black">{t("no_ads_yet")}</h3>
             </div>
           )
-        ) : ( (
+        ) : (
           (() => {
             const displayAdsList = isViewingSavedSearch ? savedAdsData : ads;
 
