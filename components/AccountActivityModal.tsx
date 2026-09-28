@@ -1482,7 +1482,7 @@ I have sent my CV for your review.`;
                                             productTab === 'All' ? "text-slate-800 border-slate-800" : "text-slate-400 border-transparent hover:text-slate-600"
                                         )}
                                     >
-                                        All Product({userAds.length})
+                                        All Posts({userAds.length})
                                     </button>
                                     <button
                                         onClick={() => setProductTab('Popular')}
@@ -1491,7 +1491,7 @@ I have sent my CV for your review.`;
                                             productTab === 'Popular' ? "text-slate-800 border-slate-800" : "text-slate-400 border-transparent hover:text-slate-600"
                                         )}
                                     >
-                                        Popular Product({promotedAds.length})
+                                        Popular Posts({promotedAds.length})
                                     </button>
                                 </div>
 
