@@ -1143,6 +1143,18 @@ export default function AdDetailsModal({
 
                   return (
                     <>
+                      {/* Invite is free and does not consume a connect. */}
+                      {ad.postRole &&
+                        String(ad.user?._id || ad.user) !== String(currentUserId) && (
+                          <button
+                            onClick={handleInvite}
+                            className="flex-1 h-10 border border-violet-200 bg-violet-50 text-violet-700 text-xs px-1 rounded-md hover:bg-violet-100 transition-colors flex items-center justify-center gap-1"
+                          >
+                            <UserPlus className="w-3.5 h-3.5" />
+                            Invite
+                          </button>
+                        )}
+
                       {/* Call Button - Only if requested and phone available */}
                       {otherButtons.includes("Call") &&
                         !(
