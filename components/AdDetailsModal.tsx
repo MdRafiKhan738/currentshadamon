@@ -55,6 +55,7 @@ import {
 import { API_BASE_URL } from "../utils/apiConfig";
 // Use centralized url helper
 import { getImageUrl } from "../utils/imageUrl";
+import { formatInvestmentAmount } from "../utils/formatInvestmentAmount";
 import { getNonHighlightLabels, hasHighlightLabel } from "../utils/labels";
 import { formatDistanceToNow } from "date-fns";
 import { useRef, useEffect } from "react";
@@ -1366,7 +1367,7 @@ I have sent my CV for your review.`;
                                 {language === "bn" ? (field.labelBn || field.label || field.key) : (field.label || field.labelBn || field.key)}
                               </p>
                               <p className="mt-1 break-words text-sm font-bold text-slate-900">
-                                {String(dynamicPriceValues[field.key] ?? "—")}
+{field.inputType === "text" ? String(dynamicPriceValues[field.key] ?? "—") : formatInvestmentAmount(dynamicPriceValues[field.key])}
                               </p>
                             </div>
                           ))}
