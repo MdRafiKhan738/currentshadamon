@@ -391,6 +391,23 @@ export default function PostAdModal({ isOpen, onClose, editAd, onSuccess, initia
         }
     };
 
+    useEffect(() => {
+        if (!isOpen || editAd || !initialCategory || categories.length === 0) return;
+
+        const category = categories.find((item) => item.name === initialCategory || item._id === initialCategory);
+        if (!category) return;
+
+        const requestedSub = initialSubCategory
+            ? category.subcategories.find((item) => item.name === initialSubCategory || item._id === initialSubCategory)
+            : category.subcategories[0];
+
+        setSelectedCategory(category.name);
+        setSelectedSubCategory(requestedSub?.name || "");
+        setTempCategory(category.name);
+        setTempSubCategory(requestedSub?.name || "");
+        setView("location");
+    }, [isOpen, editAd, initialCategory, initialSubCategory, categories]);
+
     const checkUser = async () => {
         const token = Cookies.get('token');
 
