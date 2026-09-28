@@ -72,6 +72,7 @@ export default function InvestmentPostFormModal({
   isOpen,
   onClose,
   onSuccess,
+  onFailure,
   initialMobile = "",
   initialRole,
   initialCategory = "",
