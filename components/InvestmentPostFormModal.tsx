@@ -344,7 +344,6 @@ export default function InvestmentPostFormModal({
       );
 
       onSuccess?.(data.data);
-      onClose();
     } catch (error) {
       console.error("Investment post submission failed:", error);
       toast.error("Could not submit your post. Please try again.");
