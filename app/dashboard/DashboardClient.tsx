@@ -232,6 +232,15 @@ export default function DashboardClient() {
 
   const [isViewingSavedSearch, setIsViewingSavedSearch] = useState(false);
   const [savedAdsData, setSavedAdsData] = useState<ActiveAd[]>([]);
+  const [dashboardSummary, setDashboardSummary] = useState({
+    pendingProposals: 0,
+    acceptedProposals: 0,
+    pendingInvitations: 0,
+    profileVisitors: 0,
+    packageName: "Free",
+    usedConnects: 0,
+    availableConnects: 0,
+  });
   const hasHandledAdminLoginRef = useRef(false);
 
   useEffect(() => {
@@ -298,6 +307,51 @@ export default function DashboardClient() {
       setCanScrollLeft(scrollLeft > 2);
       setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 2);
     }
+  }, []);
+
+  useEffect(() => {
+    const token = Cookies.get("token");
+    if (!token) return;
+
+    const headers = { Authorization: `Bearer ${token}` };
+
+    const loadDashboardSummary = async () => {
+      try {
+        const [meRes, proposalsRes, invitesRes] = await Promise.all([
+          fetch(`${API_BASE_URL}/api/user/me`, { headers }),
+          fetch(`${API_BASE_URL}/api/proposals`, { headers }),
+          fetch(`${API_BASE_URL}/api/invites`, { headers }),
+        ]);
+
+        const me = meRes.ok ? await meRes.json() : {};
+        const proposals = proposalsRes.ok ? await proposalsRes.json() : {};
+        const invites = invitesRes.ok ? await invitesRes.json() : {};
+        const allProposals = Array.isArray(proposals.data)
+          ? proposals.data
+          : [...(proposals.received || []), ...(proposals.sent || [])];
+
+        setDashboardSummary({
+          pendingProposals: allProposals.filter((item: any) => item.status === "pending").length,
+          acceptedProposals: allProposals.filter((item: any) => item.status === "accepted").length,
+          pendingInvitations: (invites.received || []).filter((item: any) => item.status === "pending").length,
+          profileVisitors: Number(me.profileViews || 0),
+          packageName: me.activePackage?.name || me.merchantType || "Free",
+          usedConnects: Number(me.creditsUsed || me.activePackage?.usedCredits || 0),
+          availableConnects: Number(me.connectsBalance || me.activePackage?.creditsRemaining || 0),
+        });
+      } catch (error) {
+        console.error("Failed to load dashboard summary:", error);
+      }
+    };
+
+    loadDashboardSummary();
+    const refreshSummary = () => loadDashboardSummary();
+    window.addEventListener("auth-change", refreshSummary);
+    window.addEventListener("connect-balance-updated", refreshSummary);
+    return () => {
+      window.removeEventListener("auth-change", refreshSummary);
+      window.removeEventListener("connect-balance-updated", refreshSummary);
+    };
   }, []);
 
   useEffect(() => {
