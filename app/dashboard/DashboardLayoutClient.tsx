@@ -1662,8 +1662,10 @@ export default function DashboardLayoutClient({
             setIsPostAdModalOpen(false);
             setAdToEdit(null);
             setSidebarPostRole(undefined);
-            if (isPublicInvestmentEntry) {
+            if (isPublicInvestmentEntry && !Cookies.get("token")) {
               window.location.replace(INVEST_HOME_URL);
+            } else if (isPublicInvestmentEntry) {
+              window.history.replaceState(null, "", "/dashboard?view=dashboard");
             }
           }}
           onFailure={() => {
