@@ -55,6 +55,7 @@ import FilterModal, { type FilterState } from "./FilterModal";
 import MobileEntryModal from "./MobileEntryModal";
 import LoginModal from "./LoginModal";
 import RegisterModal from "./RegisterModal";
+import DashboardOverview from "./DashboardOverview";
 import AdDetailsModal from "./AdDetailsModal";
 
 type InvestmentRole = "investor" | "business_owner";
@@ -602,7 +603,19 @@ export default function ReferenceDashboardClient() {
 
         <section className="w-full min-w-0 lg:w-[580px] lg:flex-none">
           {dashboardView ? (
-            <DashboardReferencePanel user={user} summary={dashboardSummary} onBack={openFeed} onOpenPackage={() => setPackageOpen(true)} onOpenAccount={openAccount} />
+            <DashboardOverview summary={{
+              pendingProposals: dashboardSummary.pendingProposals,
+              acceptedProposals: dashboardSummary.acceptedProposals,
+              pendingInvitations: dashboardSummary.pendingInvitations,
+              acceptedInvitations: dashboardSummary.acceptedInvitations,
+              profileVisitors: Number(user?.profileViews || 0),
+              packageName: user?.activePackage?.name || "Free",
+              packageType: user?.activePackage?.type || "",
+              packageValidTill: user?.activePackage?.validTill || "",
+              usedConnects: Number(user?.creditsUsed || user?.activePackage?.usedCredits || 0),
+              availableConnects: Number(user?.connectsBalance || user?.activePackage?.creditsRemaining || 0),
+              pendingVerification: dashboardSummary.pendingVerification,
+            }} />
           ) : (
             <>
               <div className="sticky top-[66px] z-[60] rounded-none border-b border-slate-200 bg-white lg:rounded-md">
