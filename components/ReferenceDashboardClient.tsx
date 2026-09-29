@@ -194,7 +194,12 @@ export default function ReferenceDashboardClient() {
         setAuthChecked(true);
         return;
       }
-      const userData = await response.json();
+      const rawUserData = await response.json();
+      const userData =
+        rawUserData?.user ||
+        rawUserData?.data?.user ||
+        rawUserData?.data ||
+        rawUserData;
       const packageData = packageResponse?.ok ? await packageResponse.json().catch(() => ({})) : {};
       setUser({
         ...userData,
@@ -917,7 +922,7 @@ export default function ReferenceDashboardClient() {
       <InvestmentPostFormModal
         isOpen={postModalOpen}
         onClose={() => {
-          if (!user && (!Cookies.get("token") || isHomePostEntry)) {
+          if (!Cookies.get("token")) {
             window.location.href = "https://shadamoninvest.vercel.app/";
             return;
           }
