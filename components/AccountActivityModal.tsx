@@ -1368,12 +1368,6 @@ I have sent my CV for your review.`;
                     </div>
                 </div>
 
-                {activeTab === 'Dashboard' && isOwnAccount && (
-                    <div className="px-1 sm:px-0 pb-40">
-                        <DashboardOverview summary={dashboardSummary} />
-                    </div>
-                )}
-
                 {/* Content Area */}
                 <div className="flex-1 overflow-y-auto bg-[#F1F5F9] relative">
                     {loading && (
@@ -1381,6 +1375,12 @@ I have sent my CV for your review.`;
                             <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
                         </div>
                     )}
+                    {activeTab === 'Dashboard' && isOwnAccount && (
+                        <div className="px-1 sm:px-0 pb-40">
+                            <DashboardOverview summary={dashboardSummary} />
+                        </div>
+                    )}
+
                     {activeTab === 'Page' && (
                         <div className="px-1 sm:px-0 pb-40">
                             {/* Banner & Profile Section */}
