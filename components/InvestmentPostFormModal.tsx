@@ -5,6 +5,7 @@ import Cookies from "js-cookie";
 import { ArrowLeft, Check, ImagePlus, Loader2, MapPin, Pencil, Plus, X } from "lucide-react";
 import toast from "react-hot-toast";
 import { API_BASE_URL } from "../utils/apiConfig";
+import LoginModal from "./LoginModal";
 import { getImageUrl } from "../utils/imageUrl";
 
 type InvestmentRole = "investor" | "business_owner";
@@ -111,6 +112,7 @@ export default function InvestmentPostFormModal({
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showExistingAccountLogin, setShowExistingAccountLogin] = useState(false);
 
   const priceFields = useMemo(
     () =>
@@ -125,6 +127,10 @@ export default function InvestmentPostFormModal({
   );
 
   const roleLabel = postRole === "investor" ? "Investor" : "Business Owner";
+
+  const isInvestHomeEntry =
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("source") === "invest-home";
 
   useEffect(() => {
     if (!isOpen) return;
@@ -770,6 +776,18 @@ export default function InvestmentPostFormModal({
           )}
         </div>
 
+        {isInvestHomeEntry && !isAuthenticated ? (
+          <div className="border-t border-slate-100 bg-white px-4 py-3 sm:px-6">
+            <button
+              type="button"
+              onClick={() => setShowExistingAccountLogin(true)}
+              className="text-xs font-bold text-emerald-700 hover:text-emerald-800 hover:underline"
+            >
+              Already have an account — Login?
+            </button>
+          </div>
+        ) : null}
+
         <div className="flex items-center justify-between gap-3 border-t border-slate-200 bg-white px-4 py-3 sm:px-6">
           <div className="text-[11px] text-slate-500">
             Your post will go to admin review first.
@@ -784,6 +802,31 @@ export default function InvestmentPostFormModal({
             {submitting ? "Posting..." : "Post"}
           </button>
         </div>
+      <LoginModal
+        isOpen={showExistingAccountLogin}
+        onClose={() => setShowExistingAccountLogin(false)}
+        initialMobile={phone}
+        onSwitchToRegister={() => setShowExistingAccountLogin(false)}
+        onSuccess={async () => {
+          setShowExistingAccountLogin(false);
+          const token = Cookies.get("token") || "";
+          if (!token) return;
+          try {
+            const response = await fetch(API_BASE_URL + "/api/user/me", {
+              headers: { Authorization: "Bearer " + token },
+              cache: "no-store",
+            });
+            const me = await response.json().catch(() => ({}));
+            if (response.ok && me?._id) {
+              setIsAuthenticated(true);
+              setUserName(me.name || me.storeName || userName);
+              setPhone(me.mobile || phone);
+            }
+          } finally {
+            window.dispatchEvent(new Event("auth-change"));
+          }
+        }}
+      />
       </div>
     </div>
   );
