@@ -322,7 +322,6 @@ export default function InvestmentPostFormModal({
                   <div className="rounded border border-slate-300 px-2 py-1 text-slate-500">
                     {selectedLocation || "ঢাকা, বাংলাদেশ"}
                   </div>
-                  <button type="button" onClick={() => setPostModalOpen?.(false)} className="hidden" />
                   <span className="rounded px-2 py-1 font-bold text-emerald-600">পাবলিশ</span>
                 </div>
 
