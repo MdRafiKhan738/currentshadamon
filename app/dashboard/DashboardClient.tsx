@@ -62,6 +62,7 @@ import { getNonHighlightLabels, hasHighlightLabel } from "../../utils/labels";
 import { INFO_PAGE_ROUTES } from "@/utils/infoContent";
 import Image from "next/image";
 import LatestFreeAdPromo from "../../components/LatestFreeAdPromo";
+import AdDisplay from "../../components/AdDisplay";
 import InvestmentPostCard from "../../components/InvestmentPostCard";
 import DashboardOverview from "../../components/DashboardOverview";
 
@@ -1657,6 +1658,8 @@ export default function DashboardClient() {
               <ArrowRight className="w-5 h-5" strokeWidth={2.5} />
             </button>
           </div>
+        <AdDisplay positionId={2} className="bg-white rounded-lg overflow-hidden" />
+
         </div>
 
         {!filters.category &&
