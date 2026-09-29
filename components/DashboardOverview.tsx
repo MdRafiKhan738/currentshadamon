@@ -179,22 +179,19 @@ export default function DashboardOverview({
           <div className="px-1.5 py-1 text-left">
             <div className="text-[10px] font-medium text-slate-700">{summary.pendingInvitations}</div>
             <div className="text-[7px] leading-3 text-slate-500">
-              {language === "bn" ? "অপেক্ষমাণ আমন্ত্রণ" : "Pending
-Invitations"}
+              {language === "bn" ? "অপেক্ষমাণ আমন্ত্রণ" : <>Pending<br />Invitations</>}
             </div>
           </div>
           <div className="px-1.5 py-1 text-left">
             <div className="text-[10px] font-medium text-slate-700">{summary.acceptedInvitations}</div>
             <div className="text-[7px] leading-3 text-slate-500">
-              {language === "bn" ? "গৃহীত আমন্ত্রণ" : "Accepted
-Invitations"}
+              {language === "bn" ? "গৃহীত আমন্ত্রণ" : <>Accepted<br />Invitations</>}
             </div>
           </div>
           <div className="px-1.5 py-1 text-left">
             <div className="text-[10px] font-medium text-slate-700">{summary.profileVisitors}</div>
             <div className="text-[7px] leading-3 text-slate-500">
-              {language === "bn" ? "মোট ভিজিটর" : "Total
-Visitors"}
+              {language === "bn" ? "মোট ভিজিটর" : <>Total<br />Visitors</>}
             </div>
           </div>
         </div>
@@ -212,8 +209,7 @@ Visitors"}
               {summary.usedConnects}
             </div>
             <div className="text-[7px] leading-3 text-slate-500">
-              {language === "bn" ? "Used Connect" : "Used
-Connect"}
+              {language === "bn" ? "Used Connect" : <>Used<br />Connect</>}
             </div>
           </div>
           <div className="px-1.5 py-1">
@@ -224,8 +220,7 @@ Connect"}
               <LockKeyhole className="h-3 w-3 text-[#ef294b]" />
             </div>
             <div className="text-[7px] leading-3 text-slate-500">
-              {language === "bn" ? "Unused Connect" : "Unused
-Connect"}
+              {language === "bn" ? "Unused Connect" : <>Unused<br />Connect</>}
             </div>
           </div>
         </div>
