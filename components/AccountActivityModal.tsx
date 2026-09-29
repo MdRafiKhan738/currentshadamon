@@ -69,7 +69,18 @@ interface AccountActivityModalProps {
 export default function AccountActivityModal({ isOpen, onClose, userId, onOpenPostAd, onEditAd, initialTab = 'Dashboard' }: AccountActivityModalProps) {
     const router = useRouter();
     const [activeTab, setActiveTab] = useState<'Dashboard' | 'Page' | 'Profile' | 'Settings' | 'Post' | 'Activity'>(initialTab);
-    const [dashboardSummary, setDashboardSummary] = useState({
+    const [dashboardSummary, setDashboardSummary] = useState<{
+        pendingProposals: number;
+        acceptedProposals: number;
+        pendingInvitations: number;
+        profileVisitors: number;
+        packageName: string;
+        packageType: string;
+        packageValidTill: string;
+        usedConnects: number;
+        availableConnects: number;
+        pendingVerification: number;
+    }>({
         pendingProposals: 0,
         acceptedProposals: 0,
         pendingInvitations: 0,
