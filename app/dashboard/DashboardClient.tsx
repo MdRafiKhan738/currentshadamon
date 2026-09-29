@@ -298,6 +298,8 @@ export default function DashboardClient() {
     pendingInvitations: 0,
     profileVisitors: 0,
     packageName: "Free",
+    packageType: "",
+    packageValidTill: "",
     usedConnects: 0,
     availableConnects: 0,
     pendingVerification: 0,
@@ -399,6 +401,8 @@ export default function DashboardClient() {
           pendingInvitations: (invites.received || []).filter((item: any) => item.status === "pending").length,
           profileVisitors: Number(me.profileViews || 0),
           packageName: me.activePackage?.name || me.merchantType || "Free",
+          packageType: me.activePackage?.type || "",
+          packageValidTill: me.activePackage?.validTill || me.validityDate || "",
           usedConnects: Number(me.creditsUsed || me.activePackage?.usedCredits || 0),
           availableConnects: Number(me.connectsBalance || me.activePackage?.creditsRemaining || 0),
           pendingVerification: Array.isArray(myAds.data)
@@ -414,9 +418,11 @@ export default function DashboardClient() {
     const refreshSummary = () => loadDashboardSummary();
     window.addEventListener("auth-change", refreshSummary);
     window.addEventListener("connect-balance-updated", refreshSummary);
+    window.addEventListener("package-updated", refreshSummary);
     return () => {
       window.removeEventListener("auth-change", refreshSummary);
       window.removeEventListener("connect-balance-updated", refreshSummary);
+      window.removeEventListener("package-updated", refreshSummary);
     };
   }, []);
 
