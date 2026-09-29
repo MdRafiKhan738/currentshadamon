@@ -64,6 +64,7 @@ interface InvestmentPostFormModalProps {
   initialRole?: InvestmentRole;
   initialCategory?: string;
   initialSubCategory?: string;
+  referenceDesign?: boolean;
 }
 
 function normalizeRole(value?: string): InvestmentRole {
@@ -91,6 +92,7 @@ export default function InvestmentPostFormModal({
   initialRole,
   initialCategory = "",
   initialSubCategory = "",
+  referenceDesign = false,
 }: InvestmentPostFormModalProps) {
   const [postRole, setPostRole] = useState<InvestmentRole>(normalizeRole(initialRole));
   const [categories, setCategories] = useState<Category[]>([]);
@@ -273,6 +275,209 @@ export default function InvestmentPostFormModal({
   }, [isOpen]);
 
   if (!isOpen) return null;
+
+  if (referenceDesign) {
+    const renderPriceField = (field: PriceField) => (
+      <label key={field.key} className="block rounded-md border border-slate-300 bg-white px-3 py-2">
+        <span className="block truncate text-[9px] font-medium text-slate-500">
+          {field.label || field.labelBn || field.key}
+        </span>
+        <input
+          type={field.inputType === "text" ? "text" : "number"}
+          value={priceValues[field.key] || ""}
+          onChange={(event) =>
+            setPriceValues((previous) => ({ ...previous, [field.key]: event.target.value }))
+          }
+          placeholder={field.placeholder || field.placeholderBn || ""}
+          className="mt-1 w-full bg-transparent text-sm font-semibold text-slate-900 outline-none placeholder:text-slate-300"
+        />
+      </label>
+    );
+
+    return (
+      <div className="fixed inset-0 z-[1900] flex items-center justify-center bg-black/50 p-2 sm:p-4">
+        <div className="relative flex max-h-[96vh] w-full max-w-[560px] flex-col overflow-hidden rounded-[4px] bg-white shadow-2xl">
+          <div className="flex items-center justify-between border-b border-slate-200 px-3 py-2.5">
+            <button type="button" onClick={onClose} className="flex items-center gap-1.5 text-xs font-semibold text-slate-700">
+              <ArrowLeft className="h-4 w-4" />
+              পোস্ট করুন
+            </button>
+            <button type="button" onClick={onClose} className="rounded-full p-1 text-slate-500 hover:bg-slate-100">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+
+          {loadingData ? (
+            <div className="flex min-h-[520px] items-center justify-center text-xs text-slate-400">
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              Loading...
+            </div>
+          ) : (
+            <>
+              <div className="overflow-y-auto px-3 pb-3 pt-2">
+                <div className="grid grid-cols-[1fr_1fr_auto] items-center gap-1.5 border-b border-slate-200 pb-2 text-[9px]">
+                  <button type="button" onClick={() => setShowCategoryPicker(true)} className="rounded border border-slate-300 px-2 py-1 text-left font-semibold text-slate-700">
+                    {selectedCategory?.name || "Category"} · {selectedSubCategory?.name || "Subcategory"}
+                  </button>
+                  <div className="rounded border border-slate-300 px-2 py-1 text-slate-500">
+                    {selectedLocation || "ঢাকা, বাংলাদেশ"}
+                  </div>
+                  <button type="button" onClick={() => setPostModalOpen?.(false)} className="hidden" />
+                  <span className="rounded px-2 py-1 font-bold text-emerald-600">পাবলিশ</span>
+                </div>
+
+                <div className="mt-3">
+                  <div className="text-[10px] font-semibold text-slate-500">আপনার ব্যবসা সম্পর্কে কিছু দিন</div>
+                  <div className="mt-2 overflow-hidden rounded border border-slate-300 bg-slate-50">
+                    <div className="flex min-h-[82px] items-center justify-center">
+                      {previewImage ? (
+                        <img src={previewImage} alt="Post" className="h-[96px] w-[150px] object-cover" />
+                      ) : (
+                        <div className="flex flex-col items-center gap-1 text-slate-400">
+                          <ImagePlus className="h-7 w-7" />
+                          <span className="text-[9px]">আপনার ছবি যোগ করুন</span>
+                        </div>
+                      )}
+                    </div>
+                    <label className="flex cursor-pointer items-center justify-center gap-1 border-t border-slate-200 bg-white px-2 py-1.5 text-[9px] font-semibold text-slate-700">
+                      <Plus className="h-3.5 w-3.5" /> ছবি যোগ করুন
+                      <input type="file" accept="image/*" multiple className="hidden" onChange={handleImageChange} />
+                    </label>
+                  </div>
+                </div>
+
+                <div className="mt-3 rounded border border-slate-300">
+                  <div className="flex items-center gap-2 border-b border-slate-200 bg-white px-2.5 py-1.5">
+                    <span className={postRole === "investor" ? "rounded-full bg-violet-100 px-2 py-1 text-[9px] font-bold text-violet-700" : "rounded-full bg-emerald-100 px-2 py-1 text-[9px] font-bold text-emerald-700"}>
+                      {postRole === "investor" ? "I wanna invest" : "I need investment"}
+                    </span>
+                    <span className="text-[9px] text-slate-400">ক্যাটাগরি অটো-সিলেক্টেড</span>
+                  </div>
+
+                  <select
+                    value={selectedLocation}
+                    onChange={(event) => { setSelectedLocation(event.target.value); setSelectedSubLocation(""); }}
+                    className="w-full border-b border-slate-200 bg-white px-2.5 py-2 text-[11px] font-semibold outline-none"
+                    required
+                  >
+                    <option value="">লোকেশন নির্বাচন করুন *</option>
+                    {locations.map((location) => <option key={location._id} value={location.name}>{location.name}</option>)}
+                  </select>
+
+                  <select
+                    value={selectedSubLocation}
+                    onChange={(event) => setSelectedSubLocation(event.target.value)}
+                    className="w-full border-b border-slate-200 bg-white px-2.5 py-2 text-[11px] outline-none"
+                    required
+                    disabled={!selectedLocation}
+                  >
+                    <option value="">সাব-লোকেশন নির্বাচন করুন *</option>
+                    {subLocations.filter((item) => {
+                      const parent = typeof item.location === "object" ? item.location?._id : item.location;
+                      const selected = locations.find((location) => location.name === selectedLocation);
+                      return !parent || parent === selected?._id;
+                    }).map((item) => <option key={item._id} value={item.name}>{item.name}</option>)}
+                  </select>
+
+                  <input
+                    value={headline}
+                    onChange={(event) => setHeadline(event.target.value)}
+                    placeholder={postRole === "investor" ? "Want to invest 50 Lacs" : "Need investment for my business"}
+                    className="w-full border-b border-slate-200 bg-white px-2.5 py-2.5 text-sm font-semibold outline-none placeholder:text-slate-300"
+                    required
+                  />
+                  <textarea
+                    value={description}
+                    onChange={(event) => setDescription(event.target.value)}
+                    placeholder="আপনার পোস্টের বিস্তারিত লিখুন..."
+                    rows={5}
+                    className="w-full resize-none bg-white px-2.5 py-2.5 text-[11px] leading-5 outline-none placeholder:text-slate-300"
+                    required
+                  />
+                </div>
+
+                {hasPriceBox && (
+                  <div className="mt-3 overflow-hidden rounded border border-slate-300">
+                    <div className="grid grid-cols-3 divide-x divide-slate-200 bg-slate-50">
+                      {priceFields.slice(0, 3).map((field) => renderPriceField(field))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="mt-3 rounded border border-slate-300 bg-white">
+                  <input
+                    value={phone}
+                    onChange={(event) => setPhone(event.target.value.replace(/\D/g, "").slice(0, 11))}
+                    inputMode="numeric"
+                    placeholder="01XXXXXXXXX"
+                    className="w-full border-b border-slate-200 px-3 py-2 text-[11px] outline-none"
+                    required
+                  />
+                  <div className="flex items-center gap-2 px-2 py-1.5">
+                    <input type="text" placeholder="আপনার ওয়েবসাইট / ফেসবুক লিংক" className="min-w-0 flex-1 text-[10px] outline-none" />
+                    <select className="rounded border border-slate-200 px-1.5 py-1 text-[9px] text-slate-600">
+                      <option>WhatsApp</option>
+                      <option>Call</option>
+                    </select>
+                    <button type="button" className="flex h-6 w-6 items-center justify-center rounded-full border border-slate-300 text-slate-500">
+                      <Plus className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {isInvestHomeEntry && !isAuthenticated ? (
+                <div className="border-t border-slate-100 px-3 py-2 text-[9px] text-slate-500">
+                  <button type="button" onClick={() => setShowExistingAccountLogin(true)} className="font-bold text-emerald-700 hover:underline">
+                    Already have an account — Login?
+                  </button>
+                </div>
+              ) : null}
+
+              <div className="border-t border-slate-200 bg-white px-3 py-2.5">
+                <label className="flex items-start gap-1.5 text-[8px] leading-3 text-slate-500">
+                  <input type="checkbox" defaultChecked className="mt-[1px] h-3 w-3" />
+                  <span>আমি নিশ্চিত করছি যে আমার দেওয়া তথ্য সঠিক এবং Shadamon-এর নীতিমালা মেনে পোস্ট করছি।</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={handleSubmit}
+                  disabled={submitting || loadingData}
+                  className="mt-2 w-full rounded bg-[#111111] px-4 py-2.5 text-[11px] font-bold text-white disabled:opacity-50"
+                >
+                  {submitting ? "Posting..." : "পোস্ট করুন"}
+                </button>
+              </div>
+            </>
+          )}
+
+          <LoginModal
+            isOpen={showExistingAccountLogin}
+            onClose={() => setShowExistingAccountLogin(false)}
+            initialMobile={phone}
+            onSwitchToRegister={() => setShowExistingAccountLogin(false)}
+            onSuccess={async () => {
+              setShowExistingAccountLogin(false);
+              const token = Cookies.get("token") || "";
+              if (!token) return;
+              try {
+                const response = await fetch(API_BASE_URL + "/api/user/me", { headers: { Authorization: "Bearer " + token }, cache: "no-store" });
+                const me = await response.json().catch(() => ({}));
+                if (response.ok && me?._id) {
+                  setIsAuthenticated(true);
+                  setUserName(me.name || me.storeName || userName);
+                  setPhone(me.mobile || phone);
+                  onClose();
+                }
+              } finally {
+                window.dispatchEvent(new Event("auth-change"));
+              }
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
 
   const handleSelectSubCategory = (category: Category, subCategory: SubCategory) => {
     setSelectedCategory(category);
