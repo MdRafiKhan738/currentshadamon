@@ -33,7 +33,7 @@ export const getSharedSocket = (userId: string) => {
     return sharedSocket;
   }
   if (sharedSocket) sharedSocket.disconnect();
-  sharedSocket = io(API_BASE_URL.replace(/\\/api\\/?$/, ""), { transports: ["websocket", "polling"] });
+  sharedSocket = io(API_BASE_URL.replace(/\/api\/?$/, ""), { transports: ["websocket", "polling"] });
   sharedSocketUserId = normalized;
   const setup = () => sharedSocket?.emit("setup", { id: normalized });
   sharedSocket.on("connect", setup);
