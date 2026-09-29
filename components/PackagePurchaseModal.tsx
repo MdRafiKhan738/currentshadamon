@@ -28,11 +28,11 @@ const getDiscount = (item: PackageOption) => {
 
 function FeatureRows({ item }: { item: PackageOption }) {
   const checked = useMemo(
-    () => (item.checkedFeatures || []).map((x) => String(x).trim()).filter(Boolean),
+    () => (item.checkedFeatures || []).flatMap((x) => String(x).split(/[,\n]/)).map((x) => x.trim()).filter(Boolean),
     [item.checkedFeatures],
   );
   const unchecked = useMemo(
-    () => (item.uncheckedFeatures || []).map((x) => String(x).trim()).filter(Boolean),
+    () => (item.uncheckedFeatures || []).flatMap((x) => String(x).split(/[,\n]/)).map((x) => x.trim()).filter(Boolean),
     [item.uncheckedFeatures],
   );
 
