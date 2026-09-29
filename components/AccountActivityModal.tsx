@@ -909,11 +909,19 @@ I have sent my CV for your review.`;
 
         window.addEventListener('realtime-ad-changed', handleRefresh);
         window.addEventListener('refresh-ads', handleRefresh);
+        const handlePackageSync = () => {
+            if (isOpen && !userId) fetchUserData();
+        };
+
         window.addEventListener('auth-change', handleAuthSync);
+        window.addEventListener('package-updated', handlePackageSync);
+        window.addEventListener('connect-balance-updated', handlePackageSync);
         return () => {
             window.removeEventListener('realtime-ad-changed', handleRefresh);
             window.removeEventListener('refresh-ads', handleRefresh);
             window.removeEventListener('auth-change', handleAuthSync);
+            window.removeEventListener('package-updated', handlePackageSync);
+            window.removeEventListener('connect-balance-updated', handlePackageSync);
         };
     }, [isOpen, userId, initialTab, t]);
 
