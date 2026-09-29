@@ -622,7 +622,20 @@ export default function ReferenceDashboardClient() {
               <div className="sticky top-[66px] z-[60] rounded-none border-b border-slate-200 bg-white lg:rounded-md">
                 <div className="grid grid-cols-3 divide-x divide-slate-100">
                   <button onClick={() => { setFilterOpen(true); setActiveSelector("category"); }} className="flex items-center justify-center gap-2 px-3 py-2.5 text-xs font-medium hover:bg-slate-50"><GridIcon />{filters.category || "Select Category"}</button>
-                  <button onClick={() => { setFilterOpen(true); setActiveSelector("location"); }} className="flex items-center justify-center gap-2 px-3 py-2.5 text-xs font-medium hover:bg-slate-50"><MapPin className="h-4 w-4" />{filters.location || "Location"}</button>
+                  <button
+                    onClick={() => { setFilterOpen(true); setActiveSelector("location"); }}
+                    className="flex min-w-0 items-center justify-center gap-1.5 px-3 py-2.5 text-xs font-medium hover:bg-slate-50"
+                  >
+                    <MapPin className="h-4 w-4 shrink-0" />
+                    <span className="min-w-0 truncate">
+                      {filters.location
+                        ? `${filters.location}${filters.subLocation ? `, ${filters.subLocation}` : ""}`
+                        : "Location"}
+                    </span>
+                    <span className="shrink-0 text-[9px] text-slate-400">
+                      ({displayPosts.length + displayFreeAds.length})
+                    </span>
+                  </button>
                   <button onClick={() => setFilterOpen(true)} className="flex items-center justify-center gap-2 px-3 py-2.5 text-xs font-medium hover:bg-slate-50"><SlidersHorizontal className="h-4 w-4" />Filter</button>
                 </div>
               </div>
@@ -686,6 +699,10 @@ export default function ReferenceDashboardClient() {
                 <AdDisplay positionId={2} className="rounded-lg bg-white" />
               </div>
 
+              <div className="mt-3">
+                <LatestFreeAdPromo />
+              </div>
+
               <div className="mt-3 space-y-3">
                 {loading ? (
                   <div className="rounded-lg bg-white p-12 text-center text-sm text-slate-400">Loading posts...</div>
@@ -722,8 +739,6 @@ export default function ReferenceDashboardClient() {
                         onOpen={() => openAdDetails(ad)}
                       />
                     ))}
-
-                    <LatestFreeAdPromo />
 
                     <AdDisplay positionId={3} className="rounded-lg bg-white" />
                   </>
@@ -803,9 +818,15 @@ export default function ReferenceDashboardClient() {
               <button onClick={() => setIsMobileMenuOpen(false)}><X className="h-5 w-5" /></button>
             </div>
             <div className="mt-4 space-y-1">
-              <button onClick={() => { setIsMobileMenuOpen(false); openPostFlow(); }} className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-sm font-semibold"><FileText className="h-4 w-4" />Post</button>
-              <button onClick={() => { setIsMobileMenuOpen(false); openAccount("Activity"); }} className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-sm font-semibold"><Activity className="h-4 w-4" />Activity</button>
-              <button onClick={() => { setIsMobileMenuOpen(false); setPackageOpen(true); }} className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-sm font-semibold"><Package className="h-4 w-4" />{activePackage?.name || "Package"}</button>
+              <button onClick={() => { setIsMobileMenuOpen(false); setMessageOpen(true); }} className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-sm font-semibold"><Inbox className="h-4 w-4" />{language === "bn" ? "ইনবক্স" : "Inbox"}</button>
+              <button onClick={() => { setIsMobileMenuOpen(false); openAccount("Dashboard"); }} className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-sm font-semibold"><UserPlus className="h-4 w-4" />{language === "bn" ? "প্রস্তাব" : "Proposals"}</button>
+              <button onClick={() => { setIsMobileMenuOpen(false); openAccount("Profile"); }} className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-sm font-semibold"><User className="h-4 w-4" />{language === "bn" ? "প্রোফাইল" : "Profile"}</button>
+              <button onClick={() => { setIsMobileMenuOpen(false); openPostFlow(); }} className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-sm font-semibold"><FileText className="h-4 w-4" />{language === "bn" ? "পোস্ট" : "Post"}</button>
+              <button onClick={() => { setIsMobileMenuOpen(false); openAccount("Activity"); }} className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-sm font-semibold"><Activity className="h-4 w-4" />{language === "bn" ? "অ্যাক্টিভিটি" : "Activity"}</button>
+              <button onClick={() => { setIsMobileMenuOpen(false); openAccount("Activity"); }} className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-sm font-semibold"><Heart className="h-4 w-4" />{language === "bn" ? "ফেভারিট" : "Favourite"}</button>
+              <button onClick={() => { setIsMobileMenuOpen(false); openAccount("Dashboard"); }} className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-sm font-semibold"><UserPlus className="h-4 w-4" />{language === "bn" ? "আমন্ত্রণ" : "Invite"}</button>
+              <button onClick={() => { setIsMobileMenuOpen(false); setPromoteOpen(true); }} className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-sm font-semibold"><Megaphone className="h-4 w-4" />{language === "bn" ? "প্রমোট" : "Promote"}</button>
+              <button onClick={() => { setIsMobileMenuOpen(false); setPackageOpen(true); }} className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-sm font-semibold"><Package className="h-4 w-4" />{language === "bn" ? "প্যাকেজ" : "Package"}</button>
             </div>
           </div>
         </div>
