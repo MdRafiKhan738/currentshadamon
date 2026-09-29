@@ -388,7 +388,7 @@ export default function AdDetailsModal({
     const ownerId = typeof ad.user === "object" ? ad.user?._id : ad.user;
     if (String(ownerId) === String(currentUserId)) return true;
     try {
-      const response = await fetch(API_BASE_URL + "/api/connect/unlock-post", {
+      const response = await fetch(API_BASE_URL + "/api/connects/unlock-post", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
         body: JSON.stringify({ adId: ad._id, actionType }),
@@ -499,7 +499,7 @@ export default function AdDetailsModal({
 
     setRevealingPhone(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/connect/reveal-phone`, {
+      const response = await fetch(`${API_BASE_URL}/api/connects/reveal-phone`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
