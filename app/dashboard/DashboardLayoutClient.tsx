@@ -986,7 +986,7 @@ export default function DashboardLayoutClient({
       setIsMobileEntryModalOpen(true);
     } else {
       setViewingUserId(undefined);
-      setAccountModalInitialTab("Post");
+      setAccountModalInitialTab("Dashboard");
       setIsAccountModalOpen(true);
     }
   };
