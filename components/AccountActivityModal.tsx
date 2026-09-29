@@ -75,6 +75,8 @@ export default function AccountActivityModal({ isOpen, onClose, userId, onOpenPo
         pendingInvitations: 0,
         profileVisitors: 0,
         packageName: 'Free',
+        packageType: '',
+        packageValidTill: '',
         usedConnects: 0,
         availableConnects: 0,
         pendingVerification: 0,
