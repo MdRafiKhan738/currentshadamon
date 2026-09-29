@@ -25,7 +25,7 @@ export default function ProposalModal({ isOpen, onClose }: { isOpen: boolean; on
 
   useEffect(() => { if (isOpen) load(); }, [isOpen]);
 
-  const update = async (id: string, status: "accepted" | "rejected") => {
+  const update = async (id: string, status: "accepted" | "rejected" | "cancelled") => {
     const token = Cookies.get("token");
     if (!token) return;
     const res = await fetch(API_BASE_URL + "/api/proposals/" + id, {
@@ -68,7 +68,7 @@ export default function ProposalModal({ isOpen, onClose }: { isOpen: boolean; on
                     <div className="mt-3 grid grid-cols-1 gap-2 border-t border-slate-200 pt-3 text-[11px] text-slate-500 sm:grid-cols-2">
                       <div><span className="font-semibold text-slate-700">Post:</span> {p.adId.headline || "Investment post"}</div>
                       <div><span className="font-semibold text-slate-700">Type:</span> {p.proposalType || "investment"}</div>
-                      {p.adId.priceBoxFields?.map((field: any) => {
+                      {(p.adId.priceBoxFields || p.adId.features?.priceBoxFields || []).map((field: any) => {
                         const values = p.adId.priceBoxValues || p.adId.features?.priceBoxValues || {};
                         const value = values[field.key];
                         return value != null && String(value).trim() ? (
