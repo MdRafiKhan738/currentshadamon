@@ -557,7 +557,7 @@ export default function InvestmentPostFormModal({
                       </div>
                     ))}
                   </div>
-                ) : null;
+                ) : null}
 
                 <div className="mt-3">
                   <div className="text-[10px] font-semibold text-slate-500">আপনার ব্যবসা সম্পর্কে কিছু দিন</div>
