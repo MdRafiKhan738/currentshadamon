@@ -153,8 +153,8 @@ export default function DashboardLayoutClient({
   const [tempMobile, setTempMobile] = useState<string>("");
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
   const [accountModalInitialTab, setAccountModalInitialTab] = useState<
-    "Page" | "Profile" | "Settings" | "Post" | "Activity"
-  >("Page");
+    "Dashboard" | "Page" | "Profile" | "Settings" | "Post" | "Activity"
+  >("Dashboard");
   const [viewingUserId, setViewingUserId] = useState<string | undefined>(
     undefined,
   );
@@ -767,7 +767,7 @@ export default function DashboardLayoutClient({
     const token = Cookies.get("token");
 
     if (openPromoteTab === "true" && token) {
-      setAccountModalInitialTab("Post");
+      setAccountModalInitialTab("Dashboard");
       setIsAccountModalOpen(true);
       const params = new URLSearchParams(window.location.search);
       params.delete("openPromoteTab");
@@ -1892,7 +1892,7 @@ export default function DashboardLayoutClient({
         initialTab={accountModalInitialTab}
         onClose={() => {
           setIsAccountModalOpen(false);
-          setAccountModalInitialTab("Page");
+          setAccountModalInitialTab("Dashboard");
           setViewingUserId(undefined);
           const params = new URLSearchParams(window.location.search);
           params.delete("profile");
