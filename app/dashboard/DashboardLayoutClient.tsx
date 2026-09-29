@@ -657,12 +657,12 @@ export default function DashboardLayoutClient({
           window.dispatchEvent(new CustomEvent("realtime-ad-changed", { detail: payload }));
         };
 
-        realtimeSocket.off("notification received");
-        realtimeSocket.off("credit balance updated");
-        realtimeSocket.off("ad status changed");
-        realtimeSocket.off("ad created");
-        realtimeSocket.off("ad updated");
-        realtimeSocket.off("ad deleted");
+
+
+
+
+
+
         realtimeSocket.on("notification received", notificationHandler);
         realtimeSocket.on("credit balance updated", creditHandler);
         realtimeSocket.on("ad status changed", adHandler);
