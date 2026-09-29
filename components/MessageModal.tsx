@@ -75,24 +75,29 @@ export default function MessageModal({ isOpen, onClose, onOpenChat }: MessageMod
             return () => window.removeEventListener('refresh-unread-count', handleRefresh);
         }
 
-        socket.on('message received', (newMessage) => {
+        const handleMessageReceived = (newMessage: any) => {
             fetchConversations(searchQuery);
-        });
+        };
 
-        socket.on('seen updated', () => {
+        const handleSeenUpdated = () => {
             fetchConversations(searchQuery);
-        });
+        };
 
-        socket.on('notification received', () => {
+        const handleNotificationReceived = () => {
             fetchNotifications();
-        });
+        };
+
+        socket.on('message received', handleMessageReceived);
+        socket.on('seen updated', handleSeenUpdated);
+        socket.on('notification received', handleNotificationReceived);
 
         const handleRefresh = () => fetchConversations(searchQuery);
         window.addEventListener('refresh-unread-count', handleRefresh);
 
         return () => {
-            socket.off('message received');
-            socket.off('seen updated');
+            socket.off('message received', handleMessageReceived);
+            socket.off('seen updated', handleSeenUpdated);
+            socket.off('notification received', handleNotificationReceived);
             window.removeEventListener('refresh-unread-count', handleRefresh);
         };
     }, [socket, searchQuery]);
