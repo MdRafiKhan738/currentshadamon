@@ -1661,7 +1661,7 @@ export default function DashboardLayoutClient({
             setIsPostAdModalOpen(false);
             setAdToEdit(null);
             setSidebarPostRole(undefined);
-            if (searchParams.get("source") === "invest-home") {
+            if (isPublicInvestmentEntry) {
               window.location.replace(INVEST_HOME_URL);
             }
           }}
