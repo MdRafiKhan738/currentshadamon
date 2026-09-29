@@ -186,7 +186,7 @@ export default function PackagePurchaseModal({
                         {isBoth ? "You & your suitable contacts" : "Only you can see contact info"} · {credits.toLocaleString()} Connects
                       </div>
 
-                      <FeatureRows item={item} />
+                      <div className="max-h-[178px] overflow-y-auto pr-1"><FeatureRows item={item} /></div>
 
                       <button
                         onClick={() => purchase(item)}
