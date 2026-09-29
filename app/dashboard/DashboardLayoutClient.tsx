@@ -612,7 +612,6 @@ export default function DashboardLayoutClient({
         setUnreadCount(0);
         disconnectSharedSocket();
         setSocket(null);
-        if (!isPublicInvestmentEntry) window.location.replace(INVEST_HOME_URL);
         return;
       }
 
@@ -626,7 +625,6 @@ export default function DashboardLayoutClient({
           setUser(null);
           disconnectSharedSocket();
           setSocket(null);
-          if (!isPublicInvestmentEntry) window.location.replace(INVEST_HOME_URL);
           return;
         }
 
@@ -1209,7 +1207,7 @@ export default function DashboardLayoutClient({
       {/* Main Content Area */}
       <main
         id="main-dashboard-scroller"
-        className="flex-1 w-full overflow-y-auto overflow-x-hidden"
+        className={cn("flex-1 w-full overflow-y-auto overflow-x-hidden", !user && "blur-[3px] pointer-events-none select-none")}
         onScroll={(e) => {
           const scrollTop = e.currentTarget.scrollTop;
           const clamped = Math.min(scrollTop, 64);
@@ -1710,6 +1708,10 @@ export default function DashboardLayoutClient({
             }
           }}
         />
+      )}
+
+      {!user && (
+        <div className="fixed inset-0 z-[900] bg-white/25 backdrop-blur-[2px] pointer-events-auto" aria-hidden="true" />
       )}
 
       {isPostChoiceOpen && !requestedInvestmentRole && !sidebarPostRole && (
