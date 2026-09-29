@@ -130,7 +130,10 @@ export default function InvestmentPostFormModal({
 
   const isInvestHomeEntry =
     typeof window !== "undefined" &&
-    new URLSearchParams(window.location.search).get("source") === "invest-home";
+    (() => {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("source") === "invest-home" || params.has("role") || params.has("cat");
+    })();
 
   useEffect(() => {
     if (!isOpen) return;
