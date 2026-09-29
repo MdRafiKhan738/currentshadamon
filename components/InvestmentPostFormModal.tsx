@@ -69,10 +69,16 @@ function normalizeRole(value?: string): InvestmentRole {
   return value === "investor" ? "investor" : "business_owner";
 }
 
+function categoryRole(category?: Category | null): InvestmentRole | null {
+  if (!category) return null;
+  const value = String(category.name || "").trim().toLowerCase();
+  if (/investor|investment/.test(value)) return "investor";
+  if (/business\s*owner|business-owner|business/.test(value)) return "business_owner";
+  return null;
+}
+
 function categoryMatchesRole(category: Category, role: InvestmentRole) {
-  const value = String(category.name || "").toLowerCase();
-  if (role === "investor") return /investor|investment/.test(value);
-  return /business\s*owner|business-owner|business/.test(value);
+  return categoryRole(category) === role;
 }
 
 export default function InvestmentPostFormModal({
@@ -85,7 +91,7 @@ export default function InvestmentPostFormModal({
   initialCategory = "",
   initialSubCategory = "",
 }: InvestmentPostFormModalProps) {
-  const role = normalizeRole(initialRole);
+  const [postRole, setPostRole] = useState<InvestmentRole>(normalizeRole(initialRole));
   const [categories, setCategories] = useState<Category[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
   const [subLocations, setSubLocations] = useState<SubLocation[]>([]);
@@ -103,6 +109,8 @@ export default function InvestmentPostFormModal({
   const [loadingData, setLoadingData] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [userName, setUserName] = useState("");
+  const [password, setPassword] = useState("");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const priceFields = useMemo(
     () =>
@@ -116,7 +124,7 @@ export default function InvestmentPostFormModal({
     selectedSubCategory?.priceBoxShow && priceFields.length > 0,
   );
 
-  const roleLabel = role === "investor" ? "Investor" : "Business Owner";
+  const roleLabel = postRole === "investor" ? "Investor" : "Business Owner";
 
   useEffect(() => {
     if (!isOpen) return;
@@ -171,8 +179,12 @@ export default function InvestmentPostFormModal({
         setSubLocations(nextSubLocations);
 
         if (meRes?.success && meRes.data) {
+          setIsAuthenticated(true);
           setUserName(meRes.data.name || "");
           if (!initialMobile && meRes.data.mobile) setPhone(meRes.data.mobile);
+        } else {
+          setIsAuthenticated(false);
+          setUserName("");
         }
 
         const requestedCategory =
@@ -183,7 +195,7 @@ export default function InvestmentPostFormModal({
 
         const roleCategory =
           requestedCategory ||
-          nextCategories.find((item) => categoryMatchesRole(item, role));
+          nextCategories.find((item) => categoryMatchesRole(item, normalizeRole(initialRole)));
 
         if (!roleCategory) {
           toast.error(`The ${roleLabel} category is not configured in admin yet.`);
@@ -202,6 +214,8 @@ export default function InvestmentPostFormModal({
 
         setSelectedCategory(roleCategory);
         setSelectedSubCategory(nextSub);
+        const detectedRole = categoryRole(roleCategory);
+        if (detectedRole) setPostRole(detectedRole);
         if (!selectedLocation && meRes?.success && meRes.data?.lastPostLocation) {
           setSelectedLocation(meRes.data.lastPostLocation);
         }
@@ -221,7 +235,7 @@ export default function InvestmentPostFormModal({
     return () => {
       cancelled = true;
     };
-  }, [isOpen, initialCategory, initialSubCategory, initialMobile, role, roleLabel]);
+  }, [isOpen, initialCategory, initialSubCategory, initialMobile, initialRole]);
 
   useEffect(() => {
     if (!selectedSubCategory) {
@@ -245,6 +259,7 @@ export default function InvestmentPostFormModal({
       setPriceValues({});
       setSelectedSubLocation("");
       setBusinessStatus("active");
+      setPassword("");
     }
   }, [isOpen]);
 
@@ -253,6 +268,8 @@ export default function InvestmentPostFormModal({
   const handleSelectSubCategory = (category: Category, subCategory: SubCategory) => {
     setSelectedCategory(category);
     setSelectedSubCategory(subCategory);
+    const detectedRole = categoryRole(category);
+    if (detectedRole) setPostRole(detectedRole);
     setShowCategoryPicker(false);
     setPriceValues({});
   };
@@ -307,6 +324,61 @@ export default function InvestmentPostFormModal({
     setSubmitting(true);
 
     try {
+      let token = Cookies.get("token") || "";
+
+      if (!isAuthenticated) {
+        const checkResponse = await fetch(API_BASE_URL + "/api/user/check-mobile", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ mobile: cleanPhone }),
+        });
+        const checkData = await checkResponse.json().catch(() => ({}));
+
+        if (!userName.trim()) throw new Error("Please enter your name.");
+        if (!password.trim()) throw new Error("Please enter a password for your account.");
+
+        const authPayload = {
+          mobile: cleanPhone,
+          password,
+          name: userName.trim(),
+          storeName: userName.trim(),
+          category: selectedCategory.name,
+          subCategory: selectedSubCategory.name,
+          actionType: "call",
+        };
+
+        const authResponse = await fetch(
+          API_BASE_URL + (checkData?.exists ? "/api/user/login" : "/api/user/register"),
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(authPayload),
+          },
+        );
+        const authData = await authResponse.json().catch(() => ({}));
+
+        if (!authResponse.ok || !authData.token) {
+          throw new Error(authData.message || "Authentication failed");
+        }
+
+        token = authData.token;
+        Cookies.set("token", token, { expires: 7, sameSite: "lax" });
+        setIsAuthenticated(true);
+        if (authData.user?.name) setUserName(authData.user.name);
+        window.dispatchEvent(new Event("auth-change"));
+      }
+
+      if (token && userName.trim()) {
+        const profile = new FormData();
+        profile.append("name", userName.trim());
+        profile.append("storeName", userName.trim());
+        await fetch(API_BASE_URL + "/api/user/update", {
+          method: "PUT",
+          headers: { Authorization: "Bearer " + token },
+          body: profile,
+        });
+      }
+
       const formData = new FormData();
       formData.append("headline", headline.trim());
       formData.append("description", description.trim());
@@ -315,14 +387,15 @@ export default function InvestmentPostFormModal({
       formData.append("location", selectedLocation);
       formData.append("subLocation", selectedSubLocation);
       formData.append("phone", cleanPhone);
+      formData.append("name", userName.trim());
       formData.append("hidePhone", "false");
       formData.append("phoneTypes", JSON.stringify(["call"]));
       formData.append("additionalPhones", JSON.stringify([]));
-      formData.append("postRole", role);
-      if (role === "business_owner") formData.append("businessStatus", businessStatus);
+      formData.append("postRole", postRole);
+      if (postRole === "business_owner") formData.append("businessStatus", businessStatus);
       formData.append(
         "investmentReturnType",
-        role === "investor" ? "expected" : "return",
+        postRole === "investor" ? "expected" : "return",
       );
       formData.append("priceBoxValues", JSON.stringify(priceValues));
       formData.append("priceBoxFields", JSON.stringify(priceFields));
@@ -416,7 +489,7 @@ export default function InvestmentPostFormModal({
                   </div>
                   <div className="mt-1 flex flex-wrap items-center gap-2 text-base font-bold text-slate-900">
                     <span>{roleLabel}</span>
-                    {role === "business_owner" ? (
+                    {postRole === "business_owner" ? (
                       <select
                         value={businessStatus}
                         onChange={(event) => setBusinessStatus(event.target.value as "active" | "new" | "closed")}
@@ -432,11 +505,27 @@ export default function InvestmentPostFormModal({
                       </span>
                     )}
                   </div>
-                  {userName && (
-                    <div className="mt-1 text-xs text-slate-500">
-                      {userName}
+                  <div className="mt-2">
+                    <input
+                      value={userName}
+                      onChange={(event) => setUserName(event.target.value)}
+                      placeholder="Your name"
+                      className="w-full max-w-xs rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-800 outline-none focus:border-slate-400"
+                      required
+                    />
+                  </div>
+                  {!isAuthenticated ? (
+                    <div className="mt-2">
+                      <input
+                        type="password"
+                        value={password}
+                        onChange={(event) => setPassword(event.target.value)}
+                        placeholder="Password (used to log in again)"
+                        className="w-full max-w-xs rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-800 outline-none focus:border-slate-400"
+                        required
+                      />
                     </div>
-                  )}
+                  ) : null}
                 </div>
 
                 <div className="flex flex-wrap items-center justify-end gap-1.5">
