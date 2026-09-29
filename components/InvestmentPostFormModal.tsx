@@ -692,7 +692,7 @@ export default function InvestmentPostFormModal({
                     value={headline}
                     onChange={(event) => setHeadline(event.target.value)}
                     placeholder={
-                      role === "investor"
+                      postRole === "investor"
                         ? "Want to invest BDT 50 Lacs"
                         : "Want investment for my business"
                     }
