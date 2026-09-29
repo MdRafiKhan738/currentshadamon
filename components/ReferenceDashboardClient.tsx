@@ -400,6 +400,20 @@ export default function ReferenceDashboardClient() {
   }, [dashboardView, loadDashboardSummary, loadFeed, loadRightRail, loadUser]);
 
   useEffect(() => {
+    const handleDashboardLoginSuccess = async () => {
+      await loadUser();
+      setPostModalOpen(false);
+      setPostChoiceOpen(false);
+      setHomePostStarted(false);
+    };
+
+    window.addEventListener("dashboard-login-success", handleDashboardLoginSuccess);
+    return () => {
+      window.removeEventListener("dashboard-login-success", handleDashboardLoginSuccess);
+    };
+  }, [loadUser]);
+
+  useEffect(() => {
     if (searchParams.get("openModal") === "true") {
       setPostChoiceOpen(true);
     }
