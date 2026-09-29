@@ -1665,34 +1665,34 @@ export default function DashboardClient() {
           !filters.search &&
           filters.promoteTag === "All" && <LatestFreeAdPromo />}
 
+        {investmentPosts.length > 0 && (
+          <div className="space-y-4">
+            {investmentPosts.map((post) => (
+              <InvestmentPostCard
+                key={post._id}
+                post={post}
+                onOpen={() => {
+                  const params = new URLSearchParams(searchParams.toString());
+                  params.set("ad", post._id);
+                  router.push("/dashboard?" + params.toString(), { scroll: false });
+                }}
+              />
+            ))}
+          </div>
+        )}
+
         {loading ? (
           <div className="text-center py-20 pb-40">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-600 mx-auto mb-4"></div>
             <p className="text-black text-sm">{t("loading_feed")}</p>
           </div>
         ) : ads.length === 0 ? (
-          investmentPosts.length > 0 ? (
-            <div className="space-y-4">
-              {investmentPosts.map((post) => (
-                <InvestmentPostCard
-                  key={post._id}
-                  post={post}
-                  onOpen={() => {
-                    const params = new URLSearchParams(searchParams.toString());
-                    params.set("ad", post._id);
-                    router.push("/dashboard?" + params.toString(), { scroll: false });
-                  }}
-                />
-              ))}
+          <div className="bg-white rounded-none lg:rounded-2xl p-8 border border-slate-200 shadow-sm min-h-[400px] flex flex-col items-center justify-center text-black">
+            <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mb-4">
+              <Home className="w-8 h-8 text-black" />
             </div>
-          ) : (
-            <div className="bg-white rounded-none lg:rounded-2xl p-8 border border-slate-200 shadow-sm min-h-[400px] flex flex-col items-center justify-center text-black">
-              <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mb-4">
-                <Home className="w-8 h-8 text-black" />
-              </div>
-              <h3 className="text-lg font-bold text-black">{t("no_ads_yet")}</h3>
-            </div>
-          )
+            <h3 className="text-lg font-bold text-black">{t("no_ads_yet")}</h3>
+          </div>
         ) : (
           (() => {
             const displayAdsList = isViewingSavedSearch ? savedAdsData : ads;
