@@ -24,7 +24,6 @@ import {
   Activity,
   Heart,
   UserPlus,
-  LayoutDashboard,
   FilePlus2,
   Megaphone,
   // Globe,
