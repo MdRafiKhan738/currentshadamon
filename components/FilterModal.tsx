@@ -28,6 +28,7 @@ interface FilterModalProps {
   locations: LocationItem[];
   mode?: "modal" | "inline";
   containerClassName?: string;
+  postCount?: number;
 }
 
 export interface FilterState {
@@ -96,6 +97,7 @@ export default function FilterModal({
   locations,
   mode = "modal",
   containerClassName,
+  postCount,
 }: FilterModalProps) {
   const { language } = useLanguage();
   const [filters, setFilters] = useState<FilterState>(initialFilters);
@@ -219,10 +221,30 @@ export default function FilterModal({
   }, []);
 
   useEffect(() => {
-    if (isOpen) {
-      fetchCount(filters);
+    if (!isOpen) return;
+
+    const localCount = allAds.filter((ad) => {
+      if (filters.category && ad.category !== filters.category) return false;
+      if (filters.subCategory && ad.subCategory !== filters.subCategory) return false;
+      if (filters.location && ad.location !== filters.location) return false;
+      if (filters.subLocation && ad.subLocation !== filters.subLocation) return false;
+      return true;
+    }).length;
+
+    if (localCount > 0 || allAds.length > 0) {
+      setAdCount(localCount);
+      setLoadingCount(false);
+      return;
     }
-  }, [filters, isOpen, fetchCount]);
+
+    fetchCount(filters);
+  }, [filters, isOpen, allAds, fetchCount]);
+
+  useEffect(() => {
+    if (typeof postCount === "number" && postCount >= 0) {
+      setAdCount(postCount);
+    }
+  }, [postCount]);
 
   const handleReset = () => {
     const resetFilters: FilterState = {
