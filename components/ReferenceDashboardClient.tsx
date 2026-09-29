@@ -362,20 +362,6 @@ export default function ReferenceDashboardClient() {
     }
   }, [searchParams]);
   useEffect(() => {
-    const onOpenMessage = () => setMessageOpen(true);
-    const onOpenAdDetails = (event: Event) => {
-      const post = (event as CustomEvent).detail?.ad;
-      if (post) openAdDetails(post);
-    };
-    window.addEventListener("open-message-modal", onOpenMessage);
-    window.addEventListener("open-ad-details", onOpenAdDetails);
-    return () => {
-      window.removeEventListener("open-message-modal", onOpenMessage);
-      window.removeEventListener("open-ad-details", onOpenAdDetails);
-    };
-  }, [openAdDetails]);
-
-  useEffect(() => {
     const currentAdId = searchParams.get("ad");
     if (!currentAdId) {
       setDetailAd(null);
@@ -465,6 +451,20 @@ export default function ReferenceDashboardClient() {
     params.delete("ad");
     router.replace(`/dashboard${params.toString() ? `?${params.toString()}` : ""}`, { scroll: false });
   };
+
+  useEffect(() => {
+    const onOpenMessage = () => setMessageOpen(true);
+    const onOpenAdDetails = (event: Event) => {
+      const post = (event as CustomEvent).detail?.ad;
+      if (post) openAdDetails(post);
+    };
+    window.addEventListener("open-message-modal", onOpenMessage);
+    window.addEventListener("open-ad-details", onOpenAdDetails);
+    return () => {
+      window.removeEventListener("open-message-modal", onOpenMessage);
+      window.removeEventListener("open-ad-details", onOpenAdDetails);
+    };
+  }, [openAdDetails]);
 
   const openRolePost = (role: InvestmentRole) => {
     setPostRole(role);
