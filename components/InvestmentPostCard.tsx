@@ -78,11 +78,38 @@ export default function InvestmentPostCard({
   onOpen: () => void;
 }) {
   const [now, setNow] = useState(Date.now());
+  const [inviteStatus, setInviteStatus] = useState<"none" | "pending" | "accepted" | "rejected" | "cancelled">("none");
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 10000);
     return () => window.clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    const token = Cookies.get("token");
+    if (!token || !post?._id) {
+      setInviteStatus("none");
+      return;
+    }
+
+    fetch(API_BASE_URL + "/api/invites?adId=" + encodeURIComponent(post._id), {
+      headers: { Authorization: "Bearer " + token },
+      cache: "no-store",
+    })
+      .then((res) => res.json())
+      .then((result) => {
+        if (cancelled || !result?.success) return;
+        const sent = Array.isArray(result.sent) ? result.sent : [];
+        const current = sent.find((invite: any) => String(invite.adId?._id || invite.adId) === String(post._id));
+        if (current) setInviteStatus(current.status || "pending");
+      })
+      .catch(() => {});
+
+    return () => {
+      cancelled = true;
+    };
+  }, [post?._id]);
 
   const role =
     post.postRole === "business_owner" ? "Business Owner" : "Investor";
@@ -134,6 +161,7 @@ export default function InvestmentPostCard({
       if (!response.ok) {
         throw new Error(result.message || "Unable to send invite.");
       }
+      setInviteStatus("pending");
       toast.success("Invite sent.");
     } catch (error) {
       toast.error(
@@ -231,11 +259,14 @@ export default function InvestmentPostCard({
             <div className="flex items-center gap-1.5 text-slate-500">
               <button
                 type="button"
-                onClick={handleInvite}
-                className="flex items-center gap-1 rounded-lg border border-violet-200 bg-violet-50 px-2 py-1.5 text-[10px] font-bold text-violet-700 hover:bg-violet-100"
+                onClick={inviteStatus === "none" || inviteStatus === "rejected" || inviteStatus === "cancelled" ? handleInvite : (event) => event.stopPropagation()}
+                disabled={inviteStatus === "pending" || inviteStatus === "accepted"}
+                className={inviteStatus === "pending" || inviteStatus === "accepted"
+                  ? "flex items-center gap-1 rounded-lg border border-emerald-200 bg-emerald-50 px-2 py-1.5 text-[10px] font-bold text-emerald-700 cursor-default"
+                  : "flex items-center gap-1 rounded-lg border border-violet-200 bg-violet-50 px-2 py-1.5 text-[10px] font-bold text-violet-700 hover:bg-violet-100"}
               >
                 <UserPlus className="h-3.5 w-3.5" />
-                Invite
+                {inviteStatus === "pending" ? "Invited" : inviteStatus === "accepted" ? "Accepted" : "Invite"}
               </button>
               <span className="rounded-lg border border-slate-200 p-2">
                 <Phone className="h-3.5 w-3.5" />
