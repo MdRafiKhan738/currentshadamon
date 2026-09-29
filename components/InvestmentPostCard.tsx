@@ -172,8 +172,8 @@ export default function InvestmentPostCard({
       onClick={onOpen}
       className="group w-full cursor-pointer overflow-hidden rounded-[10px] border border-[#dfe7ee] bg-white shadow-[0_1px_3px_rgba(15,23,42,0.08)] transition-shadow hover:shadow-[0_6px_18px_rgba(15,23,42,0.09)]"
     >
-      <div className="grid min-h-[236px] grid-cols-[190px_minmax(0,1fr)] sm:grid-cols-[205px_minmax(0,1fr)]">
-        <div className="relative min-h-[236px] overflow-hidden bg-[#f1f4f6]">
+      <div className="grid min-h-[246px] grid-cols-[142px_minmax(0,1fr)] sm:grid-cols-[220px_minmax(0,1fr)]">
+        <div className="relative min-h-[246px] overflow-hidden bg-[#f1f4f6]">
           {image ? (
             <img
               src={image}
