@@ -1,5 +1,7 @@
 "use client";
 
+// Vercel build fix: all local imports in this component intentionally resolve from /components.
+
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
