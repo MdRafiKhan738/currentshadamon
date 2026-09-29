@@ -1145,6 +1145,15 @@ export default function DashboardClient() {
       setShowFooterPromoteModal(true);
     };
 
+    const handleRealtimeAdChanged = () => {
+      if (!isViewingSavedSearch) {
+        fetchData(1, false);
+      }
+      fetchInitialData();
+      window.dispatchEvent(new Event("refresh-ads"));
+    };
+
+    window.addEventListener("realtime-ad-changed", handleRealtimeAdChanged);
     window.addEventListener("refresh-ads", handleRefresh);
     window.addEventListener(
       "user-followed",
@@ -1160,6 +1169,7 @@ export default function DashboardClient() {
       handleOpenFooterPromoteModal,
     );
     return () => {
+      window.removeEventListener("realtime-ad-changed", handleRealtimeAdChanged);
       window.removeEventListener("refresh-ads", handleRefresh);
       window.removeEventListener(
         "user-followed",
