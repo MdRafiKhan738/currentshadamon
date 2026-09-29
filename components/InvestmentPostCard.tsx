@@ -241,12 +241,12 @@ export default function InvestmentPostCard({
         </div>
 
         <div className="min-w-0 bg-white px-3.5 py-3 sm:px-4">
-          <div className="flex items-center gap-2 text-[10px] font-semibold text-black">
-            <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#7c3aed]" />
+          <div className="flex items-center gap-2 text-[12px] font-semibold text-black">
+            <span className="h-2 w-2 shrink-0 rounded-full bg-[#7c3aed]" />
             <span>{statusText}</span>
             <span className="text-slate-300">•</span>
             <span className="inline-flex items-center gap-1 truncate">
-              <MapPin className="h-3 w-3 shrink-0 text-slate-400" />
+              <MapPin className="h-3.5 w-3.5 shrink-0 text-slate-500" />
               {post.location || (language === "bn" ? "বাংলাদেশ" : "Bangladesh")}
             </span>
           </div>
@@ -288,16 +288,16 @@ export default function InvestmentPostCard({
           <div className="mt-3 border-t border-slate-100 pt-2.5">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
-                <div className="flex items-center gap-1 text-[10px] font-semibold text-slate-800"><span className="truncate">{name}</span></div>
-                <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[8px] text-slate-400">
-                  <span className="font-semibold text-slate-500">{language === "bn" ? "পোস্ট করেছেন" : "Post by"}</span>
-                  <span className="font-bold text-slate-700">{name}</span>
+                <div className="flex items-center gap-1 text-[12px] font-semibold text-slate-900"><span className="truncate">{name}</span></div>
+                <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[11px] text-slate-500">
+                  <span className="font-semibold text-slate-700">{language === "bn" ? "পোস্ট করেছেন" : "Post by"}</span>
+                  <span className="font-bold text-slate-900">{name}</span>
                   {verified ? <BadgeCheck className="h-3.5 w-3.5 text-[#12a87c]" /> : null}
-                  <CalendarDays className="h-2.5 w-2.5" />
-                  <span>{postedAgo(displayDate)}</span>
+                  <CalendarDays className="h-3.5 w-3.5" />
+                  <span className="font-medium text-slate-600">{language === "bn" ? "আপলোড: " : "Uploaded at: "}{postedAgo(displayDate)}</span>
                 </div>
-                {post.subLocation ? <div className="mt-0.5 text-[8px] text-slate-400">{post.location} · {post.subLocation}</div> : null}
-                <div className="mt-0.5 text-[8px] font-semibold text-slate-500">{badge}</div>
+                {post.subLocation ? <div className="mt-1 text-[11px] text-slate-600">{post.location} · {post.subLocation}</div> : null}
+                <div className="mt-1 text-[11px] font-semibold text-slate-700">{badge}</div>
               </div>
 
               <div className="flex w-full items-center justify-between gap-2">
