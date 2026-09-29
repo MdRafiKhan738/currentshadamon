@@ -55,6 +55,8 @@ import FilterModal, { type FilterState } from "./FilterModal";
 import MobileEntryModal from "./MobileEntryModal";
 import LoginModal from "./LoginModal";
 import RegisterModal from "./RegisterModal";
+import AdDetailsModal from "./AdDetailsModal";
+import ProposalModal from "./ProposalModal";
 
 type InvestmentRole = "investor" | "business_owner";
 
@@ -127,7 +129,7 @@ function localized(name: string, bn: string | undefined, language: string) {
 export default function ReferenceDashboardClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { language, t } = useLanguage();
+  const { language, setLanguage, t } = useLanguage();
   const { settings } = useSettings();
 
   const [user, setUser] = useState<UserShape | null>(null);
@@ -162,6 +164,9 @@ export default function ReferenceDashboardClient() {
   const [initialMobile, setInitialMobile] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFilterBubble, setSelectedFilterBubble] = useState("");
+  const [feedMode, setFeedMode] = useState<"watching" | "all" | "promote">("all");
+  const [detailAd, setDetailAd] = useState<any>(null);
+  const [proposalModalOpen, setProposalModalOpen] = useState(false);
   const [dashboardSummary, setDashboardSummary] = useState({ pendingProposals: 0, acceptedProposals: 0, pendingInvitations: 0, acceptedInvitations: 0, pendingVerification: 0 });
 
   const loadUser = useCallback(async () => {
@@ -357,6 +362,38 @@ export default function ReferenceDashboardClient() {
       setPostChoiceOpen(true);
     }
   }, [searchParams]);
+  useEffect(() => {
+    const onOpenMessage = () => setMessageOpen(true);
+    const onOpenProposal = () => setProposalModalOpen(true);
+    const onOpenAdDetails = (event: Event) => {
+      const post = (event as CustomEvent).detail?.ad;
+      if (post) openAdDetails(post);
+    };
+    window.addEventListener("open-message-modal", onOpenMessage);
+    window.addEventListener("open-proposal-modal", onOpenProposal);
+    window.addEventListener("open-ad-details", onOpenAdDetails);
+    return () => {
+      window.removeEventListener("open-message-modal", onOpenMessage);
+      window.removeEventListener("open-proposal-modal", onOpenProposal);
+      window.removeEventListener("open-ad-details", onOpenAdDetails);
+    };
+  }, [openAdDetails]);
+
+  useEffect(() => {
+    const currentAdId = searchParams.get("ad");
+    if (!currentAdId) {
+      setDetailAd(null);
+      return;
+    }
+    if (detailAd?._id === currentAdId) return;
+    fetch(`${API_BASE_URL}/api/ads/public/${currentAdId}`, { cache: "no-store" })
+      .then((r) => r.json())
+      .then((result) => {
+        if (result?.success) setDetailAd(result.data);
+      })
+      .catch(() => {});
+  }, [searchParams, detailAd?._id]);
+
 
   const activePackage = user?.activePackage;
   const packageSummary = useMemo(() => {
@@ -413,6 +450,26 @@ export default function ReferenceDashboardClient() {
     setPostChoiceOpen(true);
   };
 
+  const openAdDetails = useCallback(async (post: any) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/ads/public/${post._id}`, { cache: "no-store" });
+      const result = await response.json();
+      setDetailAd(result?.success ? result.data : post);
+    } catch {
+      setDetailAd(post);
+    }
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("ad", post._id);
+    router.replace(`/dashboard?${params.toString()}`, { scroll: false });
+  }, [router, searchParams]);
+
+  const closeAdDetails = () => {
+    setDetailAd(null);
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("ad");
+    router.replace(`/dashboard${params.toString() ? `?${params.toString()}` : ""}`, { scroll: false });
+  };
+
   const openRolePost = (role: InvestmentRole) => {
     setPostRole(role);
     setPostChoiceOpen(false);
@@ -444,8 +501,14 @@ export default function ReferenceDashboardClient() {
     });
   }, [filters, investmentPosts]);
 
-  const displayPosts = filteredInvestmentPosts.slice(0, 8);
-  const displayFreeAds = ads.filter((ad) => !ad.postRole).slice(0, 8);
+  const modeFilteredInvestmentPosts = feedMode === "promote"
+    ? filteredInvestmentPosts.filter((post) => String(post.adType || "").toLowerCase() === "promoted")
+    : filteredInvestmentPosts;
+  const modeFilteredFreeAds = feedMode === "promote"
+    ? ads.filter((ad) => String(ad.adType || "").toLowerCase() === "promoted")
+    : ads.filter((ad) => !ad.postRole);
+  const displayPosts = modeFilteredInvestmentPosts.slice(0, 8);
+  const displayFreeAds = modeFilteredFreeAds.slice(0, 8);
 
   return (
     <div className="min-h-screen bg-[#eef3f6] text-slate-900">
@@ -486,8 +549,7 @@ export default function ReferenceDashboardClient() {
             </div>
             <button
               onClick={() => {
-                if (dashboardView) openFeed();
-                else setActiveSelector("category");
+                setLanguage(language === "bn" ? "en" : "bn");
               }}
               className="hidden h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-[11px] font-semibold sm:flex"
             >
@@ -517,10 +579,6 @@ export default function ReferenceDashboardClient() {
         <aside className="sticky top-[82px] hidden h-[calc(100vh-96px)] w-[180px] flex-none overflow-y-auto no-scrollbar lg:block">
           <div className="rounded-lg border border-slate-200 bg-white">
             <nav className="p-2">
-              <button onClick={openDashboard} className={cn("flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-xs font-semibold", dashboardView ? "bg-[#ecf7f2] text-emerald-700" : "text-slate-700 hover:bg-slate-50")}>
-                <RiHome5Fill className="h-4 w-4" />
-                <span>Dashboard</span>
-              </button>
               <button onClick={() => setMessageOpen(true)} className="flex w-full items-center gap-3 rounded-md bg-[#eff9f5] px-3 py-2.5 text-xs font-bold text-emerald-700">
                 <Inbox className="h-4 w-4" />
                 <span className="flex-1 text-left">Inbox</span>
@@ -584,6 +642,36 @@ export default function ReferenceDashboardClient() {
                 </div>
               </div>
 
+              <div className="mt-2 flex items-center gap-1 overflow-x-auto rounded-md border border-slate-200 bg-white p-1 no-scrollbar">
+                <button
+                  onClick={() => setFeedMode("watching")}
+                  className={cn(
+                    "whitespace-nowrap rounded px-3 py-2 text-[10px] font-semibold",
+                    feedMode === "watching" ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-50"
+                  )}
+                >
+                  {language === "bn" ? "শুধু আপনি দেখছেন" : "Only you are watching"}
+                </button>
+                <button
+                  onClick={() => setFeedMode("all")}
+                  className={cn(
+                    "whitespace-nowrap rounded px-3 py-2 text-[10px] font-semibold",
+                    feedMode === "all" ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-50"
+                  )}
+                >
+                  {language === "bn" ? "সব পোস্ট" : "All Post"}
+                </button>
+                <button
+                  onClick={() => setFeedMode("promote")}
+                  className={cn(
+                    "whitespace-nowrap rounded px-3 py-2 text-[10px] font-semibold",
+                    feedMode === "promote" ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-50"
+                  )}
+                >
+                  {language === "bn" ? "প্রমোট" : "Promote"}
+                </button>
+              </div>
+
               <div className="mt-3">
                 <AdDisplay positionId={2} className="rounded-lg bg-white" />
               </div>
@@ -597,11 +685,7 @@ export default function ReferenceDashboardClient() {
                       <InvestmentPostCard
                         key={post._id}
                         post={post}
-                        onOpen={() => {
-                          const params = new URLSearchParams(searchParams.toString());
-                          params.set("ad", post._id);
-                          router.push(`/dashboard?${params.toString()}`, { scroll: false });
-                        }}
+                        onOpen={() => openAdDetails(post)}
                       />
                     ))}
 
@@ -625,11 +709,7 @@ export default function ReferenceDashboardClient() {
                       <InvestmentPostCard
                         key={ad._id}
                         post={{ ...ad, postRole: ad.postRole || undefined } as any}
-                        onOpen={() => {
-                          const params = new URLSearchParams(searchParams.toString());
-                          params.set("ad", ad._id);
-                          router.push(`/dashboard?${params.toString()}`, { scroll: false });
-                        }}
+                        onOpen={() => openAdDetails(ad)}
                       />
                     ))}
 
@@ -701,7 +781,7 @@ export default function ReferenceDashboardClient() {
         <button onClick={() => setFilterOpen(true)} className="flex flex-col items-center gap-0.5 text-[9px] text-slate-600"><RiSearchLine className="h-4 w-4" /><span>Search</span></button>
         <button onClick={openPostFlow} className="-mt-5 flex h-11 w-11 items-center justify-center rounded-full bg-[#1294cf] text-white shadow-lg"><RiAddLine className="h-5 w-5" /></button>
         <button onClick={() => setMessageOpen(true)} className="flex flex-col items-center gap-0.5 text-[9px] text-slate-600"><RiMailFill className="h-4 w-4" /><span>Inbox</span></button>
-        <button onClick={() => openAccount("Profile")} className="flex flex-col items-center gap-0.5 text-[9px] text-slate-600"><RiUser3Line className="h-4 w-4" /><span>Profile</span></button>
+        <button onClick={() => openAccount("Dashboard")} className="flex flex-col items-center gap-0.5 text-[9px] text-slate-600"><RiUser3Line className="h-4 w-4" /><span>{language === "bn" ? "প্রোফাইল" : "Profile"}</span></button>
       </nav>
 
       {isMobileMenuOpen && (
@@ -713,7 +793,6 @@ export default function ReferenceDashboardClient() {
               <button onClick={() => setIsMobileMenuOpen(false)}><X className="h-5 w-5" /></button>
             </div>
             <div className="mt-4 space-y-1">
-              <button onClick={() => { setIsMobileMenuOpen(false); openDashboard(); }} className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-sm font-semibold"><RiHome5Fill className="h-4 w-4" />Dashboard</button>
               <button onClick={() => { setIsMobileMenuOpen(false); openPostFlow(); }} className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-sm font-semibold"><FileText className="h-4 w-4" />Post</button>
               <button onClick={() => { setIsMobileMenuOpen(false); openAccount("Activity"); }} className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-sm font-semibold"><Activity className="h-4 w-4" />Activity</button>
               <button onClick={() => { setIsMobileMenuOpen(false); setPackageOpen(true); }} className="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-sm font-semibold"><Package className="h-4 w-4" />{activePackage?.name || "Package"}</button>
@@ -727,19 +806,19 @@ export default function ReferenceDashboardClient() {
           <div className="w-full max-w-[520px] rounded-2xl bg-white p-5 shadow-2xl">
             <div className="flex items-start justify-between">
               <div>
-                <h2 className="text-lg font-bold">What do you want to post?</h2>
-                <p className="mt-1 text-xs text-slate-500">Choose the post type. The correct category is selected automatically.</p>
+                <h2 className="text-lg font-bold">{language === "bn" ? "আপনি কী পোস্ট করতে চান?" : "What do you want to post?"}</h2>
+                <p className="mt-1 text-xs text-slate-500">{language === "bn" ? "পোস্টের ধরন নির্বাচন করুন। সঠিক ক্যাটাগরি স্বয়ংক্রিয়ভাবে নির্বাচন হবে।" : "Choose the post type. The correct category is selected automatically."}</p>
               </div>
               <button onClick={() => setPostChoiceOpen(false)} className="rounded-full p-2 text-slate-400 hover:bg-slate-100"><X className="h-4 w-4" /></button>
             </div>
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               <button onClick={() => openRolePost("investor")} className="rounded-xl border border-violet-200 bg-violet-50 p-4 text-left">
-                <div className="text-sm font-extrabold">I wanna invest</div>
-                <div className="mt-1 text-xs text-slate-500">Investor / Looking to invest</div>
+                <div className="text-sm font-extrabold">{language === "bn" ? "আমি বিনিয়োগ করতে চাই" : "I wanna invest"}</div>
+                <div className="mt-1 text-xs text-slate-500">{language === "bn" ? "বিনিয়োগকারী / বিনিয়োগ খুঁজছেন" : "Investor / Looking to invest"}</div>
               </button>
               <button onClick={() => openRolePost("business_owner")} className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-left">
-                <div className="text-sm font-extrabold">I need investment</div>
-                <div className="mt-1 text-xs text-slate-500">Business owner / Need funding</div>
+                <div className="text-sm font-extrabold">{language === "bn" ? "আমার ব্যবসায় বিনিয়োগ দরকার" : "I need investment"}</div>
+                <div className="mt-1 text-xs text-slate-500">{language === "bn" ? "ব্যবসার মালিক / অর্থায়ন দরকার" : "Business owner / Need funding"}</div>
               </button>
             </div>
           </div>
@@ -757,6 +836,14 @@ export default function ReferenceDashboardClient() {
           loadUser();
         }}
       />
+
+      {detailAd ? (
+        <AdDetailsModal
+          isOpen={Boolean(detailAd)}
+          onClose={closeAdDetails}
+          ad={detailAd}
+        />
+      ) : null}
 
       <PackagePurchaseModal isOpen={packageOpen} onClose={() => setPackageOpen(false)} />
 
@@ -786,6 +873,8 @@ export default function ReferenceDashboardClient() {
       />
 
       <InviteModal isOpen={inviteOpen} onClose={() => setInviteOpen(false)} />
+      <ProposalModal isOpen={proposalModalOpen} onClose={() => setProposalModalOpen(false)} />
+
 
       <PromoteModal isOpen={promoteOpen} onClose={() => { setPromoteOpen(false); setPromoteAd(null); }} ad={promoteAd} />
 
