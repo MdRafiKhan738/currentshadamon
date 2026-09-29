@@ -663,6 +663,16 @@ export default function DashboardLayoutClient({
 
         realtimeSocket.on("notification received", notificationHandler);
         realtimeSocket.on("credit balance updated", creditHandler);
+        realtimeSocket.on("package updated", (payload: any) => {
+          if (payload?.userId && String(payload.userId) !== String(userData._id)) return;
+          setUser((prev: any) => prev ? {
+            ...prev,
+            activePackage: payload?.activePackage || prev.activePackage,
+            connectsBalance: typeof payload?.connectsBalance === "number" ? payload.connectsBalance : prev.connectsBalance,
+            validityDate: payload?.validityDate || prev.validityDate,
+          } : prev);
+          window.dispatchEvent(new Event("package-updated"));
+        });
         realtimeSocket.on("ad status changed", adHandler);
         realtimeSocket.on("ad created", adHandler);
         realtimeSocket.on("ad updated", adHandler);
