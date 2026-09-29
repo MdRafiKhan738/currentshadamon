@@ -72,45 +72,6 @@ export default function DashboardOverview({
 
   return (
     <section className="w-full overflow-hidden border border-[#dfe3e8] bg-white">
-      <div className="border-b border-[#e1e4e8] bg-white">
-        <div className="flex items-center gap-2 px-3 py-2">
-          <span className="text-[12px] text-slate-500">←</span>
-          <span className="text-[12px] font-medium text-slate-700">
-            {language === "bn" ? "অ্যাকাউন্ট অ্যাক্টিভিটি" : "Account Activity"}
-          </span>
-        </div>
-
-        <div className="flex items-center gap-1 px-3 pb-2">
-          <button
-            type="button"
-            className="h-[24px] rounded-[2px] bg-[#4d22c7] px-2.5 text-[8px] font-semibold text-white"
-          >
-            {language === "bn" ? "ড্যাশবোর্ড" : "Dashboard"}
-          </button>
-          <button
-            type="button"
-            onClick={() => dispatchAccount("Profile")}
-            className="h-[24px] rounded-[2px] border border-[#e5e7eb] bg-white px-2.5 text-[8px] font-medium text-slate-700"
-          >
-            {language === "bn" ? "প্রোফাইল" : "Profile"}
-          </button>
-          <button
-            type="button"
-            onClick={() => dispatchAccount("Post")}
-            className="h-[24px] rounded-[2px] border border-[#e5e7eb] bg-white px-2.5 text-[8px] font-medium text-slate-700"
-          >
-            {language === "bn" ? "পোস্ট" : "Post"}
-          </button>
-          <button
-            type="button"
-            onClick={() => dispatchAccount("Activity")}
-            className="h-[24px] rounded-[2px] border border-[#e5e7eb] bg-white px-2.5 text-[8px] font-medium text-slate-700"
-          >
-            {language === "bn" ? "অ্যাক্টিভিটি" : "Activity"}
-          </button>
-        </div>
-      </div>
-
       <div className="border-b border-[#e1e4e8] bg-white px-3 pb-3 pt-2">
         <div className="grid grid-cols-[76px_minmax(0,1fr)_74px] gap-2">
           <div className="relative">
