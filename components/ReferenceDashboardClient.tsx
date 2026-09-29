@@ -615,6 +615,7 @@ export default function ReferenceDashboardClient() {
               usedConnects: Number(user?.creditsUsed || user?.activePackage?.usedCredits || 0),
               availableConnects: Number(user?.connectsBalance || user?.activePackage?.creditsRemaining || 0),
               pendingVerification: dashboardSummary.pendingVerification,
+              user={user}
             }} />
           ) : (
             <>
