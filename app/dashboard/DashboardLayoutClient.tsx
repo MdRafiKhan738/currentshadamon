@@ -38,7 +38,6 @@ import {
   RiUser3Line,
 } from "react-icons/ri";
 import Cookies from "js-cookie";
-import { io } from "socket.io-client";
 import { useLanguage } from "../context/LanguageContext";
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -64,7 +63,7 @@ import SearchModal from "../../components/SearchModal";
 import FilterModal, { FilterState } from "../../components/FilterModal";
 import { toast } from "react-hot-toast";
 
-import { API_BASE_URL } from "../../utils/apiConfig";
+import { API_BASE_URL, getSharedSocket, disconnectSharedSocket } from "../../utils/apiConfig";
 import { getImageUrl } from "../../utils/imageUrl";
 import {
   INFO_CONTENT,
@@ -602,68 +601,89 @@ export default function DashboardLayoutClient({
 
   const { settings, fetchDashboardSettings, fetchAdPositions } = useSettings();
 
-  // Socket.io for notifications and Auth Sync
+  // One shared Socket.IO connection powers chat, credit and feed realtime updates.
   useEffect(() => {
-    const fetchUserAndSetupSocket = async () => {
+    let cancelled = false;
+
+    const setupRealtime = async () => {
       const token = Cookies.get("token");
       if (!token) {
         setUser(null);
         setUnreadCount(0);
-        if (socket) {
-          socket.disconnect();
-          setSocket(null);
-        }
-        if (!isPublicInvestmentEntry) {
-          window.location.replace(INVEST_HOME_URL);
-        }
+        disconnectSharedSocket();
+        setSocket(null);
+        if (!isPublicInvestmentEntry) window.location.replace(INVEST_HOME_URL);
         return;
       }
 
       try {
         const res = await fetch(`${API_BASE_URL}/api/user/me`, {
           headers: { Authorization: `Bearer ${token}` },
+          cache: "no-store",
         });
         if (!res.ok) {
           Cookies.remove("token");
           setUser(null);
-          if (!isPublicInvestmentEntry) {
-            window.location.replace(INVEST_HOME_URL);
-          }
+          disconnectSharedSocket();
+          setSocket(null);
+          if (!isPublicInvestmentEntry) window.location.replace(INVEST_HOME_URL);
           return;
         }
+
         const userData = await res.json();
+        if (cancelled || !userData?._id) return;
 
-        if (userData && userData._id) {
-          setUser(userData);
-          const socketUrl = API_BASE_URL.replace("/api", "");
-          const newSocket = io(socketUrl);
-          setSocket(newSocket);
+        setUser(userData);
+        const realtimeSocket = getSharedSocket(userData._id);
+        if (!realtimeSocket) return;
+        setSocket(realtimeSocket);
 
-          newSocket.emit("setup", { id: userData._id });
+        const notificationHandler = () => {
+          fetchUnreadCount();
+          window.dispatchEvent(new Event("refresh-unread-count"));
+        };
+        const creditHandler = (payload: any) => {
+          const balance = Number(payload?.balance);
+          if (payload?.userId && String(payload.userId) !== String(userData._id)) return;
+          if (!Number.isFinite(balance)) return;
+          setUser((prev: any) => prev ? {
+            ...prev,
+            connectsBalance: balance,
+            creditsUsed: typeof payload?.creditsUsed === "number" ? payload.creditsUsed : prev.creditsUsed,
+          } : prev);
+          window.dispatchEvent(new CustomEvent("connect-balance-updated", { detail: { balance } }));
+        };
+        const adHandler = (payload: any) => {
+          window.dispatchEvent(new CustomEvent("realtime-ad-changed", { detail: payload }));
+        };
 
-          newSocket.on("notification received", () => {
-            fetchUnreadCount();
-            window.dispatchEvent(new Event("refresh-unread-count"));
-          });
-
-          return () => {
-            newSocket.disconnect();
-          };
-        }
+        realtimeSocket.off("notification received");
+        realtimeSocket.off("credit balance updated");
+        realtimeSocket.off("ad status changed");
+        realtimeSocket.off("ad created");
+        realtimeSocket.off("ad updated");
+        realtimeSocket.off("ad deleted");
+        realtimeSocket.on("notification received", notificationHandler);
+        realtimeSocket.on("credit balance updated", creditHandler);
+        realtimeSocket.on("ad status changed", adHandler);
+        realtimeSocket.on("ad created", adHandler);
+        realtimeSocket.on("ad updated", adHandler);
+        realtimeSocket.on("ad deleted", adHandler);
       } catch (err) {
         console.error("Socket setup error:", err);
       }
     };
 
-    fetchUserAndSetupSocket();
+    setupRealtime();
 
     const handleAuthChange = () => {
-      fetchUserAndSetupSocket();
+      setupRealtime();
       fetchUnreadCount();
     };
-
     window.addEventListener("auth-change", handleAuthChange);
+
     return () => {
+      cancelled = true;
       window.removeEventListener("auth-change", handleAuthChange);
     };
   }, [isPublicInvestmentEntry]);
@@ -926,10 +946,8 @@ export default function DashboardLayoutClient({
     Cookies.remove("user");
     setUser(null);
     setUnreadCount(0);
-    if (socket) {
-      socket.disconnect();
-      setSocket(null);
-    }
+    disconnectSharedSocket();
+    setSocket(null);
     sessionStorage.removeItem("ad_session_views");
     sessionStorage.removeItem("ad_session_view_tokens");
     window.dispatchEvent(new Event("auth-change"));
