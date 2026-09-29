@@ -1150,7 +1150,6 @@ export default function DashboardClient() {
         fetchData(1, false);
       }
       fetchInitialData();
-      window.dispatchEvent(new Event("refresh-ads"));
     };
 
     window.addEventListener("realtime-ad-changed", handleRealtimeAdChanged);
