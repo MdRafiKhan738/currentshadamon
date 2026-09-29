@@ -615,8 +615,7 @@ export default function ReferenceDashboardClient() {
               usedConnects: Number(user?.creditsUsed || user?.activePackage?.usedCredits || 0),
               availableConnects: Number(user?.connectsBalance || user?.activePackage?.creditsRemaining || 0),
               pendingVerification: dashboardSummary.pendingVerification,
-              user={user}
-            }} />
+            }} user={user} />
           ) : (
             <>
               <div className="sticky top-[66px] z-[60] rounded-none border-b border-slate-200 bg-white lg:rounded-md">
