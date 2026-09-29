@@ -1193,7 +1193,7 @@ export default function AdDetailsModal({
               )}
 
               {/* Action Buttons Row */}
-              <div className="flex flex-row items-stretch gap-1.5 relative">
+              <div className="flex flex-row flex-wrap items-stretch gap-2 relative">
                 {(() => {
                   const otherButtons = actionButtons.filter(
                     (b) => b !== "Chat" && b !== "Message",
@@ -1207,7 +1207,7 @@ export default function AdDetailsModal({
                           <button
                             onClick={handleInvite}
                             disabled={inviteStatus === "accepted"}
-                            className={inviteStatus !== "none" ? "flex-1 h-10 border border-emerald-200 bg-emerald-50 text-emerald-700 text-xs px-1 rounded-md flex items-center justify-center gap-1" : "flex-1 h-10 border border-violet-200 bg-violet-50 text-violet-700 text-xs px-1 rounded-md hover:bg-violet-100 transition-colors flex items-center justify-center gap-1"}
+                            className={inviteStatus !== "none" ? "min-w-[112px] flex-1 h-10 whitespace-nowrap border border-emerald-200 bg-emerald-50 text-emerald-700 text-xs px-2 rounded-md flex items-center justify-center gap-1" : "min-w-[112px] flex-1 h-10 whitespace-nowrap border border-violet-200 bg-violet-50 text-violet-700 text-xs px-1 rounded-md hover:bg-violet-100 transition-colors flex items-center justify-center gap-1"}
                           >
                             <UserPlus className="w-3.5 h-3.5" />
                             {inviteStatus === "pending" ? "Invited • Cancel" : inviteStatus === "accepted" ? "Accepted" : "Invite"}
@@ -1227,7 +1227,7 @@ export default function AdDetailsModal({
                           if (!showPhone) handleRevealPhone();
                           else setShowPhone(false);
                         }}
-                            className="flex-1 h-10 bg-[#1A202C] text-white text-xs px-1 rounded-md hover:bg-slate-800 transition-colors"
+                            className="min-w-[96px] flex-1 h-10 whitespace-nowrap bg-[#1A202C] text-white text-xs px-3 rounded-md hover:bg-slate-800 transition-colors"
                           >
                             Call
                           </button>
@@ -1235,14 +1235,14 @@ export default function AdDetailsModal({
 
                       {/* Chat Button - ALWAYS SHOW */}
                       <button
-                        className="flex-1 h-10 bg-[#1A202C] text-white text-xs px-1 rounded-md hover:bg-black transition-colors"
+                        className="min-w-[96px] flex-1 h-10 whitespace-nowrap bg-[#1A202C] text-white text-xs px-3 rounded-md hover:bg-black transition-colors"
                         onClick={handleChatClick}
                       >
                         Chat
                       </button>
 
                       {ad.postRole && String(ad.user?._id || ad.user) !== String(currentUserId) && (
-                        <button onClick={() => setProposalOpen(true)} className="flex-1 h-10 border border-emerald-200 bg-emerald-50 text-emerald-700 text-xs px-1 rounded-md hover:bg-emerald-100 transition-colors">Send Proposal</button>
+                        <button onClick={() => setProposalOpen(true)} className="min-w-[120px] flex-1 h-10 whitespace-nowrap border border-emerald-200 bg-emerald-50 text-emerald-700 text-xs px-3 rounded-md hover:bg-emerald-100 transition-colors">Send Proposal</button>
                       )}
 
                       {/* Send CV Button - Only if requested */}
