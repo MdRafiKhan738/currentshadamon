@@ -20,6 +20,8 @@ type DashboardSummary = {
   pendingInvitations: number;
   profileVisitors: number;
   packageName: string;
+  packageType?: string;
+  packageValidTill?: string;
   usedConnects: number;
   availableConnects: number;
   pendingVerification: number;
@@ -83,7 +85,11 @@ export default function DashboardOverview({ summary }: Props) {
       label: "Package",
       value: summary.packageName || "Free",
       icon: Package,
-      description: "Current account package",
+      description: "Current account package" +
+        (summary.packageType ? " • " + summary.packageType : "") +
+        (summary.packageValidTill
+          ? " • Valid to " + new Date(summary.packageValidTill).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })
+          : ""),
       action: () => open("open-package-modal"),
     },
     {
