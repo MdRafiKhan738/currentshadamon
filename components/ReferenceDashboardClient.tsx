@@ -2,7 +2,7 @@
 
 // Vercel build fix: all local imports in this component intentionally resolve from /components.
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
   Activity,
@@ -168,6 +168,7 @@ export default function ReferenceDashboardClient() {
   const [selectedFilterBubble, setSelectedFilterBubble] = useState("");
   const [feedMode, setFeedMode] = useState<"watching" | "all" | "promote">("all");
   const [detailAd, setDetailAd] = useState<any>(null);
+  const dashboardLoginInProgressRef = useRef(false);
 
   const [dashboardSummary, setDashboardSummary] = useState({ pendingProposals: 0, acceptedProposals: 0, pendingInvitations: 0, acceptedInvitations: 0, pendingVerification: 0 });
 
@@ -401,17 +402,36 @@ export default function ReferenceDashboardClient() {
 
   useEffect(() => {
     const handleDashboardLoginSuccess = async () => {
-      await loadUser();
-      setPostModalOpen(false);
-      setPostChoiceOpen(false);
-      setHomePostStarted(false);
+      dashboardLoginInProgressRef.current = true;
+
+      try {
+        await loadUser();
+
+        // The login happened inside the dashboard post gateway. Never send the
+        // user back to the homepage after a successful login. Remove the
+        // homepage-entry query parameters and reveal the dashboard in-place.
+        setPostModalOpen(false);
+        setPostChoiceOpen(false);
+        setHomePostStarted(false);
+
+        const params = new URLSearchParams(searchParams.toString());
+        params.delete("source");
+        params.delete("role");
+        params.delete("cat");
+        params.delete("openModal");
+
+        const nextUrl = "/dashboard" + (params.toString() ? "?" + params.toString() : "");
+        router.replace(nextUrl, { scroll: false });
+      } finally {
+        dashboardLoginInProgressRef.current = false;
+      }
     };
 
     window.addEventListener("dashboard-login-success", handleDashboardLoginSuccess);
     return () => {
       window.removeEventListener("dashboard-login-success", handleDashboardLoginSuccess);
     };
-  }, [loadUser]);
+  }, [loadUser, router, searchParams]);
 
   useEffect(() => {
     if (searchParams.get("openModal") === "true") {
@@ -936,7 +956,10 @@ export default function ReferenceDashboardClient() {
       <InvestmentPostFormModal
         isOpen={postModalOpen}
         onClose={() => {
-          if (!Cookies.get("token")) {
+          // Do not redirect during the login hand-off. A successful login is
+          // resolved by dashboard-login-success and the dashboard is revealed
+          // in-place.
+          if (!Cookies.get("token") && !dashboardLoginInProgressRef.current) {
             window.location.href = "https://shadamoninvest.vercel.app/";
             return;
           }
@@ -945,7 +968,7 @@ export default function ReferenceDashboardClient() {
         initialRole={postRole}
         referenceDesign
         onFailure={() => {
-          if (!user && isHomePostEntry) {
+          if (!user && isHomePostEntry && !dashboardLoginInProgressRef.current) {
             window.location.href = "https://shadamoninvest.vercel.app/";
           }
         }}
