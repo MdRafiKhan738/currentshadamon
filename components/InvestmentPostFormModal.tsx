@@ -276,6 +276,190 @@ export default function InvestmentPostFormModal({
 
   if (!isOpen) return null;
 
+  const handleSelectSubCategory = (category: Category, subCategory: SubCategory) => {
+    setSelectedCategory(category);
+    setSelectedSubCategory(subCategory);
+    const detectedRole = categoryRole(category);
+    if (detectedRole) setPostRole(detectedRole);
+    setShowCategoryPicker(false);
+    setPriceValues({});
+  };
+
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
+    if (!files.length) return;
+
+    setImages((previous) => [...previous, ...files].slice(0, 5));
+    event.target.value = "";
+  };
+
+  const removeImage = (index: number) => {
+    setImages((previous) => previous.filter((_, itemIndex) => itemIndex !== index));
+  };
+
+  const handleSubmit = async () => {
+    const cleanPhone = phone.replace(/\s+/g, "").trim();
+
+    if (!selectedCategory || !selectedSubCategory) {
+      toast.error(`Please configure the ${roleLabel} category in admin first.`);
+      return;
+    }
+    if (!selectedLocation) {
+      toast.error("Please select your location.");
+      return;
+    }
+    if (!selectedSubLocation) {
+      toast.error("Please select your sublocation.");
+      return;
+    }
+    if (!headline.trim()) {
+      toast.error("Please enter a headline.");
+      return;
+    }
+    if (!description.trim()) {
+      toast.error("Please enter a description.");
+      return;
+    }
+    if (!/^01\d{9}$/.test(cleanPhone)) {
+      toast.error("Please enter a valid 11-digit Bangladesh mobile number.");
+      return;
+    }
+
+    for (const field of priceFields) {
+      if (field.required && !String(priceValues[field.key] || "").trim()) {
+        toast.error(`Please fill ${field.label || field.key}.`);
+        return;
+      }
+    }
+
+    setSubmitting(true);
+
+    try {
+      let token = Cookies.get("token") || "";
+
+      if (!isAuthenticated) {
+        const checkResponse = await fetch(API_BASE_URL + "/api/user/check-mobile", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ mobile: cleanPhone }),
+        });
+        const checkData = await checkResponse.json().catch(() => ({}));
+
+        if (!userName.trim()) throw new Error("Please enter your name.");
+        if (!password.trim()) throw new Error("Please enter a password for your account.");
+
+        const authPayload = {
+          mobile: cleanPhone,
+          password,
+          name: userName.trim(),
+          storeName: userName.trim(),
+          category: selectedCategory.name,
+          subCategory: selectedSubCategory.name,
+          actionType: "call",
+        };
+
+        const authResponse = await fetch(
+          API_BASE_URL + (checkData?.exists ? "/api/user/login" : "/api/user/register"),
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(authPayload),
+          },
+        );
+        const authData = await authResponse.json().catch(() => ({}));
+
+        if (!authResponse.ok || !authData.token) {
+          throw new Error(authData.message || "Authentication failed");
+        }
+
+        token = authData.token;
+        Cookies.set("token", token, { expires: 7, sameSite: "lax" });
+        setIsAuthenticated(true);
+        window.dispatchEvent(new Event("auth-change"));
+      }
+
+      if (token && userName.trim()) {
+        const profile = new FormData();
+        profile.append("name", userName.trim());
+        profile.append("storeName", userName.trim());
+        await fetch(API_BASE_URL + "/api/user/update", {
+          method: "PUT",
+          headers: { Authorization: "Bearer " + token },
+          body: profile,
+        });
+      }
+
+      const formData = new FormData();
+      formData.append("headline", headline.trim());
+      formData.append("description", description.trim());
+      formData.append("category", selectedCategory.name);
+      formData.append("subCategory", selectedSubCategory.name);
+      formData.append("location", selectedLocation);
+      formData.append("subLocation", selectedSubLocation);
+      formData.append("phone", cleanPhone);
+      formData.append("name", userName.trim());
+      formData.append("hidePhone", "false");
+      formData.append("phoneTypes", JSON.stringify(["call"]));
+      formData.append("additionalPhones", JSON.stringify([]));
+      formData.append("postRole", postRole);
+      if (postRole === "business_owner") formData.append("businessStatus", businessStatus);
+      formData.append(
+        "investmentReturnType",
+        postRole === "investor" ? "expected" : "return",
+      );
+      formData.append("priceBoxValues", JSON.stringify(priceValues));
+      formData.append("priceBoxFields", JSON.stringify(priceFields));
+      formData.append(
+        "features",
+        JSON.stringify({
+          priceBoxValues: priceValues,
+          priceBoxFields: priceFields,
+          priceBoxEnabled: hasPriceBox,
+          priceBoxName: hasPriceBox
+            ? selectedSubCategory.priceBoxName || "Investment Details"
+            : "",
+        }),
+      );
+
+      for (const image of images) {
+        formData.append("images", image);
+      }
+
+      const response = await fetch(`${API_BASE_URL}/api/ads`, {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        toast.error(data.message || "Could not submit your post.");
+        onFailure?.();
+        return;
+      }
+
+      if (data.token) {
+        Cookies.set("token", data.token, { expires: 7, sameSite: "lax" });
+      }
+
+      window.dispatchEvent(new Event("auth-change"));
+      window.dispatchEvent(new Event("refresh-ads"));
+
+      toast.success(
+        "Post submitted. It will appear publicly after admin approval.",
+      );
+
+      onSuccess?.(data.data);
+    } catch (error) {
+      console.error("Investment post submission failed:", error);
+      toast.error("Could not submit your post. Please try again.");
+      onFailure?.();
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const previewImage = images[0] ? URL.createObjectURL(images[0]) : "";
 
   if (referenceDesign) {
@@ -480,189 +664,6 @@ export default function InvestmentPostFormModal({
     );
   }
 
-  const handleSelectSubCategory = (category: Category, subCategory: SubCategory) => {
-    setSelectedCategory(category);
-    setSelectedSubCategory(subCategory);
-    const detectedRole = categoryRole(category);
-    if (detectedRole) setPostRole(detectedRole);
-    setShowCategoryPicker(false);
-    setPriceValues({});
-  };
-
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files || []);
-    if (!files.length) return;
-
-    setImages((previous) => [...previous, ...files].slice(0, 5));
-    event.target.value = "";
-  };
-
-  const removeImage = (index: number) => {
-    setImages((previous) => previous.filter((_, itemIndex) => itemIndex !== index));
-  };
-
-  const handleSubmit = async () => {
-    const cleanPhone = phone.replace(/\s+/g, "").trim();
-
-    if (!selectedCategory || !selectedSubCategory) {
-      toast.error(`Please configure the ${roleLabel} category in admin first.`);
-      return;
-    }
-    if (!selectedLocation) {
-      toast.error("Please select your location.");
-      return;
-    }
-    if (!selectedSubLocation) {
-      toast.error("Please select your sublocation.");
-      return;
-    }
-    if (!headline.trim()) {
-      toast.error("Please enter a headline.");
-      return;
-    }
-    if (!description.trim()) {
-      toast.error("Please enter a description.");
-      return;
-    }
-    if (!/^01\d{9}$/.test(cleanPhone)) {
-      toast.error("Please enter a valid 11-digit Bangladesh mobile number.");
-      return;
-    }
-
-    for (const field of priceFields) {
-      if (field.required && !String(priceValues[field.key] || "").trim()) {
-        toast.error(`Please fill ${field.label || field.key}.`);
-        return;
-      }
-    }
-
-    setSubmitting(true);
-
-    try {
-      let token = Cookies.get("token") || "";
-
-      if (!isAuthenticated) {
-        const checkResponse = await fetch(API_BASE_URL + "/api/user/check-mobile", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ mobile: cleanPhone }),
-        });
-        const checkData = await checkResponse.json().catch(() => ({}));
-
-        if (!userName.trim()) throw new Error("Please enter your name.");
-        if (!password.trim()) throw new Error("Please enter a password for your account.");
-
-        const authPayload = {
-          mobile: cleanPhone,
-          password,
-          name: userName.trim(),
-          storeName: userName.trim(),
-          category: selectedCategory.name,
-          subCategory: selectedSubCategory.name,
-          actionType: "call",
-        };
-
-        const authResponse = await fetch(
-          API_BASE_URL + (checkData?.exists ? "/api/user/login" : "/api/user/register"),
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(authPayload),
-          },
-        );
-        const authData = await authResponse.json().catch(() => ({}));
-
-        if (!authResponse.ok || !authData.token) {
-          throw new Error(authData.message || "Authentication failed");
-        }
-
-        token = authData.token;
-        Cookies.set("token", token, { expires: 7, sameSite: "lax" });
-        setIsAuthenticated(true);
-        window.dispatchEvent(new Event("auth-change"));
-      }
-
-      if (token && userName.trim()) {
-        const profile = new FormData();
-        profile.append("name", userName.trim());
-        profile.append("storeName", userName.trim());
-        await fetch(API_BASE_URL + "/api/user/update", {
-          method: "PUT",
-          headers: { Authorization: "Bearer " + token },
-          body: profile,
-        });
-      }
-
-      const formData = new FormData();
-      formData.append("headline", headline.trim());
-      formData.append("description", description.trim());
-      formData.append("category", selectedCategory.name);
-      formData.append("subCategory", selectedSubCategory.name);
-      formData.append("location", selectedLocation);
-      formData.append("subLocation", selectedSubLocation);
-      formData.append("phone", cleanPhone);
-      formData.append("name", userName.trim());
-      formData.append("hidePhone", "false");
-      formData.append("phoneTypes", JSON.stringify(["call"]));
-      formData.append("additionalPhones", JSON.stringify([]));
-      formData.append("postRole", postRole);
-      if (postRole === "business_owner") formData.append("businessStatus", businessStatus);
-      formData.append(
-        "investmentReturnType",
-        postRole === "investor" ? "expected" : "return",
-      );
-      formData.append("priceBoxValues", JSON.stringify(priceValues));
-      formData.append("priceBoxFields", JSON.stringify(priceFields));
-      formData.append(
-        "features",
-        JSON.stringify({
-          priceBoxValues: priceValues,
-          priceBoxFields: priceFields,
-          priceBoxEnabled: hasPriceBox,
-          priceBoxName: hasPriceBox
-            ? selectedSubCategory.priceBoxName || "Investment Details"
-            : "",
-        }),
-      );
-
-      for (const image of images) {
-        formData.append("images", image);
-      }
-
-      const response = await fetch(`${API_BASE_URL}/api/ads`, {
-        method: "POST",
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-        body: formData,
-      });
-
-      const data = await response.json();
-
-      if (!response.ok || !data.success) {
-        toast.error(data.message || "Could not submit your post.");
-        onFailure?.();
-        return;
-      }
-
-      if (data.token) {
-        Cookies.set("token", data.token, { expires: 7, sameSite: "lax" });
-      }
-
-      window.dispatchEvent(new Event("auth-change"));
-      window.dispatchEvent(new Event("refresh-ads"));
-
-      toast.success(
-        "Post submitted. It will appear publicly after admin approval.",
-      );
-
-      onSuccess?.(data.data);
-    } catch (error) {
-      console.error("Investment post submission failed:", error);
-      toast.error("Could not submit your post. Please try again.");
-      onFailure?.();
-    } finally {
-      setSubmitting(false);
-    }
-  };
 
   return (
     <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/50 p-3 backdrop-blur-sm">
