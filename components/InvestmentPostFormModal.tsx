@@ -276,6 +276,8 @@ export default function InvestmentPostFormModal({
 
   if (!isOpen) return null;
 
+  const previewImage = images[0] ? URL.createObjectURL(images[0]) : "";
+
   if (referenceDesign) {
     const renderPriceField = (field: PriceField) => (
       <label key={field.key} className="block rounded-md border border-slate-300 bg-white px-3 py-2">
@@ -661,8 +663,6 @@ export default function InvestmentPostFormModal({
       setSubmitting(false);
     }
   };
-
-  const previewImage = images[0] ? URL.createObjectURL(images[0]) : "";
 
   return (
     <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/50 p-3 backdrop-blur-sm">
