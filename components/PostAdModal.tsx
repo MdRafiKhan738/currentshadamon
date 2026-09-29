@@ -151,6 +151,13 @@ export default function PostAdModal({ isOpen, onClose, editAd, onSuccess, initia
 
     const hasBanglaChars = (value: string) => /[\u0980-\u09FF]/.test(value);
 
+    const roleForCategory = (categoryName: string): "investor" | "business_owner" | null => {
+        const value = String(categoryName || "").trim().toLowerCase();
+        if (/investor|investment/.test(value)) return "investor";
+        if (/business\s*owner|business-owner|business/.test(value)) return "business_owner";
+        return null;
+    };
+
     const getLocalizedAreaName = React.useCallback((rawName: string, rawNameBn?: string) => {
         const providedBn = String(rawNameBn || '').trim();
         if (language === 'bn' && providedBn) {
@@ -459,6 +466,8 @@ export default function PostAdModal({ isOpen, onClose, editAd, onSuccess, initia
         // Update main state too just in case we skip
         setSelectedCategory(cat);
         setSelectedSubCategory(sub);
+        const detectedRole = roleForCategory(cat);
+        if (detectedRole) setPostRole(detectedRole);
 
         setView('location');
     };
@@ -1135,6 +1144,8 @@ export default function PostAdModal({ isOpen, onClose, editAd, onSuccess, initia
                                                         onClick={() => {
                                                             setSelectedCategory(cat.name);
                                                             setSelectedSubCategory(sub.name);
+                                                            const detectedRole = roleForCategory(cat.name);
+                                                            if (detectedRole) setPostRole(detectedRole);
                                                             setView('location');
                                                         }}
                                                         className="w-full flex items-center gap-3 py-1 pl-14 pr-4 hover:bg-slate-100 transition-colors text-left"
@@ -1776,20 +1787,18 @@ export default function PostAdModal({ isOpen, onClose, editAd, onSuccess, initia
                                             (!isUserLoggedIn && !password.trim()) ||
                                             (!isUserLoggedIn && additionalPhones.length === 0)
                                         ) && <p className="text-[9px] text-red-500 font-bold uppercase">{t('field_required')}</p>}
-                                        {!isUserLoggedIn && (
-                                            <div className="space-y-1">
-                                                <input
-                                                    type="text"
-                                                    value={name}
-                                                    onChange={(e) => setName(e.target.value)}
-                                                    placeholder={t('name_placeholder')}
-                                                    className={cn(
-                                                        "w-full text-[13px] text-black focus:outline-none placeholder:text-black px-1 border-b pb-1",
-                                                        attemptedSubmit && !name.trim() ? "border-red-300" : "border-slate-500"
-                                                    )}
-                                                />
-                                            </div>
-                                        )}
+                                                                        <div className="space-y-1">
+                                            <input
+                                                type="text"
+                                                value={name}
+                                                onChange={(e) => setName(e.target.value)}
+                                                placeholder={t('name_placeholder')}
+                                                className={cn(
+                                                    "w-full text-[13px] text-black focus:outline-none placeholder:text-black px-1 border-b pb-1",
+                                                    attemptedSubmit && !name.trim() ? "border-red-300" : "border-slate-500"
+                                                )}
+                                            />
+                                        </div>
 
                                         <div className={cn(
                                             "flex items-center gap-2 border-b pb-1",
@@ -1826,7 +1835,7 @@ export default function PostAdModal({ isOpen, onClose, editAd, onSuccess, initia
                                             )}
                                         </div>
 
-                                        {(!isUserLoggedIn || (phone.trim() !== userData?.mobile)) && (
+                                        {!isUserLoggedIn && (
                                             <div className="space-y-1 pt-2">
                                                 <input
                                                     type="password"
