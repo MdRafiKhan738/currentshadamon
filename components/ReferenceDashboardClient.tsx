@@ -160,7 +160,7 @@ export default function ReferenceDashboardClient() {
   const [initialMobile, setInitialMobile] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFilterBubble, setSelectedFilterBubble] = useState("");
-  const [dashboardSummary, setDashboardSummary] = useState({ pendingProposals: 0, acceptedProposals: 0, pendingInvitations: 0, pendingVerification: 0 });
+  const [dashboardSummary, setDashboardSummary] = useState({ pendingProposals: 0, acceptedProposals: 0, pendingInvitations: 0, acceptedInvitations: 0, pendingVerification: 0 });
 
   const loadUser = useCallback(async () => {
     const token = Cookies.get("token");
@@ -205,7 +205,7 @@ export default function ReferenceDashboardClient() {
   const loadDashboardSummary = useCallback(async () => {
     const token = Cookies.get("token");
     if (!token) {
-      setDashboardSummary({ pendingProposals: 0, acceptedProposals: 0, pendingInvitations: 0, pendingVerification: 0 });
+      setDashboardSummary({ pendingProposals: 0, acceptedProposals: 0, pendingInvitations: 0, acceptedInvitations: 0, pendingVerification: 0 });
       return;
     }
     try {
@@ -224,6 +224,7 @@ export default function ReferenceDashboardClient() {
         pendingProposals: proposals.filter((x: any) => x?.status === "pending").length,
         acceptedProposals: proposals.filter((x: any) => x?.status === "accepted").length,
         pendingInvitations: invitations.filter((x: any) => x?.status === "pending").length,
+        acceptedInvitations: invitations.filter((x: any) => x?.status === "accepted").length,
         pendingVerification: ads.filter((x: any) => ["review", "pending"].includes(String(x?.status || "").toLowerCase())).length,
       });
     } catch {
@@ -833,7 +834,7 @@ function DashboardReferencePanel({
   onOpenAccount,
 }: {
   user: UserShape | null;
-  summary: { pendingProposals: number; acceptedProposals: number; pendingInvitations: number; pendingVerification: number };
+  summary: { pendingProposals: number; acceptedProposals: number; pendingInvitations: number; acceptedInvitations: number; pendingVerification: number };
   onBack: () => void;
   onOpenPackage: () => void;
   onOpenAccount: (tab?: "Dashboard" | "Page" | "Profile" | "Settings" | "Post" | "Activity") => void;
@@ -886,7 +887,7 @@ function DashboardReferencePanel({
 
         <div className="mt-3 grid grid-cols-3 border-y border-slate-100">
           <Metric label="Pending Invitations" value={summary.pendingInvitations} />
-          <Metric label="Accepted Invitations" value={summary.acceptedProposals} />
+          <Metric label="Accepted Invitations" value={summary.acceptedInvitations} />
           <Metric label="Profile Visitors" value={Number(user?.profileViews || 0)} />
         </div>
 
