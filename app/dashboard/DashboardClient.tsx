@@ -1524,7 +1524,7 @@ export default function DashboardClient() {
                         )}
                       >
                         {getLocalizedCategoryName(cat.name, cat.categoryNameBn)}
-                      </span>n>
+                      </span>
                     </Link>
                   ))}
                 </>
