@@ -431,7 +431,7 @@ export default function DashboardLayoutClient({
       if (activeTab) {
         setAccountModalInitialTab(activeTab);
       } else {
-        setAccountModalInitialTab("Page");
+        setAccountModalInitialTab("Dashboard");
       }
 
       setIsAccountModalOpen(true);
