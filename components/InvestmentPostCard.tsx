@@ -297,7 +297,7 @@ export default function InvestmentPostCard({
                   <span className="font-extrabold text-slate-600">{language === "bn" ? "আপলোড: " : "Uploaded at: "}{postedAgo(displayDate)}</span>
                 </div>
                 {post.subLocation ? <div className="mt-1 text-[15px] font-bold text-slate-600">{post.location} · {post.subLocation}</div> : null}
-                <div className="mt-1 text-[13px] font-bold text-slate-700">{badge}</div>
+                {/* <div className="mt-1 text-[13px] font-bold text-slate-700">{badge}</div> */}
               </div>
 
               <div className="flex w-full items-center justify-between gap-2">
