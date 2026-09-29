@@ -1430,7 +1430,7 @@ I have sent my CV for your review.`;
                     )}
                     {activeTab === 'Dashboard' && isOwnAccount && (
                         <div className="px-1 sm:px-0 pb-40">
-                            <DashboardOverview summary={dashboardSummary} />
+                            <DashboardOverview summary={dashboardSummary} user={userData} />
                         </div>
                     )}
 
