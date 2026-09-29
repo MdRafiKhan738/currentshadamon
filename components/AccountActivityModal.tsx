@@ -1404,7 +1404,7 @@ I have sent my CV for your review.`;
 
                     {/* Tabs */}
                     <div className="px-4 pb-2 flex items-center gap-2 overflow-x-auto no-scrollbar">
-                        {(isOwnAccount ? ['Dashboard', 'Page', 'Profile', 'Settings', 'Post', 'Activity'] : ['Page']).map((tab) => (
+                        {(isOwnAccount ? ['Dashboard', 'Profile', 'Post', 'Activity'] : ['Profile']).map((tab) => (
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab as any)}
