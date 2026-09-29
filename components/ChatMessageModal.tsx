@@ -114,7 +114,6 @@ export default function ChatMessageModal({ isOpen, onClose, onBack, ad, otherUse
                 method: 'PUT',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            socket.emit('message seen', { adId: ad._id, senderId: otherUserId, receiverId: currentUser._id });
             window.dispatchEvent(new Event('refresh-unread-count'));
         } catch (err) {
             console.error("Error marking seen:", err);
@@ -259,9 +258,6 @@ export default function ChatMessageModal({ isOpen, onClose, onBack, ad, otherUse
                 setSelectedImage(null);
                 setImagePreview(null);
 
-                if (socket) {
-                    socket.emit('new message', savedMsg);
-                }
             } else if (res.status === 403) {
                 alert(data.message || "Action blocked");
             }
