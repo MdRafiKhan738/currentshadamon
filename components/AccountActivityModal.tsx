@@ -3089,11 +3089,11 @@ I have sent my CV for your review.`;
                 </div>
             )}
 
-            {isVerifyModalOpen && userData && (
-                <ProposalModal isOpen={proposalModalOpen} onClose={() => setProposalModalOpen(false)} />
+            <ProposalModal isOpen={proposalModalOpen} onClose={() => setProposalModalOpen(false)} />
             <InviteModal isOpen={inviteModalOpen} onClose={() => setInviteModalOpen(false)} />
             <PackagePurchaseModal isOpen={packageModalOpen} onClose={() => setPackageModalOpen(false)} />
 
+            {isVerifyModalOpen && userData && (
             <VerifyProfileModal
                     isOpen={isVerifyModalOpen}
                     onClose={() => setIsVerifyModalOpen(false)}
