@@ -10,6 +10,7 @@ import {
   Phone,
   UserPlus,
   UserRound,
+  UserRoundCheck,
 } from "lucide-react";
 import Cookies from "js-cookie";
 import toast from "react-hot-toast";
@@ -17,6 +18,7 @@ import toast from "react-hot-toast";
 import { getImageUrl } from "../utils/imageUrl";
 import { API_BASE_URL } from "../utils/apiConfig";
 import { formatInvestmentAmount } from "../utils/formatInvestmentAmount";
+import { useLanguage } from "../app/context/LanguageContext";
 
 type MarketplacePost = {
   _id: string;
@@ -86,6 +88,8 @@ export default function InvestmentPostCard({
   onOpen: () => void;
 }) {
   const [inviteStatus, setInviteStatus] = useState<"none" | "pending" | "accepted" | "rejected" | "cancelled">("none");
+  const [inviteId, setInviteId] = useState<string | null>(null);
+  const { language } = useLanguage();
   useEffect(() => {
     let cancelled = false;
     const token = Cookies.get("token");
@@ -105,7 +109,13 @@ export default function InvestmentPostCard({
         const current = sent.find(
           (invite: any) => String(invite.adId?._id || invite.adId) === String(post._id),
         );
-        if (current) setInviteStatus(current.status || "pending");
+        if (current) {
+          setInviteId(String(current._id));
+          setInviteStatus(current.status || "pending");
+        } else {
+          setInviteId(null);
+          setInviteStatus("none");
+        }
       })
       .catch(() => {});
 
@@ -120,26 +130,66 @@ export default function InvestmentPostCard({
     return [...source].sort((a, b) => (a.order || 0) - (b.order || 0));
   }, [post.priceBoxFields, post.features?.priceBoxFields]);
 
-  const visibleFields = fields.slice(0, 3);
+  const returnFieldIndex = fields.findIndex((field) =>
+    /return|expected/i.test(String(field.label || field.labelBn || field.key)),
+  );
+  const orderedFields = returnFieldIndex >= 0
+    ? [fields[returnFieldIndex], ...fields.filter((_, index) => index !== returnFieldIndex)]
+    : fields;
+  const visibleFields = orderedFields.slice(0, 3);
   const hasPriceBox = visibleFields.length > 0;
   const image = getImageUrl(post.images?.[0]);
   const name = post.user?.name || post.user?.storeName || "Member";
   const verified = Boolean(post.user?.mVerified || (post.user?.verifiedBy && post.user.verifiedBy !== "Not Verified"));
   const badge = roleLabel(post);
-  const isBusiness = post.postRole === "business_owner";
+  const statusText =
+    post.postRole === "business_owner"
+      ? post.businessStatus === "new"
+        ? (language === "bn" ? "নতুন ব্যবসা" : "New Business")
+        : post.businessStatus === "closed"
+          ? (language === "bn" ? "ব্যবসা বন্ধ" : "Close Business")
+          : (language === "bn" ? "সক্রিয় ব্যবসা" : "Active Business")
+      : (language === "bn" ? "বিনিয়োগকারী" : "Investor");
   const displayDate = post.updatedAt && post.adType?.toLowerCase() === "promoted" ? post.updatedAt : post.createdAt;
 
   const invite = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
+
     const token = Cookies.get("token");
     if (!token) {
-      window.dispatchEvent(new CustomEvent("open-mobile-entry-modal", { detail: { reason: "invite", ad: post } }));
+      window.dispatchEvent(
+        new CustomEvent("open-mobile-entry-modal", {
+          detail: { reason: "invite", ad: post },
+        }),
+      );
+      return;
+    }
+
+    if (inviteStatus === "pending" && inviteId) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/invites/${inviteId}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + token,
+          },
+          body: JSON.stringify({ status: "cancelled" }),
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(result.message || "Unable to cancel invitation.");
+        setInviteStatus("none");
+        setInviteId(null);
+        window.dispatchEvent(new Event("refresh-dashboard"));
+        toast.success(language === "bn" ? "আমন্ত্রণ বাতিল হয়েছে।" : "Invitation cancelled.");
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Unable to cancel invitation.");
+      }
       return;
     }
 
     const receiverId = post.user?._id;
     if (!receiverId) {
-      toast.error("This post owner could not be identified.");
+      toast.error(language === "bn" ? "এই পোস্টের মালিক শনাক্ত করা যায়নি।" : "This post owner could not be identified.");
       return;
     }
 
@@ -155,7 +205,9 @@ export default function InvestmentPostCard({
       const result = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(result.message || "Unable to send invite.");
       setInviteStatus("pending");
-      toast.success("Invite sent.");
+      setInviteId(result?.data?._id ? String(result.data._id) : null);
+      window.dispatchEvent(new Event("refresh-dashboard"));
+      toast.success(language === "bn" ? "আমন্ত্রণ পাঠানো হয়েছে।" : "Invitation sent.");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Unable to send invite.");
     }
@@ -189,28 +241,14 @@ export default function InvestmentPostCard({
         </div>
 
         <div className="min-w-0 bg-white px-3.5 py-3 sm:px-4">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex min-w-0 items-center gap-1.5 text-[9px] font-semibold text-slate-500">
-              {badge ? (
-                <>
-                  <span className={isBusiness ? "text-[#0e9f75]" : "text-[#5e39e6]"}>{badge}</span>
-                  <span className="text-slate-300">•</span>
-                </>
-              ) : null}
-              <span className="inline-flex min-w-0 items-center gap-1 truncate text-slate-500">
-                <MapPin className="h-3 w-3 shrink-0" />
-                {post.location || "Bangladesh"}
-              </span>
-            </div>
-            {post.businessStatus && post.postRole === "business_owner" ? (
-              <span className="shrink-0 rounded-full bg-[#eaf8f2] px-2 py-1 text-[8px] font-bold text-[#15966f]">
-                {post.businessStatus === "new"
-                  ? "New Business"
-                  : post.businessStatus === "closed"
-                    ? "Closed"
-                    : "Active Business"}
-              </span>
-            ) : null}
+          <div className="flex items-center gap-2 text-[10px] font-semibold text-black">
+            <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#7c3aed]" />
+            <span>{statusText}</span>
+            <span className="text-slate-300">•</span>
+            <span className="inline-flex items-center gap-1 truncate">
+              <MapPin className="h-3 w-3 shrink-0 text-slate-400" />
+              {post.location || (language === "bn" ? "বাংলাদেশ" : "Bangladesh")}
+            </span>
           </div>
 
           <h3 className="mt-1.5 line-clamp-2 text-[20px] font-bold leading-[1.08] tracking-[-0.02em] text-slate-900">
@@ -250,46 +288,68 @@ export default function InvestmentPostCard({
           <div className="mt-3 border-t border-slate-100 pt-2.5">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
-                <div className="flex items-center gap-1 text-[10px] font-semibold text-slate-800">
-                  <UserRound className="h-3 w-3 text-slate-500" />
-                  <span className="truncate">{name}</span>
-                  {verified ? <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-[#12a87c]" /> : null}
-                </div>
+                <div className="flex items-center gap-1 text-[10px] font-semibold text-slate-800"><span className="truncate">{name}</span></div>
                 <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[8px] text-slate-400">
-                  <span className="font-semibold text-slate-500">Post by</span>
+                  <span className="font-semibold text-slate-500">{language === "bn" ? "পোস্ট করেছেন" : "Post by"}</span>
                   <span className="font-bold text-slate-700">{name}</span>
+                  {verified ? <BadgeCheck className="h-3.5 w-3.5 text-[#12a87c]" /> : null}
                   <CalendarDays className="h-2.5 w-2.5" />
                   <span>{postedAgo(displayDate)}</span>
                 </div>
-                {post.subLocation ? (
-                  <div className="mt-0.5 text-[8px] text-slate-400">{post.location} · {post.subLocation}</div>
-                ) : null}
+                {post.subLocation ? <div className="mt-0.5 text-[8px] text-slate-400">{post.location} · {post.subLocation}</div> : null}
+                <div className="mt-0.5 text-[8px] font-semibold text-slate-500">{badge}</div>
               </div>
 
-              <div className="flex shrink-0 items-center gap-1">
+              <div className="flex w-full items-center justify-between gap-2">
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={invite}
+                    className={cn(
+                      "flex h-8 w-8 items-center justify-center rounded-md border",
+                      inviteStatus === "pending" || inviteStatus === "accepted"
+                        ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                        : "border-slate-200 bg-white text-slate-700",
+                    )}
+                    aria-label={inviteStatus === "pending" ? "Cancel invitation" : "Invite"}
+                  >
+                    {inviteStatus === "pending" || inviteStatus === "accepted" ? (
+                      <UserRoundCheck className="h-4 w-4" />
+                    ) : (
+                      <UserPlus className="h-4 w-4" />
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      window.dispatchEvent(new CustomEvent("open-message-modal", { detail: { ad: post, otherUser: post.user } }));
+                    }}
+                    className="flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-700"
+                    aria-label={language === "bn" ? "মেসেজ" : "Message"}
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onOpen();
+                    }}
+                    className="flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-700"
+                    aria-label={language === "bn" ? "কল" : "Call"}
+                  >
+                    <Phone className="h-4 w-4" />
+                  </button>
+                </div>
                 <button
                   type="button"
-                  onClick={inviteStatus === "none" || inviteStatus === "rejected" || inviteStatus === "cancelled" ? invite : (e) => e.stopPropagation()}
-                  disabled={inviteStatus === "pending" || inviteStatus === "accepted"}
-                  className={cn(
-                    "flex items-center gap-1 rounded-md border px-2 py-1.5 text-[8px] font-bold",
-                    inviteStatus === "pending" || inviteStatus === "accepted"
-                      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                      : "border-violet-200 bg-violet-50 text-violet-700",
-                  )}
+                  onClick={(e) => { e.stopPropagation(); onOpen(); }}
+                  className="flex h-8 w-8 items-center justify-center rounded-md bg-[#111827] text-white"
+                  aria-label="Open post"
                 >
-                  <UserPlus className="h-3 w-3" />
-                  {inviteStatus === "pending" ? "Invited" : inviteStatus === "accepted" ? "Accepted" : "Invite"}
+                  <ArrowUpRight className="h-4 w-4" />
                 </button>
-                <button type="button" onClick={(e) => e.stopPropagation()} className="rounded-md border border-slate-200 p-1.5 text-slate-500">
-                  <MessageCircle className="h-3 w-3" />
-                </button>
-                <button type="button" onClick={(e) => e.stopPropagation()} className="rounded-md border border-slate-200 p-1.5 text-slate-500">
-                  <Phone className="h-3 w-3" />
-                </button>
-                <span className="rounded-md bg-[#111827] p-1.5 text-white">
-                  <ArrowUpRight className="h-3 w-3" />
-                </span>
               </div>
             </div>
           </div>
