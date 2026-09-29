@@ -364,7 +364,6 @@ export default function InvestmentPostFormModal({
         token = authData.token;
         Cookies.set("token", token, { expires: 7, sameSite: "lax" });
         setIsAuthenticated(true);
-        if (authData.user?.name) setUserName(authData.user.name);
         window.dispatchEvent(new Event("auth-change"));
       }
 
