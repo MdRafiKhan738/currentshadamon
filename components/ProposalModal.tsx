@@ -57,10 +57,31 @@ export default function ProposalModal({ isOpen, onClose }: { isOpen: boolean; on
               return <article key={p._id} className="rounded-xl border border-slate-200 p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div><div className="font-bold text-slate-900">{person?.name || person?.storeName || "Member"}</div><div className="text-[11px] text-slate-400">{p.adId?.headline || "Investment post"}</div></div>
-                  <span className={`rounded-full px-2 py-1 text-[10px] font-bold ${p.status === "accepted" ? "bg-emerald-100 text-emerald-700" : p.status === "rejected" ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-700"}`}>{p.status}</span>
+                  <span className={`rounded-full px-2 py-1 text-[10px] font-bold ${p.status === "accepted" ? "bg-emerald-100 text-emerald-700" : p.status === "rejected" || p.status === "cancelled" ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-700"}`}>{p.status}</span>
                 </div>
-                <p className="mt-3 whitespace-pre-wrap rounded-lg bg-slate-50 p-3 text-sm text-slate-700">{p.message}</p>
-                {tab === "received" && p.status === "pending" && <div className="mt-3 flex gap-2"><button onClick={() => update(p._id, "accepted")} className="flex-1 rounded-lg bg-emerald-700 px-3 py-2 text-xs font-bold text-white"><Check className="mr-1 inline h-4 w-4" />Accept</button><button onClick={() => update(p._id, "rejected")} className="flex-1 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-700"><XCircle className="mr-1 inline h-4 w-4" />Reject</button></div>}
+                <div className="mt-3 rounded-lg bg-slate-50 p-3 text-sm text-slate-700">
+                  <div className="mb-2 text-[11px] font-bold uppercase tracking-wide text-slate-400">Proposal details</div>
+                  <p className="whitespace-pre-wrap">{p.message || "No proposal message provided."}</p>
+                  {p.adId && (
+                    <div className="mt-3 grid grid-cols-2 gap-2 border-t border-slate-200 pt-2 text-[11px] text-slate-500">
+                      <div><span className="font-semibold text-slate-700">Post:</span> {p.adId.headline || "Investment post"}</div>
+                      <div><span className="font-semibold text-slate-700">Type:</span> {p.proposalType || "investment"}</div>
+                      {p.adId.minInvestment != null && <div><span className="font-semibold text-slate-700">Min investment:</span> {p.adId.minInvestment}</div>}
+                      {p.adId.maxInvestment != null && <div><span className="font-semibold text-slate-700">Max investment:</span> {p.adId.maxInvestment}</div>}
+                      {p.adId.expectedReturn != null && <div><span className="font-semibold text-slate-700">Expected return:</span> {p.adId.expectedReturn}</div>}
+                    </div>
+                  )}
+                </div>
+                {p.status === "pending" && <div className="mt-3 flex gap-2">
+                  {tab === "received" ? (
+                    <>
+                      <button onClick={() => update(p._id, "accepted")} className="flex-1 rounded-lg bg-emerald-700 px-3 py-2 text-xs font-bold text-white"><Check className="mr-1 inline h-4 w-4" />Accept</button>
+                      <button onClick={() => update(p._id, "rejected")} className="flex-1 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-700"><XCircle className="mr-1 inline h-4 w-4" />Cancel</button>
+                    </>
+                  ) : (
+                    <button onClick={() => update(p._id, "cancelled")} className="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-700"><XCircle className="mr-1 inline h-4 w-4" />Cancel Proposal</button>
+                  )}
+                </div>}
               </article>;
             })}</div>
           )}
