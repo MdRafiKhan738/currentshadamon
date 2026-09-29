@@ -2,6 +2,7 @@
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import AdDisplay from './AdDisplay';
+import DashboardOverview from './DashboardOverview';
 import { useRouter } from 'next/navigation';
 import { X, ArrowLeft, Star, Heart, MapPin, Share2, MoreVertical, Edit2, Plus, ArrowRight, Grid, User, Clock, Settings, FileText, Activity, Trash2, CheckCircle2, ChevronDown, Check, LogOut, ExternalLink, Search, Bell, Copy } from 'lucide-react';
 import { clsx } from 'clsx';
@@ -62,12 +63,22 @@ interface AccountActivityModalProps {
     userId?: string; // If provided, viewing another user. If null, viewing self (logged in user)
     onOpenPostAd?: () => void;
     onEditAd?: (ad: any) => void;
-    initialTab?: 'Page' | 'Profile' | 'Settings' | 'Post' | 'Activity';
+    initialTab?: 'Dashboard' | 'Page' | 'Profile' | 'Settings' | 'Post' | 'Activity';
 }
 
 export default function AccountActivityModal({ isOpen, onClose, userId, onOpenPostAd, onEditAd, initialTab = 'Page' }: AccountActivityModalProps) {
     const router = useRouter();
-    const [activeTab, setActiveTab] = useState<'Page' | 'Profile' | 'Settings' | 'Post' | 'Activity'>(initialTab);
+    const [activeTab, setActiveTab] = useState<'Dashboard' | 'Page' | 'Profile' | 'Settings' | 'Post' | 'Activity'>(initialTab);
+    const [dashboardSummary, setDashboardSummary] = useState({
+        pendingProposals: 0,
+        acceptedProposals: 0,
+        pendingInvitations: 0,
+        profileVisitors: 0,
+        packageName: 'Free',
+        usedConnects: 0,
+        availableConnects: 0,
+        pendingVerification: 0,
+    });
     const { t, language } = useLanguage();
     const [productTab, setProductTab] = useState<'All' | 'Popular'>('All');
     const [expandedSetting, setExpandedSetting] = useState<string | null>(null);
@@ -341,6 +352,33 @@ export default function AccountActivityModal({ isOpen, onClose, userId, onOpenPo
 
     useEffect(() => {
         setShowAboutInfo(false);
+        if (activeTab === 'Dashboard') {
+            const token = Cookies.get('token');
+            if (token) {
+                Promise.all([
+                    fetch(API_BASE_URL + '/api/user/me', { headers: { Authorization: 'Bearer ' + token } }),
+                    fetch(API_BASE_URL + '/api/proposals', { headers: { Authorization: 'Bearer ' + token } }),
+                    fetch(API_BASE_URL + '/api/invites', { headers: { Authorization: 'Bearer ' + token } }),
+                    fetch(API_BASE_URL + '/api/ads/me', { headers: { Authorization: 'Bearer ' + token } }),
+                ]).then(async ([meRes, proposalsRes, invitesRes, adsRes]) => {
+                    const me = meRes.ok ? await meRes.json() : {};
+                    const proposals = proposalsRes.ok ? await proposalsRes.json() : {};
+                    const invites = invitesRes.ok ? await invitesRes.json() : {};
+                    const ads = adsRes.ok ? await adsRes.json() : {};
+                    const allProposals = Array.isArray(proposals.data) ? proposals.data : [...(proposals.received || []), ...(proposals.sent || [])];
+                    setDashboardSummary({
+                        pendingProposals: allProposals.filter((x: any) => x.status === 'pending').length,
+                        acceptedProposals: allProposals.filter((x: any) => x.status === 'accepted').length,
+                        pendingInvitations: (invites.received || []).filter((x: any) => x.status === 'pending').length,
+                        profileVisitors: Number(me.profileViews || 0),
+                        packageName: me.activePackage?.name || me.merchantType || 'Free',
+                        usedConnects: Number(me.creditsUsed || me.activePackage?.usedCredits || 0),
+                        availableConnects: Number(me.connectsBalance || me.activePackage?.creditsRemaining || 0),
+                        pendingVerification: Array.isArray(ads.data) ? ads.data.filter((x: any) => ['review', 'pending'].includes(String(x.status || '').toLowerCase())).length : 0,
+                    });
+                }).catch((error) => console.error('Dashboard summary error:', error));
+            }
+        }
         if (activeTab === 'Activity') {
             fetchActivityData();
             fetchCategories();
@@ -1311,7 +1349,7 @@ I have sent my CV for your review.`;
 
                     {/* Tabs */}
                     <div className="px-4 pb-2 flex items-center gap-2 overflow-x-auto no-scrollbar">
-                        {(isOwnAccount ? ['Page', 'Profile', 'Settings', 'Post', 'Activity'] : ['Page']).map((tab) => (
+                        {(isOwnAccount ? ['Dashboard', 'Page', 'Profile', 'Settings', 'Post', 'Activity'] : ['Page']).map((tab) => (
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab as any)}
@@ -1327,6 +1365,12 @@ I have sent my CV for your review.`;
                         ))}
                     </div>
                 </div>
+
+                {activeTab === 'Dashboard' && isOwnAccount && (
+                    <div className="px-1 sm:px-0 pb-40">
+                        <DashboardOverview summary={dashboardSummary} />
+                    </div>
+                )}
 
                 {/* Content Area */}
                 <div className="flex-1 overflow-y-auto bg-[#F1F5F9] relative">
