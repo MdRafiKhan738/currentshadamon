@@ -113,6 +113,7 @@ export default function InvestmentPostFormModal({
   const [loadingData, setLoadingData] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [userName, setUserName] = useState("");
+  const [businessName, setBusinessName] = useState("");
   const [password, setPassword] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showExistingAccountLogin, setShowExistingAccountLogin] = useState(false);
@@ -194,6 +195,7 @@ export default function InvestmentPostFormModal({
         if (meRes?.success && meRes.data) {
           setIsAuthenticated(true);
           setUserName(meRes.data.name || "");
+          setBusinessName(meRes.data.storeName || meRes.data.businessName || meRes.data.name || "");
           if (!initialMobile && meRes.data.mobile) setPhone(meRes.data.mobile);
         } else {
           setIsAuthenticated(false);
@@ -273,7 +275,7 @@ export default function InvestmentPostFormModal({
       setSelectedSubLocation("");
       setBusinessStatus("active");
       setPassword("");
-    }
+      setBusinessName("");    }
   }, [isOpen]);
 
   if (!isOpen) return null;
@@ -354,7 +356,7 @@ export default function InvestmentPostFormModal({
           mobile: cleanPhone,
           password,
           name: userName.trim(),
-          storeName: userName.trim(),
+          storeName: (businessName.trim() || userName.trim()),
           category: selectedCategory.name,
           subCategory: selectedSubCategory.name,
           actionType: "call",
@@ -383,7 +385,7 @@ export default function InvestmentPostFormModal({
       if (token && userName.trim()) {
         const profile = new FormData();
         profile.append("name", userName.trim());
-        profile.append("storeName", userName.trim());
+        profile.append("storeName", businessName.trim() || userName.trim());
         await fetch(API_BASE_URL + "/api/user/update", {
           method: "PUT",
           headers: { Authorization: "Bearer " + token },
@@ -657,17 +659,51 @@ export default function InvestmentPostFormModal({
                     value={phone}
                     onChange={(event) => setPhone(event.target.value.replace(/\D/g, "").slice(0, 11))}
                     inputMode="numeric"
-                    placeholder="01XXXXXXXXX"
-                    className="w-full border-b border-slate-200 px-3 py-2 text-[11px] outline-none"
+                    placeholder={language === "bn" ? "মোবাইল নম্বর" : "Mobile number"}
+                    className="w-full border-b border-slate-200 px-3 py-2.5 text-[11px] outline-none"
                     required
                   />
+
+                  {!isAuthenticated ? (
+                    <>
+                      <input
+                        value={userName}
+                        onChange={(event) => setUserName(event.target.value)}
+                        placeholder={language === "bn" ? "আপনার নাম" : "Your name"}
+                        className="w-full border-b border-slate-200 px-3 py-2.5 text-[11px] outline-none"
+                        autoComplete="name"
+                        required
+                      />
+                      <input
+                        type="password"
+                        value={password}
+                        onChange={(event) => setPassword(event.target.value)}
+                        placeholder={language === "bn" ? "পাসওয়ার্ড" : "Password"}
+                        className="w-full border-b border-slate-200 px-3 py-2.5 text-[11px] outline-none"
+                        autoComplete="new-password"
+                        required
+                      />
+                      <input
+                        value={businessName}
+                        onChange={(event) => setBusinessName(event.target.value)}
+                        placeholder={language === "bn" ? "ব্যবসার নাম" : "Business name"}
+                        className="w-full border-b border-slate-200 px-3 py-2.5 text-[11px] outline-none"
+                        autoComplete="organization"
+                      />
+                    </>
+                  ) : null}
+
                   <div className="flex items-center gap-2 px-2 py-1.5">
-                    <input type="text" placeholder="আপনার ওয়েবসাইট / ফেসবুক লিংক" className="min-w-0 flex-1 text-[10px] outline-none" />
+                    <input
+                      type="text"
+                      placeholder={language === "bn" ? "অতিরিক্ত নম্বর / WhatsApp" : "Additional number / WhatsApp"}
+                      className="min-w-0 flex-1 text-[10px] outline-none"
+                    />
                     <select className="rounded border border-slate-200 px-1.5 py-1 text-[9px] text-slate-600">
                       <option>WhatsApp</option>
                       <option>Call</option>
                     </select>
-                    <button type="button" className="flex h-6 w-6 items-center justify-center rounded-full border border-slate-300 text-slate-500">
+                    <button type="button" className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-slate-300 text-slate-500">
                       <Plus className="h-3.5 w-3.5" />
                     </button>
                   </div>
@@ -701,7 +737,13 @@ export default function InvestmentPostFormModal({
 
           <LoginModal
             isOpen={showExistingAccountLogin}
-            onClose={() => setShowExistingAccountLogin(false)}
+            onClose={() => {
+              if (isInvestHomeEntry && !Cookies.get("token")) {
+                window.location.href = "https://shadamoninvest.vercel.app/";
+                return;
+              }
+              setShowExistingAccountLogin(false);
+            }}
             initialMobile={phone}
             onSwitchToRegister={() => setShowExistingAccountLogin(false)}
             onSuccess={async () => {
