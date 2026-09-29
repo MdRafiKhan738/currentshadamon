@@ -854,9 +854,11 @@ I have sent my CV for your review.`;
             if (isOpen) fetchUserData();
         };
 
+        window.addEventListener('realtime-ad-changed', handleRefresh);
         window.addEventListener('refresh-ads', handleRefresh);
         window.addEventListener('auth-change', handleAuthSync);
         return () => {
+            window.removeEventListener('realtime-ad-changed', handleRefresh);
             window.removeEventListener('refresh-ads', handleRefresh);
             window.removeEventListener('auth-change', handleAuthSync);
         };
