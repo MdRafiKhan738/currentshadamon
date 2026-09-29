@@ -504,14 +504,60 @@ export default function InvestmentPostFormModal({
             <>
               <div className="overflow-y-auto px-3 pb-3 pt-2">
                 <div className="grid grid-cols-[1fr_1fr_auto] items-center gap-1.5 border-b border-slate-200 pb-2 text-[9px]">
-                  <button type="button" onClick={() => setShowCategoryPicker(true)} className="rounded border border-slate-300 px-2 py-1 text-left font-semibold text-slate-700">
+                  <button
+                    type="button"
+                    onClick={() => setShowCategoryPicker((value) => !value)}
+                    className="rounded border border-slate-300 px-2 py-1 text-left font-semibold text-slate-700"
+                  >
                     {selectedCategory?.name || "Category"} · {selectedSubCategory?.name || "Subcategory"}
                   </button>
                   <div className="rounded border border-slate-300 px-2 py-1 text-slate-500">
                     {selectedLocation || "ঢাকা, বাংলাদেশ"}
                   </div>
-                  <span className="rounded px-2 py-1 font-bold text-emerald-600">পাবলিশ</span>
+                  <button
+                    type="button"
+                    onClick={() => setShowCategoryPicker((value) => !value)}
+                    className="rounded border border-slate-300 bg-white px-2 py-1 font-bold text-slate-700 hover:bg-slate-50"
+                  >
+                    {language === "bn" ? "পরিবর্তন করুন" : "Change"}
+                  </button>
                 </div>
+
+                {showCategoryPicker ? (
+                  <div className="mt-2 grid gap-1.5 rounded border border-slate-200 bg-slate-50 p-2 sm:grid-cols-2">
+                    {categories.map((category) => (
+                      <div key={category._id} className="rounded border border-slate-200 bg-white p-2">
+                        <div className="mb-1 text-[9px] font-bold text-slate-700">
+                          {language === "bn"
+                            ? (category.categoryNameBn || category.name)
+                            : category.name}
+                        </div>
+                        {category.subcategories.map((sub) => (
+                          <button
+                            key={sub._id}
+                            type="button"
+                            onClick={() => handleSelectSubCategory(category, sub)}
+                            className={cn(
+                              "flex w-full items-center justify-between rounded px-2 py-1.5 text-left text-[9px] font-semibold",
+                              selectedSubCategory?._id === sub._id
+                                ? "bg-slate-900 text-white"
+                                : "text-slate-700 hover:bg-slate-100",
+                            )}
+                          >
+                            <span>
+                              {language === "bn"
+                                ? (sub.subCategoryNameBn || sub.name)
+                                : sub.name}
+                            </span>
+                            {selectedSubCategory?._id === sub._id ? (
+                              <Check className="h-3 w-3" />
+                            ) : null}
+                          </button>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                ) : null;
 
                 <div className="mt-3">
                   <div className="text-[10px] font-semibold text-slate-500">আপনার ব্যবসা সম্পর্কে কিছু দিন</div>
