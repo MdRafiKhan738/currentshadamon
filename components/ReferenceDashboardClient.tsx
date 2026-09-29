@@ -133,6 +133,8 @@ export default function ReferenceDashboardClient() {
   const { settings } = useSettings();
 
   const [user, setUser] = useState<UserShape | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
+  const [homePostStarted, setHomePostStarted] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
   const [ads, setAds] = useState<any[]>([]);
@@ -173,6 +175,7 @@ export default function ReferenceDashboardClient() {
     const token = Cookies.get("token");
     if (!token) {
       setUser(null);
+      setAuthChecked(true);
       return;
     }
     try {
@@ -204,8 +207,10 @@ export default function ReferenceDashboardClient() {
           ? packageData.data.creditsUsed
           : userData?.creditsUsed,
       });
+      setAuthChecked(true);
     } catch {
       setUser(null);
+      setAuthChecked(true);
     }
   }, []);
 
@@ -307,6 +312,27 @@ export default function ReferenceDashboardClient() {
       console.error("Right rail load failed", error);
     }
   }, []);
+
+  const homeEntryRole =
+    searchParams.get("role") === "business_owner" || searchParams.get("cat") === "business_owner"
+      ? "business_owner"
+      : "investor";
+
+  const isHomePostEntry =
+    searchParams.get("source") === "invest-home" ||
+    searchParams.has("role") ||
+    searchParams.has("cat");
+
+  const homeGatewayActive = isHomePostEntry && (!authChecked || !user);
+
+  useEffect(() => {
+    if (!isHomePostEntry || !authChecked || homePostStarted) return;
+
+    setPostRole(homeEntryRole);
+    setPostChoiceOpen(false);
+    setPostModalOpen(true);
+    setHomePostStarted(true);
+  }, [authChecked, homeEntryRole, homePostStarted, isHomePostEntry]);
 
   useEffect(() => {
     const current = {
@@ -510,6 +536,7 @@ export default function ReferenceDashboardClient() {
 
   return (
     <div className="min-h-screen bg-[#eef3f6] text-slate-900">
+      <div className={homeGatewayActive ? "pointer-events-none select-none blur-[6px]" : ""}>
       <header className="sticky top-0 z-[80] border-b border-slate-200 bg-white/95 backdrop-blur">
         <div className="mx-auto grid h-[66px] w-full max-w-[1090px] grid-cols-[180px_minmax(0,580px)_230px] items-center gap-[50px] px-3 xl:grid-cols-[180px_580px_230px]">
           <div className="flex items-center gap-2">
@@ -566,7 +593,7 @@ export default function ReferenceDashboardClient() {
               <div className="text-[9px] font-bold uppercase tracking-wider text-emerald-700">Active package</div>
               <div className="max-w-[150px] truncate text-[11px] font-bold text-slate-800">{packageSummary}</div>
             </button>
-            <button onClick={openPostFlow} className="rounded-md bg-[#1587a6] px-4 py-2 text-xs font-bold text-white shadow-sm">
+            <button onClick={openPostFlow} className="max-w-[150px] truncate whitespace-nowrap rounded-md bg-[#1587a6] px-3 py-2 text-xs font-bold text-white shadow-sm sm:max-w-[190px]">
               {language === "bn" ? "ফ্রি বিজ্ঞাপন দিন" : "Post Free"}
             </button>
           </div>
@@ -832,6 +859,8 @@ export default function ReferenceDashboardClient() {
         </div>
       )}
 
+      </div>
+
       {postChoiceOpen && (
         <div className="fixed inset-0 z-[400] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
           <div className="w-full max-w-[520px] rounded-2xl bg-white p-5 shadow-2xl">
@@ -858,11 +887,24 @@ export default function ReferenceDashboardClient() {
 
       <InvestmentPostFormModal
         isOpen={postModalOpen}
-        onClose={() => setPostModalOpen(false)}
+        onClose={() => {
+          if (isHomePostEntry && !Cookies.get("token")) {
+            window.location.href = "https://shadamoninvest.vercel.app/";
+            return;
+          }
+          setPostModalOpen(false);
+        }}
         initialRole={postRole}
         referenceDesign
+        onFailure={() => {
+          if (isHomePostEntry) {
+            window.location.href = "https://shadamoninvest.vercel.app/";
+            return;
+          }
+        }}
         onSuccess={() => {
           setPostModalOpen(false);
+          setHomePostStarted(false);
           loadFeed();
           loadUser();
         }}
