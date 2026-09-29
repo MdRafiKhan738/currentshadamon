@@ -372,6 +372,8 @@ export default function AccountActivityModal({ isOpen, onClose, userId, onOpenPo
                         pendingInvitations: (invites.received || []).filter((x: any) => x.status === 'pending').length,
                         profileVisitors: Number(me.profileViews || 0),
                         packageName: me.activePackage?.name || me.merchantType || 'Free',
+                        packageType: me.activePackage?.type || '',
+                        packageValidTill: me.activePackage?.validTill || me.validityDate || '',
                         usedConnects: Number(me.creditsUsed || me.activePackage?.usedCredits || 0),
                         availableConnects: Number(me.connectsBalance || me.activePackage?.creditsRemaining || 0),
                         pendingVerification: Array.isArray(ads.data) ? ads.data.filter((x: any) => ['review', 'pending'].includes(String(x.status || '').toLowerCase())).length : 0,
