@@ -1681,9 +1681,8 @@ export default function DashboardLayoutClient({
             setAdToEdit(null);
             setSidebarPostRole(undefined);
             setIsPostChoiceOpen(false);
+            setIsAccountModalOpen(false);
             window.dispatchEvent(new Event("refresh-ads"));
-            setAccountModalInitialTab("Post");
-            setIsAccountModalOpen(true);
             window.history.replaceState(null, "", "/dashboard?view=dashboard");
           }}
         />
