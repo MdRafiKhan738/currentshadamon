@@ -747,6 +747,7 @@ export default function ReferenceDashboardClient() {
         isOpen={postModalOpen}
         onClose={() => setPostModalOpen(false)}
         initialRole={postRole}
+        referenceDesign
         onSuccess={() => {
           setPostModalOpen(false);
           loadFeed();
