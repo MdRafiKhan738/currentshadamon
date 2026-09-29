@@ -66,9 +66,15 @@ export default function ProposalModal({ isOpen, onClose }: { isOpen: boolean; on
                     <div className="mt-3 grid grid-cols-2 gap-2 border-t border-slate-200 pt-2 text-[11px] text-slate-500">
                       <div><span className="font-semibold text-slate-700">Post:</span> {p.adId.headline || "Investment post"}</div>
                       <div><span className="font-semibold text-slate-700">Type:</span> {p.proposalType || "investment"}</div>
-                      {p.adId.minInvestment != null && <div><span className="font-semibold text-slate-700">Min investment:</span> {p.adId.minInvestment}</div>}
-                      {p.adId.maxInvestment != null && <div><span className="font-semibold text-slate-700">Max investment:</span> {p.adId.maxInvestment}</div>}
-                      {p.adId.expectedReturn != null && <div><span className="font-semibold text-slate-700">Expected return:</span> {p.adId.expectedReturn}</div>}
+                      {p.adId.priceBoxFields?.map((field: any) => {
+                        const values = p.adId.priceBoxValues || p.adId.features?.priceBoxValues || {};
+                        const value = values[field.key];
+                        return value != null && String(value).trim() ? (
+                          <div key={field.key}>
+                            <span className="font-semibold text-slate-700">{field.label || field.labelBn || field.key}:</span> {String(value)}
+                          </div>
+                        ) : null;
+                      })}
                     </div>
                   )}
                 </div>
