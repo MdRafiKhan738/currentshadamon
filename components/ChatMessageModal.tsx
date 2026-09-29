@@ -6,8 +6,8 @@ import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { getImageUrl } from '../utils/imageUrl';
 import Cookies from 'js-cookie';
-import { API_BASE_URL } from '../utils/apiConfig';
-import { io, Socket } from 'socket.io-client';
+import { API_BASE_URL, getSharedSocket } from '../utils/apiConfig';
+import { Socket } from 'socket.io-client';
 import AdDetailsModal from './AdDetailsModal';
 import VerifiedBadge from './VerifiedBadge';
 
@@ -121,33 +121,22 @@ export default function ChatMessageModal({ isOpen, onClose, onBack, ad, otherUse
         }
     };
 
-    // Initialize socket and fetch user
+    // Reuse the dashboard/session socket so the first chat open does not race a second socket connection.
     useEffect(() => {
         const token = Cookies.get('token');
         if (!token) return;
 
-        let activeSocket: Socket | null = null;
-
-        // Fetch User
         fetch(`${API_BASE_URL}/api/user/me`, {
             headers: { 'Authorization': `Bearer ${token}` }
         })
             .then(res => res.json())
             .then(data => {
+                if (!data?._id) return;
                 setCurrentUser(data);
-
-                // Connect Socket
-                const socketUrl = API_BASE_URL.replace('/api', '');
-                activeSocket = io(socketUrl);
-                setSocket(activeSocket);
-
-                activeSocket.emit('setup', { id: data._id });
+                const shared = getSharedSocket(data._id);
+                if (shared) setSocket(shared);
             })
             .catch(err => console.error("Error fetching user:", err));
-
-        return () => {
-            if (activeSocket) activeSocket.disconnect();
-        };
     }, []);
 
     // Fetch messages when modal opens or ad changes
