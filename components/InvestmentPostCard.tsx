@@ -86,13 +86,6 @@ export default function InvestmentPostCard({
   onOpen: () => void;
 }) {
   const [inviteStatus, setInviteStatus] = useState<"none" | "pending" | "accepted" | "rejected" | "cancelled">("none");
-  const [now, setNow] = useState(Date.now());
-
-  useEffect(() => {
-    const timer = window.setInterval(() => setNow(Date.now()), 10000);
-    return () => window.clearInterval(timer);
-  }, []);
-
   useEffect(() => {
     let cancelled = false;
     const token = Cookies.get("token");
@@ -266,7 +259,7 @@ export default function InvestmentPostCard({
                   <span className="font-semibold text-slate-500">Post by</span>
                   <span className="font-bold text-slate-700">{name}</span>
                   <CalendarDays className="h-2.5 w-2.5" />
-                  <span>{postedAgo(displayDate, now)}</span>
+                  <span>{postedAgo(displayDate)}</span>
                 </div>
                 {post.subLocation ? (
                   <div className="mt-0.5 text-[8px] text-slate-400">{post.location} · {post.subLocation}</div>
