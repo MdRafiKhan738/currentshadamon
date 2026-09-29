@@ -146,7 +146,7 @@ export default function InvestmentPostCard({
     post.postRole === "business_owner"
       ? post.businessStatus === "new"
         ? (language === "bn" ? "নতুন ব্যবসা" : "New Business")
-        : post.businessStatus === "closed"
+        : post.businessStatus === "closed" || post.businessStatus === "inactive"
           ? (language === "bn" ? "ব্যবসা বন্ধ" : "Close Business")
           : (language === "bn" ? "সক্রিয় ব্যবসা" : "Active Business")
       : (language === "bn" ? "বিনিয়োগকারী" : "Investor");
