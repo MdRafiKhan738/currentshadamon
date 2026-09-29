@@ -1167,10 +1167,10 @@ export default function AdDetailsModal({
                         String(ad.user?._id || ad.user) !== String(currentUserId) && (
                           <button
                             onClick={handleInvite}
-                            className="flex-1 h-10 border border-violet-200 bg-violet-50 text-violet-700 text-xs px-1 rounded-md hover:bg-violet-100 transition-colors flex items-center justify-center gap-1"
+                            className={inviteStatus !== "none" ? "flex-1 h-10 border border-emerald-200 bg-emerald-50 text-emerald-700 text-xs px-1 rounded-md flex items-center justify-center gap-1" : "flex-1 h-10 border border-violet-200 bg-violet-50 text-violet-700 text-xs px-1 rounded-md hover:bg-violet-100 transition-colors flex items-center justify-center gap-1"}
                           >
                             <UserPlus className="w-3.5 h-3.5" />
-                            Invite
+                            {inviteStatus === "pending" ? "Invited" : inviteStatus === "accepted" ? "Accepted" : "Invite"}
                           </button>
                         )}
 
