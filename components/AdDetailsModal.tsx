@@ -469,7 +469,46 @@ export default function AdDetailsModal({
     }
     const receiverId = typeof ad.user === "object" ? ad.user?._id : ad.user;
     if (!receiverId || String(receiverId) === String(currentUserId)) return;
+
     try {
+      if (inviteStatus === "pending") {
+        const existing = await fetch(
+          API_BASE_URL + "/api/invites?adId=" + encodeURIComponent(ad._id),
+          {
+            headers: { Authorization: "Bearer " + token },
+            cache: "no-store",
+          },
+        ).then((response) => response.json());
+
+        const sent = Array.isArray(existing?.sent) ? existing.sent : [];
+        const current = sent.find(
+          (invite: any) =>
+            String(invite.adId?._id || invite.adId) === String(ad._id),
+        );
+
+        if (current?._id) {
+          const cancelResponse = await fetch(
+            API_BASE_URL + "/api/invites/" + current._id,
+            {
+              method: "PATCH",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: "Bearer " + token,
+              },
+              body: JSON.stringify({ status: "cancelled" }),
+            },
+          );
+          const cancelResult = await cancelResponse.json().catch(() => ({}));
+          if (!cancelResponse.ok) {
+            throw new Error(cancelResult.message || "Unable to cancel invitation.");
+          }
+          setInviteStatus("none");
+          window.dispatchEvent(new Event("refresh-dashboard"));
+          toast.success("Invitation cancelled.");
+          return;
+        }
+      }
+
       const response = await fetch(API_BASE_URL + "/api/invites/send", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
@@ -1166,12 +1205,12 @@ export default function AdDetailsModal({
                       {ad.postRole &&
                         String(ad.user?._id || ad.user) !== String(currentUserId) && (
                           <button
-                            onClick={inviteStatus === "none" ? handleInvite : undefined}
-                            disabled={inviteStatus !== "none"}
+                            onClick={handleInvite}
+                            disabled={inviteStatus === "accepted"}
                             className={inviteStatus !== "none" ? "flex-1 h-10 border border-emerald-200 bg-emerald-50 text-emerald-700 text-xs px-1 rounded-md flex items-center justify-center gap-1" : "flex-1 h-10 border border-violet-200 bg-violet-50 text-violet-700 text-xs px-1 rounded-md hover:bg-violet-100 transition-colors flex items-center justify-center gap-1"}
                           >
                             <UserPlus className="w-3.5 h-3.5" />
-                            {inviteStatus === "pending" ? "Invited" : inviteStatus === "accepted" ? "Accepted" : "Invite"}
+                            {inviteStatus === "pending" ? "Invited • Cancel" : inviteStatus === "accepted" ? "Accepted" : "Invite"}
                           </button>
                         )}
 
