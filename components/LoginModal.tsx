@@ -86,11 +86,15 @@ export default function LoginModal({ isOpen, onClose, onSuccess, onSwitchToRegis
             if (data.token) {
                 Cookies.set('token', data.token, { expires: 7 });
                 toast.success("Login Successful!");
-                onClose();
                 window.dispatchEvent(new Event('auth-change'));
                 if (onSuccess) {
-                    onSuccess();
-                } else {
+                    // Let the parent finish its authenticated-state transition
+                    // before this modal closes, so dashboard login flows can
+                    // reveal the dashboard without a homepage redirect.
+                    await onSuccess();
+                }
+                onClose();
+                if (!onSuccess) {
                     window.location.reload();
                 }
             }
