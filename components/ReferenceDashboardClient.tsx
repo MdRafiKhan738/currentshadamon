@@ -506,6 +506,7 @@ export default function ReferenceDashboardClient() {
     : ads.filter((ad) => !ad.postRole);
   const displayPosts = modeFilteredInvestmentPosts.slice(0, 8);
   const displayFreeAds = modeFilteredFreeAds.slice(0, 8);
+  const availablePostCount = modeFilteredInvestmentPosts.length + modeFilteredFreeAds.length;
 
   return (
     <div className="min-h-screen bg-[#eef3f6] text-slate-900">
@@ -632,7 +633,7 @@ export default function ReferenceDashboardClient() {
                         : "Location"}
                     </span>
                     <span className="shrink-0 text-[9px] text-slate-400">
-                      ({displayPosts.length + displayFreeAds.length})
+                      ({availablePostCount})
                     </span>
                   </button>
                   <button onClick={() => setFilterOpen(true)} className="flex items-center justify-center gap-2 px-3 py-2.5 text-xs font-medium hover:bg-slate-50"><SlidersHorizontal className="h-4 w-4" />Filter</button>
