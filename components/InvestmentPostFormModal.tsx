@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import { API_BASE_URL } from "../utils/apiConfig";
 import LoginModal from "./LoginModal";
 import { getImageUrl } from "../utils/imageUrl";
+import { useLanguage } from "../app/context/LanguageContext";
 
 type InvestmentRole = "investor" | "business_owner";
 
@@ -115,6 +116,7 @@ export default function InvestmentPostFormModal({
   const [password, setPassword] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showExistingAccountLogin, setShowExistingAccountLogin] = useState(false);
+  const { language } = useLanguage();
 
   const priceFields = useMemo(
     () =>
@@ -534,9 +536,24 @@ export default function InvestmentPostFormModal({
                 <div className="mt-3 rounded border border-slate-300">
                   <div className="flex items-center gap-2 border-b border-slate-200 bg-white px-2.5 py-1.5">
                     <span className={postRole === "investor" ? "rounded-full bg-violet-100 px-2 py-1 text-[9px] font-bold text-violet-700" : "rounded-full bg-emerald-100 px-2 py-1 text-[9px] font-bold text-emerald-700"}>
-                      {postRole === "investor" ? "I wanna invest" : "I need investment"}
+                      {postRole === "investor"
+                        ? (language === "bn" ? "আমি বিনিয়োগ করতে চাই" : "I wanna invest")
+                        : (language === "bn" ? "আমার ব্যবসায় বিনিয়োগ দরকার" : "I need investment")}
                     </span>
-                    <span className="text-[9px] text-slate-400">ক্যাটাগরি অটো-সিলেক্টেড</span>
+                    <span className="text-[9px] text-slate-400">
+                      {language === "bn" ? "ক্যাটাগরি স্বয়ংক্রিয়ভাবে নির্বাচিত" : "Category auto-selected"}
+                    </span>
+                    {postRole === "business_owner" ? (
+                      <select
+                        value={businessStatus}
+                        onChange={(event) => setBusinessStatus(event.target.value as "active" | "new" | "closed")}
+                        className="rounded border border-emerald-200 bg-emerald-50 px-2 py-1 text-[9px] font-semibold text-emerald-700 outline-none"
+                      >
+                        <option value="active">{language === "bn" ? "সক্রিয় ব্যবসা" : "Active Business"}</option>
+                        <option value="new">{language === "bn" ? "নতুন ব্যবসা" : "New Business"}</option>
+                        <option value="closed">{language === "bn" ? "ব্যবসা বন্ধ" : "Close Business"}</option>
+                      </select>
+                    ) : null}
                   </div>
 
                   <select
