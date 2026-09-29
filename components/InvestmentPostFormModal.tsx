@@ -537,12 +537,12 @@ export default function InvestmentPostFormModal({
                             key={sub._id}
                             type="button"
                             onClick={() => handleSelectSubCategory(category, sub)}
-                            className={cn(
-                              "flex w-full items-center justify-between rounded px-2 py-1.5 text-left text-[9px] font-semibold",
-                              selectedSubCategory?._id === sub._id
+                            className={
+                              "flex w-full items-center justify-between rounded px-2 py-1.5 text-left text-[9px] font-semibold " +
+                              (selectedSubCategory?._id === sub._id
                                 ? "bg-slate-900 text-white"
-                                : "text-slate-700 hover:bg-slate-100",
-                            )}
+                                : "text-slate-700 hover:bg-slate-100")
+                            }
                           >
                             <span>
                               {language === "bn"
