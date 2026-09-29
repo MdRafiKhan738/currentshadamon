@@ -36,8 +36,8 @@ import { toast } from "react-hot-toast";
 
 import { API_BASE_URL } from "../utils/apiConfig";
 import { getImageUrl } from "../utils/imageUrl";
-import { useLanguage } from "./context/LanguageContext";
-import { useSettings } from "./context/SettingsContext";
+import { useLanguage } from "../app/context/LanguageContext";
+import { useSettings } from "../app/context/SettingsContext";
 
 import InvestmentPostCard from "./InvestmentPostCard";
 import InvestmentPostFormModal from "./InvestmentPostFormModal";
