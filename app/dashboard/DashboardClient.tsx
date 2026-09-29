@@ -1494,48 +1494,37 @@ export default function DashboardClient() {
                         }
                       }}
                     >
-                      <div
-                        className={cn(
-                          "w-[62px] h-[62px] lg:w-[70px] lg:h-[70px] rounded-full border-2 p-1 transition-all",
-                          cat.name === filters.category
-                            ? "border-[#0088cc] bg-blue-50"
-                            : "border-slate-200",
-                        )}
-                      >
-                        <div className="w-full h-full rounded-full bg-blue-50 overflow-hidden flex items-center justify-center">
-                          {cat.icon ? (
-                            <img
-                              src={getImageUrl(cat.icon) || undefined}
-                              alt={getLocalizedCategoryName(
-                                cat.name,
-                                cat.categoryNameBn,
-                              )}
-                              className="w-full h-full object-contain"
-                              loading="lazy"
-                            />
-                          ) : (
-                            <img
-                              src={`https://placehold.co/100x100?text=${getLocalizedCategoryName(cat.name, cat.categoryNameBn).charAt(0)}`}
-                              alt={getLocalizedCategoryName(
-                                cat.name,
-                                cat.categoryNameBn,
-                              )}
-                              className="w-full h-full object-contain opacity-50"
-                              loading="lazy"
-                            />
+                      {cat.icon || (cat as any).image ? (
+                        <div
+                          className={cn(
+                            "w-[62px] h-[62px] lg:w-[70px] lg:h-[70px] rounded-full border-2 p-1 transition-all",
+                            cat.name === filters.category
+                              ? "border-[#0088cc] bg-blue-50"
+                              : "border-slate-200",
                           )}
+                        >
+                          <div className="w-full h-full rounded-full bg-blue-50 overflow-hidden flex items-center justify-center">
+                            <img
+                              src={getImageUrl(cat.icon || (cat as any).image) || undefined}
+                              alt={getLocalizedCategoryName(cat.name, cat.categoryNameBn)}
+                              className="w-full h-full object-cover"
+                              loading="lazy"
+                            />
+                          </div>
                         </div>
-                      </div>
+                      ) : null}
                       <span
                         className={cn(
                           "text-[10px] lg:text-[11px] font-bold text-center max-w-[62px] lg:max-w-[70px] truncate transition-colors",
-                          cat.name === filters.category
-                            ? "text-[#0088cc]"
-                            : "text-black",
+                          cat.icon || (cat as any).image
+                            ? cat.name === filters.category
+                              ? "text-[#0088cc]"
+                              : "text-black"
+                            : "text-green-600",
                         )}
                       >
                         {getLocalizedCategoryName(cat.name, cat.categoryNameBn)}
-                      </span>
+                      </span>n>
                     </Link>
                   ))}
                 </>
