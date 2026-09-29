@@ -6,9 +6,9 @@ import { RiUser3Fill, RiDeleteBinFill } from 'react-icons/ri';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import Cookies from 'js-cookie';
-import { API_BASE_URL } from '../utils/apiConfig';
+import { API_BASE_URL, getSharedSocket } from '../utils/apiConfig';
 import { getImageUrl } from '../utils/imageUrl';
-import { io, Socket } from 'socket.io-client';
+import { Socket } from 'socket.io-client';
 import AdDetailsModal from './AdDetailsModal';
 
 function cn(...inputs: (string | undefined | null | false)[]) {
@@ -58,14 +58,11 @@ export default function MessageModal({ isOpen, onClose, onOpenChat }: MessageMod
     useEffect(() => {
         if (!isOpen || !currentUser) return;
 
-        const socketUrl = API_BASE_URL.replace('/api', '');
-        const activeSocket = io(socketUrl);
-        setSocket(activeSocket);
-
-        activeSocket.emit('setup', { id: currentUser._id });
+        const activeSocket = getSharedSocket(currentUser._id);
+        if (activeSocket) setSocket(activeSocket);
 
         return () => {
-            activeSocket.disconnect();
+            // Shared session socket is owned by the dashboard.
         };
     }, [isOpen, currentUser?._id]);
 
