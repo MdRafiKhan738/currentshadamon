@@ -955,6 +955,7 @@ export default function ReferenceDashboardClient() {
         categories={categories as any}
         locations={locations as any}
         initialFilters={filters}
+        postCount={availablePostCount}
         onApply={(next) => { setFilterOpen(false); applyFilters(next); }}
       />
 
