@@ -756,7 +756,10 @@ export default function InvestmentPostFormModal({
                   setBusinessName(me.storeName || me.businessName || me.name || businessName);
                   setPhone(me.mobile || phone);
                   setShowExistingAccountLogin(false);
-                  onClose();
+                  // Keep the post modal mounted until the dashboard confirms the new
+                  // authenticated user. The parent then closes it without triggering
+                  // the unauthenticated homepage redirect.
+                  window.dispatchEvent(new Event("dashboard-login-success"));
                 }
               } finally {
                 window.dispatchEvent(new Event("auth-change"));
