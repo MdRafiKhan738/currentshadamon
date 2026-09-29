@@ -648,6 +648,7 @@ export default function DashboardLayoutClient({
             ...prev,
             connectsBalance: balance,
             creditsUsed: typeof payload?.creditsUsed === "number" ? payload.creditsUsed : prev.creditsUsed,
+            activePackage: payload?.activePackage || prev.activePackage,
           } : prev);
           window.dispatchEvent(new CustomEvent("connect-balance-updated", { detail: { balance } }));
         };
