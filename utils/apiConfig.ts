@@ -19,3 +19,30 @@ export const API_BASE_URL =
   isProduction
     ? (!configuredApiUrl || isLocalApi ? PRODUCTION_API_URL : configuredApiUrl)
     : (configuredApiUrl || "http://localhost:5000");
+
+
+import { io, Socket } from "socket.io-client";
+
+let sharedSocket: Socket | null = null;
+let sharedSocketUserId: string | null = null;
+
+export const getSharedSocket = (userId: string) => {
+  const normalized = String(userId || "");
+  if (!normalized) return null;
+  if (sharedSocket && sharedSocketUserId === normalized && (sharedSocket.connected || sharedSocket.active)) {
+    return sharedSocket;
+  }
+  if (sharedSocket) sharedSocket.disconnect();
+  sharedSocket = io(API_BASE_URL.replace(/\\/api\\/?$/, ""), { transports: ["websocket", "polling"] });
+  sharedSocketUserId = normalized;
+  const setup = () => sharedSocket?.emit("setup", { id: normalized });
+  sharedSocket.on("connect", setup);
+  if (sharedSocket.connected) setup();
+  return sharedSocket;
+};
+
+export const disconnectSharedSocket = () => {
+  sharedSocket?.disconnect();
+  sharedSocket = null;
+  sharedSocketUserId = null;
+};
