@@ -160,6 +160,7 @@ export default function ReferenceDashboardClient() {
   const [initialMobile, setInitialMobile] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFilterBubble, setSelectedFilterBubble] = useState("");
+  const [dashboardSummary, setDashboardSummary] = useState({ pendingProposals: 0, acceptedProposals: 0, pendingInvitations: 0, pendingVerification: 0 });
 
   const loadUser = useCallback(async () => {
     const token = Cookies.get("token");
@@ -179,6 +180,38 @@ export default function ReferenceDashboardClient() {
       setUser(await response.json());
     } catch {
       setUser(null);
+    }
+  }, []);
+
+  const loadDashboardSummary = useCallback(async (currentUser?: UserShape | null) => {
+    const token = Cookies.get("token");
+    if (!token) {
+      setDashboardSummary({ pendingProposals: 0, acceptedProposals: 0, pendingInvitations: 0, pendingVerification: 0 });
+      return;
+    }
+    try {
+      const headers = { Authorization: `Bearer ${token}` };
+      const [proposalRes, inviteRes, adsRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/api/proposals`, { headers, cache: "no-store" }).then((r) => r.json()),
+        fetch(`${API_BASE_URL}/api/invites`, { headers, cache: "no-store" }).then((r) => r.json()),
+        fetch(`${API_BASE_URL}/api/ads/me`, { headers, cache: "no-store" }).then((r) => r.json()),
+      ]);
+      const proposals = Array.isArray(proposalRes?.data)
+        ? proposalRes.data
+        : [...(proposalRes?.received || []), ...(proposalRes?.sent || [])];
+      const invitations = Array.isArray(inviteRes?.received) ? inviteRes.received : [];
+      const ads = Array.isArray(adsRes?.data) ? adsRes.data : [];
+      setDashboardSummary({
+        pendingProposals: proposals.filter((x: any) => x?.status === "pending").length,
+        acceptedProposals: proposals.filter((x: any) => x?.status === "accepted").length,
+        pendingInvitations: invitations.filter((x: any) => x?.status === "pending").length,
+        pendingVerification: ads.filter((x: any) => ["review", "pending"].includes(String(x?.status || "").toLowerCase())).length,
+      });
+    } catch {
+      // Keep the most recent dashboard counters when a secondary request fails.
+    }
+    if (currentUser) {
+      setDashboardSummary((prev) => ({ ...prev }));
     }
   }, []);
 
@@ -267,10 +300,15 @@ export default function ReferenceDashboardClient() {
   }, [searchParams]);
 
   useEffect(() => {
-    loadUser();
+    loadUser().then(() => loadDashboardSummary());
     loadMeta();
     loadRightRail();
-  }, [loadUser, loadMeta, loadRightRail]);
+    const timer = window.setInterval(() => {
+      loadUser();
+      loadDashboardSummary();
+    }, 5000);
+    return () => window.clearInterval(timer);
+  }, [loadUser, loadDashboardSummary, loadMeta, loadRightRail]);
 
   useEffect(() => {
     if (!dashboardView) loadFeed();
@@ -279,6 +317,7 @@ export default function ReferenceDashboardClient() {
   useEffect(() => {
     const refresh = () => {
       loadUser();
+      loadDashboardSummary(user);
       loadRightRail();
       if (!dashboardView) loadFeed();
     };
@@ -292,7 +331,7 @@ export default function ReferenceDashboardClient() {
       window.removeEventListener("connect-balance-updated", refresh);
       window.removeEventListener("refresh-ads", refresh);
     };
-  }, [dashboardView, loadFeed, loadRightRail, loadUser]);
+  }, [dashboardView, loadDashboardSummary, loadFeed, loadRightRail, loadUser, user]);
 
   useEffect(() => {
     if (searchParams.get("openModal") === "true") {
@@ -490,7 +529,7 @@ export default function ReferenceDashboardClient() {
 
         <section className="w-full min-w-0 lg:w-[580px] lg:flex-none">
           {dashboardView ? (
-            <DashboardReferencePanel user={user} onBack={openFeed} onOpenPackage={() => setPackageOpen(true)} onOpenAccount={openAccount} />
+            <DashboardReferencePanel user={user} summary={dashboardSummary} onBack={openFeed} onOpenPackage={() => setPackageOpen(true)} onOpenAccount={openAccount} />
           ) : (
             <>
               <div className="sticky top-[66px] z-[60] rounded-none border-b border-slate-200 bg-white lg:rounded-md">
@@ -507,7 +546,7 @@ export default function ReferenceDashboardClient() {
                   <button onClick={() => setActiveSelector("location")} className={cn("relative pb-2", activeSelector === "location" ? "text-black" : "text-slate-400")}>Select Location{activeSelector === "location" ? <span className="absolute inset-x-0 -top-3 h-0.5 bg-blue-500" /> : null}</button>
                 </div>
                 <div className="relative">
-                  <div className="flex gap-4 overflow-x-auto px-3 py-3 no-scrollbar">
+                  <div id="ref-category-scroll" className="flex gap-4 overflow-x-auto px-3 py-3 no-scrollbar">
                     {(activeSelector === "category" ? categories : locations).map((item: any) => {
                       const value = item.name;
                       const selected = activeSelector === "category" ? filters.category === value : filters.location === value;
@@ -771,11 +810,13 @@ function GridIcon() {
 
 function DashboardReferencePanel({
   user,
+  summary,
   onBack,
   onOpenPackage,
   onOpenAccount,
 }: {
   user: UserShape | null;
+  summary: { pendingProposals: number; acceptedProposals: number; pendingInvitations: number; pendingVerification: number };
   onBack: () => void;
   onOpenPackage: () => void;
   onOpenAccount: (tab?: "Dashboard" | "Page" | "Profile" | "Settings" | "Post" | "Activity") => void;
@@ -827,8 +868,8 @@ function DashboardReferencePanel({
         </div>
 
         <div className="mt-3 grid grid-cols-3 border-y border-slate-100">
-          <Metric label="Pending Invitations" value={0} />
-          <Metric label="Accepted Invitations" value={0} />
+          <Metric label="Pending Invitations" value={summary.pendingInvitations} />
+          <Metric label="Accepted Invitations" value={summary.acceptedProposals} />
           <Metric label="Profile Visitors" value={Number(user?.profileViews || 0)} />
         </div>
 
