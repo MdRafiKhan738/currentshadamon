@@ -738,10 +738,6 @@ export default function InvestmentPostFormModal({
           <LoginModal
             isOpen={showExistingAccountLogin}
             onClose={() => {
-              if (isInvestHomeEntry && !Cookies.get("token")) {
-                window.location.href = "https://shadamoninvest.vercel.app/";
-                return;
-              }
               setShowExistingAccountLogin(false);
             }}
             initialMobile={phone}
@@ -752,11 +748,14 @@ export default function InvestmentPostFormModal({
               if (!token) return;
               try {
                 const response = await fetch(API_BASE_URL + "/api/user/me", { headers: { Authorization: "Bearer " + token }, cache: "no-store" });
-                const me = await response.json().catch(() => ({}));
+                const rawMe = await response.json().catch(() => ({}));
+                const me = rawMe?.user || rawMe?.data?.user || rawMe?.data || rawMe;
                 if (response.ok && me?._id) {
                   setIsAuthenticated(true);
                   setUserName(me.name || me.storeName || userName);
+                  setBusinessName(me.storeName || me.businessName || me.name || businessName);
                   setPhone(me.mobile || phone);
+                  setShowExistingAccountLogin(false);
                   onClose();
                 }
               } finally {
