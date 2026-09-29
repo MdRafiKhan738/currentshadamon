@@ -59,11 +59,13 @@ export default function ProposalModal({ isOpen, onClose }: { isOpen: boolean; on
                   <div><div className="font-bold text-slate-900">{person?.name || person?.storeName || "Member"}</div><div className="text-[11px] text-slate-400">{p.adId?.headline || "Investment post"}</div></div>
                   <span className={`rounded-full px-2 py-1 text-[10px] font-bold ${p.status === "accepted" ? "bg-emerald-100 text-emerald-700" : p.status === "rejected" || p.status === "cancelled" ? "bg-red-100 text-red-700" : "bg-amber-100 text-amber-700"}`}>{p.status}</span>
                 </div>
-                <div className="mt-3 rounded-lg bg-slate-50 p-3 text-sm text-slate-700">
+                <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
                   <div className="mb-2 text-[11px] font-bold uppercase tracking-wide text-slate-400">Proposal details</div>
-                  <p className="whitespace-pre-wrap">{p.message || "No proposal message provided."}</p>
+                  <div className="rounded-lg border border-white bg-white px-3 py-2.5">
+                    <p className="whitespace-pre-wrap leading-5 text-slate-800">{p.message || "No proposal message provided."}</p>
+                  </div>
                   {p.adId && (
-                    <div className="mt-3 grid grid-cols-2 gap-2 border-t border-slate-200 pt-2 text-[11px] text-slate-500">
+                    <div className="mt-3 grid grid-cols-1 gap-2 border-t border-slate-200 pt-3 text-[11px] text-slate-500 sm:grid-cols-2">
                       <div><span className="font-semibold text-slate-700">Post:</span> {p.adId.headline || "Investment post"}</div>
                       <div><span className="font-semibold text-slate-700">Type:</span> {p.proposalType || "investment"}</div>
                       {p.adId.priceBoxFields?.map((field: any) => {
