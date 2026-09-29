@@ -824,6 +824,9 @@ export default function InvestmentPostFormModal({
               setIsAuthenticated(true);
               setUserName(me.name || me.storeName || userName);
               setPhone(me.mobile || phone);
+              // The user is now authenticated; close the public post form so
+              // the full dashboard becomes available immediately.
+              onClose();
             }
           } finally {
             window.dispatchEvent(new Event("auth-change"));
