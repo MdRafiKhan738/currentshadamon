@@ -118,6 +118,7 @@ export default function AdDetailsModal({
   const [proposalMessage, setProposalMessage] = useState("");
   const [proposalOpen, setProposalOpen] = useState(false);
   const [proposalSending, setProposalSending] = useState(false);
+  const [inviteStatus, setInviteStatus] = useState<"none" | "pending" | "accepted">("none");
 
   const [actionButtons, setActionButtons] = useState<string[]>([
     "Call",
@@ -155,6 +156,23 @@ export default function AdDetailsModal({
         handleGlobalFollow as EventListener,
       );
   }, [ad?.user?._id, ad?.user]);
+
+  useEffect(() => {
+    if (!isOpen || !ad?._id) return;
+    const token = Cookies.get("token");
+    if (!token) {
+      setInviteStatus("none");
+      return;
+    }
+    fetch(API_BASE_URL + "/api/invites?adId=" + encodeURIComponent(ad._id), {
+      headers: { Authorization: "Bearer " + token },
+      cache: "no-store",
+    }).then(res => res.json()).then(result => {
+      const sent = Array.isArray(result?.sent) ? result.sent : [];
+      const found = sent.find((x: any) => String(x.adId?._id || x.adId) === String(ad._id));
+      setInviteStatus(found?.status === "accepted" ? "accepted" : found?.status === "pending" ? "pending" : "none");
+    }).catch(() => setInviteStatus("none"));
+  }, [isOpen, ad?._id]);
 
   // Close popup when clicking outside
   useEffect(() => {
@@ -459,6 +477,7 @@ export default function AdDetailsModal({
       });
       const result = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(result.message || "Unable to send invite.");
+      setInviteStatus("pending");
       toast.success("Invite sent.");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Unable to send invite.");
