@@ -169,15 +169,34 @@ export default function ReferenceDashboardClient() {
       return;
     }
     try {
-      const response = await fetch(`${API_BASE_URL}/api/user/me`, {
-        headers: { Authorization: `Bearer ${token}` },
-        cache: "no-store",
-      });
+      const [response, packageResponse] = await Promise.all([
+        fetch(`${API_BASE_URL}/api/user/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+          cache: "no-store",
+        }),
+        fetch(`${API_BASE_URL}/api/packages/mine`, {
+          headers: { Authorization: `Bearer ${token}` },
+          cache: "no-store",
+        }).catch(() => null),
+      ]);
       if (!response.ok) {
         setUser(null);
         return;
       }
-      setUser(await response.json());
+      const userData = await response.json();
+      const packageData = packageResponse?.ok ? await packageResponse.json().catch(() => ({})) : {};
+      setUser({
+        ...userData,
+        activePackage: packageData?.success && packageData?.data?.activePackage
+          ? packageData.data.activePackage
+          : userData?.activePackage,
+        connectsBalance: packageData?.success && typeof packageData?.data?.connectsBalance === "number"
+          ? packageData.data.connectsBalance
+          : userData?.connectsBalance,
+        creditsUsed: packageData?.success && typeof packageData?.data?.creditsUsed === "number"
+          ? packageData.data.creditsUsed
+          : userData?.creditsUsed,
+      });
     } catch {
       setUser(null);
     }
