@@ -183,7 +183,7 @@ export default function ReferenceDashboardClient() {
     }
   }, []);
 
-  const loadDashboardSummary = useCallback(async (currentUser?: UserShape | null) => {
+  const loadDashboardSummary = useCallback(async () => {
     const token = Cookies.get("token");
     if (!token) {
       setDashboardSummary({ pendingProposals: 0, acceptedProposals: 0, pendingInvitations: 0, pendingVerification: 0 });
@@ -209,9 +209,6 @@ export default function ReferenceDashboardClient() {
       });
     } catch {
       // Keep the most recent dashboard counters when a secondary request fails.
-    }
-    if (currentUser) {
-      setDashboardSummary((prev) => ({ ...prev }));
     }
   }, []);
 
@@ -317,7 +314,7 @@ export default function ReferenceDashboardClient() {
   useEffect(() => {
     const refresh = () => {
       loadUser();
-      loadDashboardSummary(user);
+      loadDashboardSummary();
       loadRightRail();
       if (!dashboardView) loadFeed();
     };
@@ -331,7 +328,7 @@ export default function ReferenceDashboardClient() {
       window.removeEventListener("connect-balance-updated", refresh);
       window.removeEventListener("refresh-ads", refresh);
     };
-  }, [dashboardView, loadDashboardSummary, loadFeed, loadRightRail, loadUser, user]);
+  }, [dashboardView, loadDashboardSummary, loadFeed, loadRightRail, loadUser]);
 
   useEffect(() => {
     if (searchParams.get("openModal") === "true") {
