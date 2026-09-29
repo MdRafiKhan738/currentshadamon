@@ -414,7 +414,6 @@ export default function InvestmentPostFormModal({
         formData.append("images", image);
       }
 
-      const token = Cookies.get("token");
       const response = await fetch(`${API_BASE_URL}/api/ads`, {
         method: "POST",
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
