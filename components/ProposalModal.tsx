@@ -65,18 +65,43 @@ export default function ProposalModal({ isOpen, onClose }: { isOpen: boolean; on
                     <p className="whitespace-pre-wrap leading-5 text-slate-800">{p.message || "No proposal message provided."}</p>
                   </div>
                   {p.adId && (
-                    <div className="mt-3 grid grid-cols-1 gap-2 border-t border-slate-200 pt-3 text-[11px] text-slate-500 sm:grid-cols-2">
-                      <div><span className="font-semibold text-slate-700">Post:</span> {p.adId.headline || "Investment post"}</div>
-                      <div><span className="font-semibold text-slate-700">Type:</span> {p.proposalType || "investment"}</div>
-                      {(p.adId.priceBoxFields || p.adId.features?.priceBoxFields || []).map((field: any) => {
-                        const values = p.adId.priceBoxValues || p.adId.features?.priceBoxValues || {};
-                        const value = values[field.key];
-                        return value != null && String(value).trim() ? (
-                          <div key={field.key}>
-                            <span className="font-semibold text-slate-700">{field.label || field.labelBn || field.key}:</span> {String(value)}
-                          </div>
-                        ) : null;
-                      })}
+                    <div className="mt-3 space-y-2 border-t border-slate-200 pt-3 text-[11px] text-slate-600">
+                      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                        <div><span className="font-semibold text-slate-700">Post:</span> {p.adId.headline || "Investment post"}</div>
+                        <div><span className="font-semibold text-slate-700">Type:</span> {p.proposalType || "investment"}</div>
+                        {p.adId.postRole ? <div><span className="font-semibold text-slate-700">Role:</span> {p.adId.postRole === "business_owner" ? "Business Owner" : "Investor"}</div> : null}
+                        {p.adId.category ? <div><span className="font-semibold text-slate-700">Category:</span> {p.adId.category}</div> : null}
+                        {p.adId.subCategory ? <div><span className="font-semibold text-slate-700">Subcategory:</span> {p.adId.subCategory}</div> : null}
+                        {p.adId.location ? <div><span className="font-semibold text-slate-700">Location:</span> {p.adId.location}{p.adId.subLocation ? " • " + p.adId.subLocation : ""}</div> : null}
+                        {p.adId.businessStatus && p.adId.postRole === "business_owner" ? <div><span className="font-semibold text-slate-700">Business status:</span> {p.adId.businessStatus}</div> : null}
+                        {p.adId.minInvestment ? <div><span className="font-semibold text-slate-700">Minimum investment:</span> {String(p.adId.minInvestment)}</div> : null}
+                        {p.adId.maxInvestment ? <div><span className="font-semibold text-slate-700">Maximum investment:</span> {String(p.adId.maxInvestment)}</div> : null}
+                        {p.adId.expectedReturn ? <div><span className="font-semibold text-slate-700">Expected return:</span> {String(p.adId.expectedReturn)}</div> : null}
+                        {p.adId.investmentReturn ? <div><span className="font-semibold text-slate-700">Return:</span> {String(p.adId.investmentReturn)}</div> : null}
+                        {p.adId.price != null ? <div><span className="font-semibold text-slate-700">Price:</span> {String(p.adId.price)}{p.adId.priceType ? " (" + p.adId.priceType + ")" : ""}</div> : null}
+                      </div>
+
+                      {p.adId.description ? (
+                        <div className="rounded-lg border border-slate-200 bg-white px-3 py-2">
+                          <div className="mb-1 font-semibold text-slate-700">Post description</div>
+                          <p className="whitespace-pre-wrap leading-5 text-slate-700">{p.adId.description}</p>
+                        </div>
+                      ) : null}
+
+                      {(p.adId.priceBoxFields || p.adId.features?.priceBoxFields || []).length > 0 ? (
+                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                          {(p.adId.priceBoxFields || p.adId.features?.priceBoxFields || []).map((field: any) => {
+                            const values = p.adId.priceBoxValues || p.adId.features?.priceBoxValues || {};
+                            const value = values[field.key];
+                            return value != null && String(value).trim() ? (
+                              <div key={field.key} className="rounded-lg border border-slate-200 bg-white px-3 py-2">
+                                <span className="font-semibold text-slate-700">{field.label || field.labelBn || field.key}:</span>{" "}
+                                <span className="text-slate-600">{String(value)}</span>
+                              </div>
+                            ) : null;
+                          })}
+                        </div>
+                      ) : null}
                     </div>
                   )}
                 </div>
