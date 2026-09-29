@@ -3,21 +3,20 @@
 import {
   BellRing,
   CheckCircle2,
-  Clock3,
   CreditCard,
   Eye,
   FileCheck2,
-  Inbox,
   Package,
   Send,
   UserPlus,
-  ArrowLeft,
 } from "lucide-react";
+import { useLanguage } from "../app/context/LanguageContext";
 
 type DashboardSummary = {
   pendingProposals: number;
   acceptedProposals: number;
   pendingInvitations: number;
+  acceptedInvitations: number;
   profileVisitors: number;
   packageName: string;
   packageType?: string;
@@ -27,169 +26,142 @@ type DashboardSummary = {
   pendingVerification: number;
 };
 
-type Props = {
-  summary: DashboardSummary;
-};
-
-export default function DashboardOverview({ summary }: Props) {
-  const goHome = () => {
-    window.location.href = "/dashboard";
-  };
+export default function DashboardOverview({ summary }: { summary: DashboardSummary }) {
+  const { language } = useLanguage();
 
   const open = (eventName: string, detail?: any) => {
     window.dispatchEvent(
-      detail
-        ? new CustomEvent(eventName, { detail })
-        : new Event(eventName),
+      detail ? new CustomEvent(eventName, { detail }) : new Event(eventName),
     );
   };
 
   const cards = [
     {
-      label: "Pending verification",
+      label: language === "bn" ? "অপেক্ষমাণ যাচাই" : "Pending verification",
       value: summary.pendingVerification,
       icon: FileCheck2,
-      description: "Posts waiting for admin review",
       action: undefined,
     },
     {
-      label: "Pending proposals",
+      label: language === "bn" ? "অপেক্ষমাণ প্রস্তাব" : "Pending proposals",
       value: summary.pendingProposals,
-      icon: Clock3,
-      description: "Proposals waiting for a response",
+      icon: FileCheck2,
       action: () => open("open-proposal-modal"),
     },
     {
-      label: "Accepted proposals",
+      label: language === "bn" ? "গৃহীত প্রস্তাব" : "Accepted proposals",
       value: summary.acceptedProposals,
       icon: CheckCircle2,
-      description: "Accepted proposal activity",
       action: () => open("open-proposal-modal"),
     },
     {
-      label: "Pending invitations",
+      label: language === "bn" ? "অপেক্ষমাণ আমন্ত্রণ" : "Pending invitations",
       value: summary.pendingInvitations,
       icon: UserPlus,
-      description: "Invitations waiting for action",
       action: () => open("open-invite-modal"),
     },
     {
-      label: "Profile visitors",
+      label: language === "bn" ? "গৃহীত আমন্ত্রণ" : "Accepted invitations",
+      value: summary.acceptedInvitations,
+      icon: CheckCircle2,
+      action: () => open("open-invite-modal"),
+    },
+    {
+      label: language === "bn" ? "প্রোফাইল ভিজিটর" : "Profile visitors",
       value: summary.profileVisitors,
       icon: Eye,
-      description: "People who viewed your profile",
-      action: () =>
-        open("open-account-modal", { activeTab: "Profile" }),
-    },
-    {
-      label: "Package",
-      value: summary.packageName || "Free",
-      icon: Package,
-      description: "Current account package" +
-        (summary.packageType ? " • " + summary.packageType : "") +
-        (summary.packageValidTill
-          ? " • Valid to " + new Date(summary.packageValidTill).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })
-          : ""),
-      action: () => open("open-package-modal"),
-    },
-    {
-      label: "Used connects",
-      value: summary.usedConnects,
-      icon: Send,
-      description: "Connects already used",
-      action: () => open("open-package-modal"),
-    },
-    {
-      label: "Available connects",
-      value: summary.availableConnects,
-      icon: CreditCard,
-      description: "Connects currently available",
-      action: () => open("open-package-modal"),
+      action: () => open("open-account-modal", { activeTab: "Profile" }),
     },
   ];
 
   return (
-    <section className="w-full rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div className="border-b border-slate-100 px-4 py-4 sm:px-6">
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={goHome}
-            aria-label="Back to home"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 text-white">
-            <Inbox className="h-5 w-5" />
-          </div>
+    <section className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+      <div className="border-b border-slate-100 px-4 py-3">
+        <div className="flex items-center justify-between gap-3">
           <div>
-            <h1 className="text-lg font-bold text-slate-900">Dashboard</h1>
-            <p className="text-xs text-slate-500">
-              Your proposals, verification, package and connects in one place.
+            <h1 className="text-[15px] font-bold text-slate-900">
+              {language === "bn" ? "ড্যাশবোর্ড" : "Dashboard"}
+            </h1>
+            <p className="mt-0.5 text-[9px] text-slate-400">
+              {language === "bn"
+                ? "প্রস্তাব, আমন্ত্রণ, প্যাকেজ এবং কানেক্ট একসাথে"
+                : "Proposals, invitations, package and connects in one place"}
             </p>
           </div>
+          <button
+            type="button"
+            onClick={() => open("open-account-modal", { activeTab: "Profile" })}
+            className="rounded-full border border-slate-200 px-2.5 py-1 text-[9px] font-semibold text-slate-600"
+          >
+            {language === "bn" ? "প্রোফাইল" : "Profile"}
+          </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-px bg-slate-200 sm:grid-cols-2 lg:grid-cols-4">
-        {cards.map(({ label, value, icon: Icon, description, action }) => (
+      <div className="grid grid-cols-2 border-b border-slate-100 sm:grid-cols-3">
+        {cards.map(({ label, value, icon: Icon, action }) => (
           <button
             key={label}
             type="button"
             onClick={action}
             disabled={!action}
-            className={`min-h-[132px] bg-white p-4 text-left transition ${action ? "cursor-pointer hover:bg-slate-50" : "cursor-default"}`}
+            className={"min-h-[86px] border-r border-b border-slate-100 bg-white px-3 py-2.5 text-left " + (action ? "cursor-pointer hover:bg-slate-50" : "cursor-default")}
           >
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-slate-700">
-                <Icon className="h-4.5 w-4.5" />
-              </div>
-              <span className="text-xl font-bold text-slate-900">
-                {value}
-              </span>
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[9px] font-medium leading-3 text-slate-400">{label}</span>
+              <Icon className="h-3.5 w-3.5 text-slate-500" />
             </div>
-            <div className="mt-4 text-sm font-bold text-slate-800">
-              {label}
-            </div>
-            <div className="mt-1 text-[11px] leading-4 text-slate-500">
-              {description}
-            </div>
+            <div className="mt-2 text-[18px] font-bold leading-none text-slate-900">{value}</div>
           </button>
         ))}
       </div>
 
-      <div className="grid gap-3 border-t border-slate-100 p-4 sm:grid-cols-2 sm:p-5">
+      <div className="grid grid-cols-1 gap-2 p-3 sm:grid-cols-3">
         <button
-          type="button"
-          onClick={() => open("open-account-modal", { activeTab: "Activity" })}
-          className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-left hover:bg-slate-100"
+          onClick={() => open("open-package-modal")}
+          className="rounded border border-slate-200 bg-slate-50 px-3 py-2 text-left hover:bg-white"
         >
-          <BellRing className="h-5 w-5 text-slate-700" />
-          <div>
-            <div className="text-sm font-bold text-slate-900">
-              Account activity
-            </div>
-            <div className="text-[11px] text-slate-500">
-              View proposals, invitations and post activity.
-            </div>
+          <div className="flex items-center gap-2">
+            <Package className="h-4 w-4 text-emerald-700" />
+            <span className="text-[9px] font-semibold text-slate-500">{language === "bn" ? "প্যাকেজ" : "Package"}</span>
+          </div>
+          <div className="mt-1 truncate text-[12px] font-bold text-slate-900">
+            {summary.packageName || "Free"}{summary.packageType ? " • " + summary.packageType : ""}
+          </div>
+          <div className="mt-0.5 text-[8px] text-slate-400">
+            {summary.packageValidTill
+              ? (language === "bn" ? "মেয়াদ " : "Valid to ") + new Date(summary.packageValidTill).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })
+              : language === "bn" ? "কোনো সক্রিয় প্যাকেজ নেই" : "No active package"}
           </div>
         </button>
 
         <button
-          type="button"
-          onClick={() => open("open-account-modal", { activeTab: "Post" })}
-          className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-left hover:bg-slate-100"
+          onClick={() => open("open-package-modal")}
+          className="rounded border border-slate-200 bg-white px-3 py-2 text-left hover:bg-slate-50"
         >
-          <FileCheck2 className="h-5 w-5 text-slate-700" />
-          <div>
-            <div className="text-sm font-bold text-slate-900">
-              My posts
-            </div>
-            <div className="text-[11px] text-slate-500">
-              Check your submitted and approved investment posts.
-            </div>
-          </div>
+          <div className="flex items-center gap-2"><Send className="h-4 w-4 text-slate-500" /><span className="text-[9px] text-slate-400">{language === "bn" ? "ব্যবহৃত কানেক্ট" : "Used Connect"}</span></div>
+          <div className="mt-1 text-[16px] font-bold text-slate-900">{summary.usedConnects}</div>
+        </button>
+
+        <button
+          onClick={() => open("open-package-modal")}
+          className="rounded border border-slate-200 bg-white px-3 py-2 text-left hover:bg-slate-50"
+        >
+          <div className="flex items-center gap-2"><CreditCard className="h-4 w-4 text-emerald-700" /><span className="text-[9px] text-slate-400">{language === "bn" ? "উপলব্ধ কানেক্ট" : "Available Connect"}</span></div>
+          <div className="mt-1 text-[16px] font-bold text-slate-900">{summary.availableConnects}</div>
+        </button>
+      </div>
+
+      <div className="border-t border-slate-100 p-3">
+        <button
+          type="button"
+          onClick={() => open("open-account-modal", { activeTab: "Activity" })}
+          className="flex w-full items-center gap-2 rounded border border-slate-200 bg-white px-3 py-2 text-left hover:bg-slate-50"
+        >
+          <BellRing className="h-4 w-4 text-slate-500" />
+          <span className="text-[10px] font-semibold text-slate-700">
+            {language === "bn" ? "অ্যাকাউন্ট অ্যাক্টিভিটি দেখুন" : "View account activity"}
+          </span>
         </button>
       </div>
     </section>
