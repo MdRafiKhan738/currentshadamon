@@ -183,7 +183,7 @@ export default function ChatMessageModal({ isOpen, onClose, onBack, ad, otherUse
     useEffect(() => {
         if (!socket) return;
 
-        socket.on('message received', (newMessage: Message) => {
+        const handleMessageReceived = (newMessage: Message) => {
             // Always refresh unread count for any new message received
             window.dispatchEvent(new Event('refresh-unread-count'));
 
@@ -202,18 +202,21 @@ export default function ChatMessageModal({ isOpen, onClose, onBack, ad, otherUse
                     markMessagesAsSeen();
                 }
             }
-        });
+        };
 
-        socket.on('seen updated', ({ adId, receiverId }: any) => {
+        const handleSeenUpdated = ({ adId, receiverId }: any) => {
             const otherUserId = getOtherUserId();
             if (adId?.toString() === ad?._id?.toString() && receiverId?.toString() === otherUserId?.toString()) {
                 setMessages(prev => prev.map(msg => ({ ...msg, status: 'seen' })));
             }
-        });
+        };
+
+        socket.on('message received', handleMessageReceived);
+        socket.on('seen updated', handleSeenUpdated);
 
         return () => {
-            socket.off('message received');
-            socket.off('seen updated');
+            socket.off('message received', handleMessageReceived);
+            socket.off('seen updated', handleSeenUpdated);
         };
     }, [socket, ad, currentUser, otherUserProp, isOpen]);
 
