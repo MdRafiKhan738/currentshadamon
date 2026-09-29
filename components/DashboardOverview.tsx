@@ -83,7 +83,7 @@ export default function DashboardOverview({
                   className="h-full w-full object-cover"
                 />
               ) : (
-                <div className="flex h-full w-full items-center justify-center text-[10px] font-semibold text-white">
+                <div className="flex h-full w-full items-center justify-center text-[11px] font-semibold text-white">
                   {profileName.slice(0, 10)}
                 </div>
               )}
@@ -99,31 +99,31 @@ export default function DashboardOverview({
           </div>
 
           <div className="min-w-0 pt-1">
-            <div className="truncate text-[9px] font-medium text-slate-700">
+            <div className="truncate text-[11px] font-medium text-slate-700">
               {profileName}
             </div>
-            <div className="truncate text-[8px] text-slate-500">
+            <div className="truncate text-[11px] text-slate-500">
               {profileLine}
             </div>
             <div className="mt-3 flex items-center gap-1.5">
               <div className="flex min-w-0 items-center gap-1 rounded border border-[#dce3ea] bg-white px-2 py-1">
-                <span className="truncate text-[8px] font-medium text-slate-700">{mobile}</span>
+                <span className="truncate text-[11px] font-medium text-slate-700">{mobile}</span>
                 <Bell className="h-3 w-3 shrink-0 text-slate-400" />
               </div>
             </div>
           </div>
 
           <div className="pt-2 text-right">
-            <div className="text-[7px] text-slate-400">
+            <div className="text-[11px] text-slate-400">
               {language === "bn" ? "অ্যাকাউন্ট টাইপ" : "Account Type"}
             </div>
-            <div className="text-[8px] font-medium text-slate-600">
+            <div className="text-[11px] font-medium text-slate-600">
               {accountType}
             </div>
             <button
               type="button"
               onClick={() => dispatchAccount("Profile")}
-              className={"mt-3 rounded-[2px] px-2.5 py-1 text-[7px] font-semibold text-white " + (user?.mVerified ? "bg-[#2e9c85]" : "bg-[#ef294b]")}
+              className={"mt-3 rounded-[2px] px-2.5 py-1 text-[11px] font-semibold text-white " + (user?.mVerified ? "bg-[#2e9c85]" : "bg-[#ef294b]")}
             >
               {verifyLabel}
             </button>
@@ -132,26 +132,26 @@ export default function DashboardOverview({
       </div>
 
       <div className="border-b border-[#e2e5e8] bg-white px-3 py-2">
-        <div className="text-[9px] font-medium text-slate-700">
+        <div className="text-[11px] font-medium text-slate-700">
           {language === "bn" ? "অ্যাকাউন্ট অ্যাক্টিভিটি" : "Account Activity"}
         </div>
 
         <div className="mt-1 grid grid-cols-3 divide-x divide-[#e7eaee]">
           <div className="px-1.5 py-1 text-left">
-            <div className="text-[10px] font-medium text-slate-700">{summary.pendingInvitations}</div>
-            <div className="text-[7px] leading-3 text-slate-500">
+            <div className="text-[11px] font-medium text-slate-700">{summary.pendingInvitations}</div>
+            <div className="text-[11px] leading-3 text-slate-500">
               {language === "bn" ? "অপেক্ষমাণ আমন্ত্রণ" : <>Pending<br />Invitations</>}
             </div>
           </div>
           <div className="px-1.5 py-1 text-left">
-            <div className="text-[10px] font-medium text-slate-700">{summary.acceptedInvitations}</div>
-            <div className="text-[7px] leading-3 text-slate-500">
+            <div className="text-[11px] font-medium text-slate-700">{summary.acceptedInvitations}</div>
+            <div className="text-[11px] leading-3 text-slate-500">
               {language === "bn" ? "গৃহীত আমন্ত্রণ" : <>Accepted<br />Invitations</>}
             </div>
           </div>
           <div className="px-1.5 py-1 text-left">
-            <div className="text-[10px] font-medium text-slate-700">{summary.profileVisitors}</div>
-            <div className="text-[7px] leading-3 text-slate-500">
+            <div className="text-[11px] font-medium text-slate-700">{summary.profileVisitors}</div>
+            <div className="text-[11px] leading-3 text-slate-500">
               {language === "bn" ? "মোট ভিজিটর" : <>Total<br />Visitors</>}
             </div>
           </div>
@@ -159,34 +159,34 @@ export default function DashboardOverview({
       </div>
 
       <div className="border-b border-[#e2e5e8] bg-white px-3 py-2">
-        <div className="flex items-center gap-1 text-[7px] font-semibold text-slate-700">
+        <div className="flex items-center gap-1 text-[11px] font-semibold text-slate-700">
           <LockKeyhole className="h-3 w-3 text-slate-700" />
           <span>{language === "bn" ? "শুধুমাত্র PREMIUM সদস্য" : "Only PREMIUM Members"}</span>
         </div>
 
         <div className="mt-1 grid grid-cols-2 divide-x divide-[#e7eaee]">
           <div className="px-1.5 py-1">
-            <div className="text-[9px] font-medium text-slate-700">
+            <div className="text-[11px] font-medium text-slate-700">
               {summary.usedConnects}
             </div>
-            <div className="text-[7px] leading-3 text-slate-500">
+            <div className="text-[11px] leading-3 text-slate-500">
               {language === "bn" ? "Used Connect" : <>Used<br />Connect</>}
             </div>
           </div>
           <div className="px-1.5 py-1">
             <div className="flex items-center gap-1">
-              <span className="text-[9px] font-medium text-slate-700">
+              <span className="text-[11px] font-medium text-slate-700">
                 {summary.availableConnects}
               </span>
               <LockKeyhole className="h-3 w-3 text-[#ef294b]" />
             </div>
-            <div className="text-[7px] leading-3 text-slate-500">
+            <div className="text-[11px] leading-3 text-slate-500">
               {language === "bn" ? "Unused Connect" : <>Unused<br />Connect</>}
             </div>
           </div>
         </div>
 
-        <div className="mt-1 flex items-center justify-between border-t border-[#eef0f2] pt-1 text-[7px] text-slate-500">
+        <div className="mt-1 flex items-center justify-between border-t border-[#eef0f2] pt-1 text-[11px] text-slate-500">
           <span className="font-semibold text-slate-700">
             {language === "bn" ? "প্যাকেজ" : "Package"}:
           </span>
@@ -196,7 +196,7 @@ export default function DashboardOverview({
         </div>
 
         {validTo ? (
-          <div className="flex items-center justify-between text-[7px] text-slate-500">
+          <div className="flex items-center justify-between text-[11px] text-slate-500">
             <span>{language === "bn" ? "মেয়াদ শেষ" : "Valid to"}</span>
             <span className="font-medium text-slate-700">{validTo}</span>
           </div>
@@ -204,7 +204,7 @@ export default function DashboardOverview({
       </div>
 
       <div className="bg-white px-3 py-2">
-        <div className="border-b border-[#e5e7eb] pb-1 text-[8px] font-medium text-slate-700">
+        <div className="border-b border-[#e5e7eb] pb-1 text-[11px] font-medium text-slate-700">
           {language === "bn" ? "অ্যাকাউন্ট সেটিংস" : "Account Settings"}
         </div>
 
@@ -212,7 +212,7 @@ export default function DashboardOverview({
           <button
             type="button"
             onClick={() => dispatchAccount("Settings")}
-            className="flex w-full items-center gap-2 py-2 text-left text-[8px] text-slate-600"
+            className="flex w-full items-center gap-2 py-2 text-left text-[11px] text-slate-600"
           >
             <BellRing className="h-3 w-3 text-slate-600" />
             {language === "bn" ? "নোটিফিকেশন" : "Notifications"}
@@ -220,7 +220,7 @@ export default function DashboardOverview({
           <button
             type="button"
             onClick={() => dispatchAccount("Settings")}
-            className="flex w-full items-center gap-2 py-2 text-left text-[8px] text-slate-600"
+            className="flex w-full items-center gap-2 py-2 text-left text-[11px] text-slate-600"
           >
             <Settings className="h-3 w-3 text-slate-600" />
             {language === "bn" ? "অ্যাকাউন্ট সেটিংস" : "Account Settings"}
@@ -231,7 +231,7 @@ export default function DashboardOverview({
               Cookies.remove("token");
               window.location.href = "/dashboard";
             }}
-            className="flex w-full items-center gap-2 py-2 text-left text-[8px] text-slate-600"
+            className="flex w-full items-center gap-2 py-2 text-left text-[11px] text-slate-600"
           >
             <LogOut className="h-3 w-3 text-slate-600" />
             {language === "bn" ? "লগ আউট" : "Log out"}
