@@ -3,6 +3,9 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import AdDisplay from './AdDisplay';
 import DashboardOverview from './DashboardOverview';
+import ProposalModal from './ProposalModal';
+import InviteModal from './InviteModal';
+import PackagePurchaseModal from './PackagePurchaseModal';
 import { useRouter } from 'next/navigation';
 import { X, ArrowLeft, Star, Heart, MapPin, Share2, MoreVertical, Edit2, Plus, ArrowRight, Grid, User, Clock, Settings, FileText, Activity, Trash2, CheckCircle2, ChevronDown, Check, LogOut, ExternalLink, Search, Bell, Copy } from 'lucide-react';
 import { clsx } from 'clsx';
@@ -73,6 +76,7 @@ export default function AccountActivityModal({ isOpen, onClose, userId, onOpenPo
         pendingProposals: number;
         acceptedProposals: number;
         pendingInvitations: number;
+        acceptedInvitations: number;
         profileVisitors: number;
         packageName: string;
         packageType: string;
@@ -84,6 +88,7 @@ export default function AccountActivityModal({ isOpen, onClose, userId, onOpenPo
         pendingProposals: 0,
         acceptedProposals: 0,
         pendingInvitations: 0,
+        acceptedInvitations: 0,
         profileVisitors: 0,
         packageName: 'Free',
         packageType: '',
@@ -319,6 +324,9 @@ export default function AccountActivityModal({ isOpen, onClose, userId, onOpenPo
 
     // Verify Profile Modal State
     const [isVerifyModalOpen, setIsVerifyModalOpen] = useState(false);
+    const [proposalModalOpen, setProposalModalOpen] = useState(false);
+    const [inviteModalOpen, setInviteModalOpen] = useState(false);
+    const [packageModalOpen, setPackageModalOpen] = useState(false);
 
     const handleSubmitRating = async () => {
         if (ratingValue === 0) {
@@ -370,25 +378,29 @@ export default function AccountActivityModal({ isOpen, onClose, userId, onOpenPo
             if (token) {
                 Promise.all([
                     fetch(API_BASE_URL + '/api/user/me', { headers: { Authorization: 'Bearer ' + token } }),
+                    fetch(API_BASE_URL + '/api/packages/mine', { headers: { Authorization: 'Bearer ' + token } }).catch(() => null),
                     fetch(API_BASE_URL + '/api/proposals', { headers: { Authorization: 'Bearer ' + token } }),
                     fetch(API_BASE_URL + '/api/invites', { headers: { Authorization: 'Bearer ' + token } }),
                     fetch(API_BASE_URL + '/api/ads/me', { headers: { Authorization: 'Bearer ' + token } }),
-                ]).then(async ([meRes, proposalsRes, invitesRes, adsRes]) => {
+                ]).then(async ([meRes, packageRes, proposalsRes, invitesRes, adsRes]) => {
                     const me = meRes.ok ? await meRes.json() : {};
+                    const packageData = packageRes?.ok ? await packageRes.json() : {};
                     const proposals = proposalsRes.ok ? await proposalsRes.json() : {};
                     const invites = invitesRes.ok ? await invitesRes.json() : {};
                     const ads = adsRes.ok ? await adsRes.json() : {};
                     const allProposals = Array.isArray(proposals.data) ? proposals.data : [...(proposals.received || []), ...(proposals.sent || [])];
+                    const activePackage = packageData?.success && packageData?.data?.activePackage ? packageData.data.activePackage : me.activePackage;
                     setDashboardSummary({
                         pendingProposals: allProposals.filter((x: any) => x.status === 'pending').length,
                         acceptedProposals: allProposals.filter((x: any) => x.status === 'accepted').length,
                         pendingInvitations: (invites.received || []).filter((x: any) => x.status === 'pending').length,
+                        acceptedInvitations: (invites.received || []).filter((x: any) => x.status === 'accepted').length,
                         profileVisitors: Number(me.profileViews || 0),
-                        packageName: me.activePackage?.name || me.merchantType || 'Free',
-                        packageType: me.activePackage?.type || '',
-                        packageValidTill: me.activePackage?.validTill || me.validityDate || '',
-                        usedConnects: Number(me.creditsUsed || me.activePackage?.usedCredits || 0),
-                        availableConnects: Number(me.connectsBalance || me.activePackage?.creditsRemaining || 0),
+                        packageName: activePackage?.name || me.merchantType || 'Free',
+                        packageType: activePackage?.type || '',
+                        packageValidTill: activePackage?.validTill || packageData?.data?.validityDate || me.validityDate || '',
+                        usedConnects: Number(packageData?.data?.creditsUsed ?? me.creditsUsed ?? activePackage?.usedCredits ?? 0),
+                        availableConnects: Number(packageData?.data?.connectsBalance ?? me.connectsBalance ?? activePackage?.creditsRemaining ?? 0),
                         pendingVerification: Array.isArray(ads.data) ? ads.data.filter((x: any) => ['review', 'pending'].includes(String(x.status || '').toLowerCase())).length : 0,
                     });
                 }).catch((error) => console.error('Dashboard summary error:', error));
@@ -402,6 +414,26 @@ export default function AccountActivityModal({ isOpen, onClose, userId, onOpenPo
             fetchLocations();
         }
     }, [activeTab]);
+
+    useEffect(() => {
+        const onOpenProposal = () => setProposalModalOpen(true);
+        const onOpenInvite = () => setInviteModalOpen(true);
+        const onOpenPackage = () => setPackageModalOpen(true);
+        const onOpenAccount = (event: Event) => {
+            const detail = (event as CustomEvent).detail;
+            if (detail?.activeTab) setActiveTab(detail.activeTab);
+        };
+        window.addEventListener('open-proposal-modal', onOpenProposal);
+        window.addEventListener('open-invite-modal', onOpenInvite);
+        window.addEventListener('open-package-modal', onOpenPackage);
+        window.addEventListener('open-account-modal', onOpenAccount);
+        return () => {
+            window.removeEventListener('open-proposal-modal', onOpenProposal);
+            window.removeEventListener('open-invite-modal', onOpenInvite);
+            window.removeEventListener('open-package-modal', onOpenPackage);
+            window.removeEventListener('open-account-modal', onOpenAccount);
+        };
+    }, []);
 
     useEffect(() => {
         // Check for profile tab request param
@@ -3058,7 +3090,11 @@ I have sent my CV for your review.`;
             )}
 
             {isVerifyModalOpen && userData && (
-                <VerifyProfileModal
+                <ProposalModal isOpen={proposalModalOpen} onClose={() => setProposalModalOpen(false)} />
+            <InviteModal isOpen={inviteModalOpen} onClose={() => setInviteModalOpen(false)} />
+            <PackagePurchaseModal isOpen={packageModalOpen} onClose={() => setPackageModalOpen(false)} />
+
+            <VerifyProfileModal
                     isOpen={isVerifyModalOpen}
                     onClose={() => setIsVerifyModalOpen(false)}
                     user={userData}
