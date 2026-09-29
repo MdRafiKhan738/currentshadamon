@@ -290,14 +290,14 @@ export default function InvestmentPostCard({
               <div className="min-w-0">
                 <div className="flex items-center gap-1 text-[12px] font-semibold text-slate-900"><span className="truncate">{name}</span></div>
                 <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[11px] text-slate-500">
-                  <span className="font-semibold text-slate-700">{language === "bn" ? "পোস্ট করেছেন" : "Post by"}</span>
+                  <span className="font-bold text-slate-700">{language === "bn" ? "পোস্ট করেছেন" : "Post by"}</span>
                   <span className="font-bold text-slate-900">{name}</span>
                   {verified ? <BadgeCheck className="h-3.5 w-3.5 text-[#12a87c]" /> : null}
                   <CalendarDays className="h-3.5 w-3.5" />
-                  <span className="font-medium text-slate-600">{language === "bn" ? "আপলোড: " : "Uploaded at: "}{postedAgo(displayDate)}</span>
+                  <span className="font-bold text-slate-600">{language === "bn" ? "আপলোড: " : "Uploaded at: "}{postedAgo(displayDate)}</span>
                 </div>
-                {post.subLocation ? <div className="mt-1 text-[11px] text-slate-600">{post.location} · {post.subLocation}</div> : null}
-                <div className="mt-1 text-[11px] font-semibold text-slate-700">{badge}</div>
+                {post.subLocation ? <div className="mt-1 text-[11px] font-bold text-slate-600">{post.location} · {post.subLocation}</div> : null}
+                <div className="mt-1 text-[11px] font-bold text-slate-700">{badge}</div>
               </div>
 
               <div className="flex w-full items-center justify-between gap-2">
