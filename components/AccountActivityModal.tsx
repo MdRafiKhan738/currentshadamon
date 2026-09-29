@@ -66,7 +66,7 @@ interface AccountActivityModalProps {
     initialTab?: 'Dashboard' | 'Page' | 'Profile' | 'Settings' | 'Post' | 'Activity';
 }
 
-export default function AccountActivityModal({ isOpen, onClose, userId, onOpenPostAd, onEditAd, initialTab = 'Page' }: AccountActivityModalProps) {
+export default function AccountActivityModal({ isOpen, onClose, userId, onOpenPostAd, onEditAd, initialTab = 'Dashboard' }: AccountActivityModalProps) {
     const router = useRouter();
     const [activeTab, setActiveTab] = useState<'Dashboard' | 'Page' | 'Profile' | 'Settings' | 'Post' | 'Activity'>(initialTab);
     const [dashboardSummary, setDashboardSummary] = useState({
