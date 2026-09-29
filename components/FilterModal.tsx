@@ -113,6 +113,7 @@ export default function FilterModal({
 
   const [allAds, setAllAds] = useState<AdItem[]>([]);
   const [premierData, setPremierData] = useState<PremierData | null>(null);
+  const [allSubLocations, setAllSubLocations] = useState<SubLocationItem[]>([]);
 
   useEffect(() => {
     const fetchPremier = async () => {
@@ -127,6 +128,23 @@ export default function FilterModal({
       }
     };
     fetchPremier();
+  }, []);
+
+  useEffect(() => {
+    const fetchSubLocations = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/locations/sub`);
+        const data = await res.json();
+        if (data.success && Array.isArray(data.data)) {
+          setAllSubLocations(
+            data.data.filter((item: any) => item.status !== false),
+          );
+        }
+      } catch (error) {
+        console.error("Error fetching sublocations:", error);
+      }
+    };
+    fetchSubLocations();
   }, []);
 
   useEffect(() => {
@@ -268,8 +286,26 @@ export default function FilterModal({
   };
 
   const selectedLocationSubLocations = useMemo(() => {
-    const subLocations =
-      locations.find((l) => l.name === tempLocation)?.subLocations || [];
+    const selectedLocation = locations.find((l) => l.name === tempLocation);
+    const apiSubLocations = allSubLocations
+      .filter(
+        (item: any) =>
+          String(item.location?._id || item.location) ===
+          String(selectedLocation?._id),
+      )
+      .map((item: any) => ({
+        _id: item._id,
+        name: item.name,
+        subLocationNameBn: item.subLocationNameBn,
+        order: item.order,
+        priority: item.priority,
+      }));
+
+    const fallbackSubLocations = selectedLocation?.subLocations || [];
+    const subLocations = apiSubLocations.length
+      ? apiSubLocations
+      : fallbackSubLocations;
+
     return [...subLocations].sort((a, b) => {
       const priorityDiff = getPriorityValue(a) - getPriorityValue(b);
       if (priorityDiff !== 0) return priorityDiff;
@@ -279,7 +315,7 @@ export default function FilterModal({
 
       return String(a?.name || "").localeCompare(String(b?.name || ""));
     });
-  }, [locations, tempLocation]);
+  }, [locations, tempLocation, allSubLocations]);
 
   const subLocationCountMap = useMemo(() => {
     const countMap = new Map<string, number>();
