@@ -34,25 +34,25 @@ import Cookies from "js-cookie";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-hot-toast";
 
-import { API_BASE_URL } from "../../utils/apiConfig";
-import { getImageUrl } from "../../utils/imageUrl";
-import { useLanguage } from "../context/LanguageContext";
-import { useSettings } from "../context/SettingsContext";
+import { API_BASE_URL } from "../utils/apiConfig";
+import { getImageUrl } from "../utils/imageUrl";
+import { useLanguage } from "./context/LanguageContext";
+import { useSettings } from "./context/SettingsContext";
 
-import InvestmentPostCard from "../../components/InvestmentPostCard";
-import InvestmentPostFormModal from "../../components/InvestmentPostFormModal";
-import PackagePurchaseModal from "../../components/PackagePurchaseModal";
-import AccountActivityModal from "../../components/AccountActivityModal";
-import LatestFreeAdPromo from "../../components/LatestFreeAdPromo";
-import AdDisplay from "../../components/AdDisplay";
-import MessageModal from "../../components/MessageModal";
-import ChatMessageModal from "../../components/ChatMessageModal";
-import InviteModal from "../../components/InviteModal";
-import PromoteModal from "../../components/PromoteModal";
-import FilterModal, { type FilterState } from "../../components/FilterModal";
-import MobileEntryModal from "../../components/MobileEntryModal";
-import LoginModal from "../../components/LoginModal";
-import RegisterModal from "../../components/RegisterModal";
+import InvestmentPostCard from "./InvestmentPostCard";
+import InvestmentPostFormModal from "./InvestmentPostFormModal";
+import PackagePurchaseModal from "./PackagePurchaseModal";
+import AccountActivityModal from "./AccountActivityModal";
+import LatestFreeAdPromo from "./LatestFreeAdPromo";
+import AdDisplay from "./AdDisplay";
+import MessageModal from "./MessageModal";
+import ChatMessageModal from "./ChatMessageModal";
+import InviteModal from "./InviteModal";
+import PromoteModal from "./PromoteModal";
+import FilterModal, { type FilterState } from "./FilterModal";
+import MobileEntryModal from "./MobileEntryModal";
+import LoginModal from "./LoginModal";
+import RegisterModal from "./RegisterModal";
 
 type InvestmentRole = "investor" | "business_owner";
 
