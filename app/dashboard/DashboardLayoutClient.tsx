@@ -1713,7 +1713,7 @@ export default function DashboardLayoutClient({
       )}
 
       {!user && (
-        <div className="fixed inset-0 z-[900] bg-white/25 backdrop-blur-[2px] pointer-events-auto" aria-hidden="true" />
+        <div className="fixed inset-0 z-[250] bg-white/25 backdrop-blur-[2px] pointer-events-auto" aria-hidden="true" />
       )}
 
       {isPostChoiceOpen && !requestedInvestmentRole && !sidebarPostRole && (
