@@ -191,6 +191,7 @@ export default function ReferenceDashboardClient() {
       ]);
       if (!response.ok) {
         setUser(null);
+        setAuthChecked(true);
         return;
       }
       const userData = await response.json();
@@ -323,16 +324,26 @@ export default function ReferenceDashboardClient() {
     searchParams.has("role") ||
     searchParams.has("cat");
 
-  const homeGatewayActive = isHomePostEntry && (!authChecked || !user);
+  const unauthenticatedDashboard = authChecked && !user;
+
+  // Anyone without a valid authenticated user must not be able to see/use the dashboard.
+  // Homepage CTAs go straight to their selected post type; direct /dashboard access
+  // opens the role chooser first.
+  const dashboardGatewayActive = !authChecked || unauthenticatedDashboard;
 
   useEffect(() => {
-    if (!isHomePostEntry || !authChecked || homePostStarted) return;
+    if (!authChecked || user || homePostStarted) return;
 
-    setPostRole(homeEntryRole);
-    setPostChoiceOpen(false);
-    setPostModalOpen(true);
+    if (isHomePostEntry) {
+      setPostRole(homeEntryRole);
+      setPostChoiceOpen(false);
+      setPostModalOpen(true);
+    } else {
+      setPostChoiceOpen(true);
+    }
+
     setHomePostStarted(true);
-  }, [authChecked, homeEntryRole, homePostStarted, isHomePostEntry]);
+  }, [authChecked, homeEntryRole, homePostStarted, isHomePostEntry, user]);
 
   useEffect(() => {
     const current = {
@@ -536,7 +547,7 @@ export default function ReferenceDashboardClient() {
 
   return (
     <div className="min-h-screen bg-[#eef3f6] text-slate-900">
-      <div className={homeGatewayActive ? "pointer-events-none select-none blur-[6px]" : ""}>
+      <div className={dashboardGatewayActive ? "pointer-events-none select-none blur-[6px]" : ""}>
       <header className="sticky top-0 z-[80] border-b border-slate-200 bg-white/95 backdrop-blur">
         <div className="mx-auto grid h-[66px] w-full max-w-[1090px] grid-cols-[180px_minmax(0,580px)_230px] items-center gap-[50px] px-3 xl:grid-cols-[180px_580px_230px]">
           <div className="flex items-center gap-2">
@@ -862,14 +873,32 @@ export default function ReferenceDashboardClient() {
       </div>
 
       {postChoiceOpen && (
-        <div className="fixed inset-0 z-[400] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+        <div
+          className="fixed inset-0 z-[400] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget && !user) {
+              window.location.href = "https://shadamoninvest.vercel.app/";
+            }
+          }}
+        >
           <div className="w-full max-w-[520px] rounded-2xl bg-white p-5 shadow-2xl">
             <div className="flex items-start justify-between">
               <div>
                 <h2 className="text-lg font-bold">{language === "bn" ? "আপনি কী পোস্ট করতে চান?" : "What do you want to post?"}</h2>
                 <p className="mt-1 text-xs text-slate-500">{language === "bn" ? "পোস্টের ধরন নির্বাচন করুন। সঠিক ক্যাটাগরি স্বয়ংক্রিয়ভাবে নির্বাচন হবে।" : "Choose the post type. The correct category is selected automatically."}</p>
               </div>
-              <button onClick={() => setPostChoiceOpen(false)} className="rounded-full p-2 text-slate-400 hover:bg-slate-100"><X className="h-4 w-4" /></button>
+              <button
+                onClick={() => {
+                  if (!user) {
+                    window.location.href = "https://shadamoninvest.vercel.app/";
+                    return;
+                  }
+                  setPostChoiceOpen(false);
+                }}
+                className="rounded-full p-2 text-slate-400 hover:bg-slate-100"
+              >
+                <X className="h-4 w-4" />
+              </button>
             </div>
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               <button onClick={() => openRolePost("investor")} className="rounded-xl border border-violet-200 bg-violet-50 p-4 text-left">
@@ -888,7 +917,7 @@ export default function ReferenceDashboardClient() {
       <InvestmentPostFormModal
         isOpen={postModalOpen}
         onClose={() => {
-          if (isHomePostEntry && !Cookies.get("token")) {
+          if (!user && (!Cookies.get("token") || isHomePostEntry)) {
             window.location.href = "https://shadamoninvest.vercel.app/";
             return;
           }
@@ -897,9 +926,8 @@ export default function ReferenceDashboardClient() {
         initialRole={postRole}
         referenceDesign
         onFailure={() => {
-          if (isHomePostEntry) {
+          if (!user && isHomePostEntry) {
             window.location.href = "https://shadamoninvest.vercel.app/";
-            return;
           }
         }}
         onSuccess={() => {
