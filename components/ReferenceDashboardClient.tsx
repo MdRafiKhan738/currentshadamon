@@ -56,7 +56,6 @@ import MobileEntryModal from "./MobileEntryModal";
 import LoginModal from "./LoginModal";
 import RegisterModal from "./RegisterModal";
 import AdDetailsModal from "./AdDetailsModal";
-import ProposalModal from "./ProposalModal";
 
 type InvestmentRole = "investor" | "business_owner";
 
@@ -152,7 +151,7 @@ export default function ReferenceDashboardClient() {
   const [accountOpen, setAccountOpen] = useState(false);
   const [accountTab, setAccountTab] = useState<"Dashboard" | "Page" | "Profile" | "Settings" | "Post" | "Activity">("Dashboard");
   const [messageOpen, setMessageOpen] = useState(false);
-  const [inviteOpen, setInviteOpen] = useState(false);
+
   const [chatOpen, setChatOpen] = useState(false);
   const [chatAd, setChatAd] = useState<any>(null);
   const [chatOtherUser, setChatOtherUser] = useState<any>(null);
@@ -166,7 +165,7 @@ export default function ReferenceDashboardClient() {
   const [selectedFilterBubble, setSelectedFilterBubble] = useState("");
   const [feedMode, setFeedMode] = useState<"watching" | "all" | "promote">("all");
   const [detailAd, setDetailAd] = useState<any>(null);
-  const [proposalModalOpen, setProposalModalOpen] = useState(false);
+
   const [dashboardSummary, setDashboardSummary] = useState({ pendingProposals: 0, acceptedProposals: 0, pendingInvitations: 0, acceptedInvitations: 0, pendingVerification: 0 });
 
   const loadUser = useCallback(async () => {
@@ -364,17 +363,14 @@ export default function ReferenceDashboardClient() {
   }, [searchParams]);
   useEffect(() => {
     const onOpenMessage = () => setMessageOpen(true);
-    const onOpenProposal = () => setProposalModalOpen(true);
     const onOpenAdDetails = (event: Event) => {
       const post = (event as CustomEvent).detail?.ad;
       if (post) openAdDetails(post);
     };
     window.addEventListener("open-message-modal", onOpenMessage);
-    window.addEventListener("open-proposal-modal", onOpenProposal);
     window.addEventListener("open-ad-details", onOpenAdDetails);
     return () => {
       window.removeEventListener("open-message-modal", onOpenMessage);
-      window.removeEventListener("open-proposal-modal", onOpenProposal);
       window.removeEventListener("open-ad-details", onOpenAdDetails);
     };
   }, [openAdDetails]);
@@ -584,12 +580,12 @@ export default function ReferenceDashboardClient() {
                 <span className="flex-1 text-left">Inbox</span>
                 {conversations.reduce((n, c) => n + Number(c.unreadCount || 0), 0) > 0 ? <span className="rounded-full bg-red-500 px-1.5 py-0.5 text-[9px] text-white">{conversations.reduce((n, c) => n + Number(c.unreadCount || 0), 0)}</span> : null}
               </button>
-              <button onClick={() => window.dispatchEvent(new Event("open-proposal-modal"))} className="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"><UserPlus className="h-4 w-4" /><span>Proposals</span></button>
+              <button onClick={() => { setAccountTab("Dashboard"); setAccountOpen(true); window.dispatchEvent(new Event("open-proposal-modal")); }} className="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"><UserPlus className="h-4 w-4" /><span>{language === "bn" ? "প্রস্তাব" : "Proposals"}</span></button>
               <button onClick={() => openAccount("Profile")} className="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"><User className="h-4 w-4" /><span>Profile</span></button>
               <button onClick={openPostFlow} className="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"><FileText className="h-4 w-4" /><span>Post</span></button>
               <button onClick={() => openAccount("Activity")} className="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"><Activity className="h-4 w-4" /><span>Activity</span></button>
               <button onClick={() => openAccount("Activity")} className="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"><Heart className="h-4 w-4" /><span>Favourite</span></button>
-              <button onClick={() => setInviteOpen(true)} className="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"><UserPlus className="h-4 w-4" /><span>Invite</span></button>
+              <button onClick={() => { setAccountTab("Dashboard"); setAccountOpen(true); window.dispatchEvent(new Event("open-invite-modal")); }} className="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"><UserPlus className="h-4 w-4" /><span>{language === "bn" ? "আমন্ত্রণ" : "Invite"}</span></button>
               <button onClick={() => setPromoteOpen(true)} className="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"><Megaphone className="h-4 w-4" /><span>Promote</span></button>
             </nav>
             <div className="border-t border-slate-100 px-3 py-3">
@@ -872,8 +868,6 @@ export default function ReferenceDashboardClient() {
         otherUser={chatOtherUser}
       />
 
-      <InviteModal isOpen={inviteOpen} onClose={() => setInviteOpen(false)} />
-      <ProposalModal isOpen={proposalModalOpen} onClose={() => setProposalModalOpen(false)} />
 
 
       <PromoteModal isOpen={promoteOpen} onClose={() => { setPromoteOpen(false); setPromoteAd(null); }} ad={promoteAd} />
