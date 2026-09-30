@@ -914,7 +914,7 @@ export default function InvestmentPostFormModal({
                       <select
                         value={businessStatus}
                         onChange={(event) => setBusinessStatus(event.target.value as "running" | "new" | "closed")}
-                        className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold text-emerald-700 outline-none"
+                        className="rounded border border-slate-300 bg-white px-2.5 py-1.5 text-[12px] font-semibold text-black outline-none"
                       >
                         <option value="running">Active Business</option>
                         <option value="new">New Business</option>
