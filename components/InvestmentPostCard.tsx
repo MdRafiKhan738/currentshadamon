@@ -110,49 +110,6 @@ export default function InvestmentPostCard({
       : (language === "bn" ? "বিনিয়োগকারী" : "Investor");
   const displayDate = post.updatedAt && post.adType?.toLowerCase() === "promoted" ? post.updatedAt : post.createdAt;
 
-  const invite = async (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.stopPropagation();
-
-    const token = Cookies.get("token");
-    if (!token) {
-      window.dispatchEvent(
-        new CustomEvent("open-mobile-entry-modal", {
-          detail: { reason: "invite", ad: post },
-        }),
-      );
-      return;
-    }
-
-    if (inviteStatus === "pending" || inviteStatus === "accepted") {
-      return;
-    }
-
-    const receiverId = post.user?._id;
-    if (!receiverId) {
-      toast.error(language === "bn" ? "এই পোস্টের মালিক শনাক্ত করা যায়নি।" : "This post owner could not be identified.");
-      return;
-    }
-
-    try {
-      const response = await fetch(API_BASE_URL + "/api/invites/send", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + token,
-        },
-        body: JSON.stringify({ receiverId, adId: post._id }),
-      });
-      const result = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(result.message || "Unable to send invite.");
-      setInviteStatus("pending");
-      setInviteId(result?.data?._id ? String(result.data._id) : null);
-      window.dispatchEvent(new Event("refresh-dashboard"));
-      toast.success(language === "bn" ? "আমন্ত্রণ পাঠানো হয়েছে।" : "Invitation sent.");
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Unable to send invite.");
-    }
-  };
-
   const priceText = (field: any) => {
     const value = values[field.key];
     if (field.inputType === "text") return String(value ?? "—");
