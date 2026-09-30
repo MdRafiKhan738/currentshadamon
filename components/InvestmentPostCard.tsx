@@ -27,6 +27,7 @@ type MarketplacePost = {
   postRole?: "investor" | "business_owner";
   businessStatus?: "new" | "closed" | "active" | "inactive";
   price?: number;
+  expectedReturn?: number;
   priceBoxValues?: Record<string, unknown>;
   priceBoxFields?: Array<{
     key: string;
@@ -109,13 +110,13 @@ export default function InvestmentPostCard({
       : (language === "bn" ? "বিনিয়োগকারী" : "Investor");
   const displayDate = post.updatedAt && post.adType?.toLowerCase() === "promoted" ? post.updatedAt : post.createdAt;
 
-  const priceText = (field: any) => {
+  const priceText = (field: any, index = 0) => {
     const value = values[field.key];
     const fieldName = String(field.label || field.labelBn || field.key || "").toLowerCase();
     const formatted = field.inputType === "text"
       ? String(value ?? "—")
       : formatInvestmentAmount(value as any);
-    if (/return|expected|profit|percentage|percent|roi/.test(fieldName)) {
+    if (index === 0 || /return|expected|profit|percentage|percent|roi/.test(fieldName)) {
       const raw = String(value ?? "").trim();
       if (raw && !raw.endsWith("%")) return formatted + "%";
     }
@@ -174,7 +175,7 @@ export default function InvestmentPostCard({
                   )}
                 >
                   <div className={cn("truncate text-[18px] font-extrabold", index === 0 ? "text-white" : "text-slate-900")}>
-                    {priceText(field)}
+                    {priceText(field, index)}
                   </div>
                 </div>
               ))}
