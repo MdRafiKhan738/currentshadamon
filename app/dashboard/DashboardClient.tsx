@@ -1204,6 +1204,21 @@ export default function DashboardClient() {
         <div className="space-y-4">
           <div className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
             <nav className="space-y-1">
+              <button
+                type="button"
+                onClick={() => {
+                  const params = new URLSearchParams(searchParams.toString());
+                  params.delete("ad");
+                  params.set("view", "dashboard");
+                  router.push("/dashboard?" + params.toString(), { scroll: false });
+                }}
+                className={isDashboardView
+                  ? "flex w-full items-center gap-3 rounded-md bg-[#111827] px-3 py-2 text-[12px] font-bold text-white"
+                  : "flex w-full items-center gap-3 rounded-md px-3 py-2 text-[12px] font-semibold text-slate-700 hover:bg-slate-50"}
+              >
+                <Grid className="h-4 w-4" />
+                <span>{language === "bn" ? "ড্যাশবোর্ড" : "Dashboard"}</span>
+              </button>
               <button type="button" onClick={() => window.dispatchEvent(new Event("open-message-modal"))} className="flex w-full items-center gap-3 rounded-md bg-emerald-50 px-3 py-2 text-[12px] font-bold text-emerald-700">
                 <Inbox className="h-4 w-4" />
                 <span className="flex-1 text-left">{language === "bn" ? "ইনবক্স" : "Inbox"}</span>
