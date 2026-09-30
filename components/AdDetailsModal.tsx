@@ -429,7 +429,8 @@ export default function AdDetailsModal({
   const handleChatClick = async () => {
     const unlocked = await unlockPostConnection();
     if (!unlocked) return;
-    window.dispatchEvent(new CustomEvent("open-chat-modal", { detail: { ad } }));
+    window.dispatchEvent(new CustomEvent("open-chat-modal", { detail: { ad, otherUser: ad.user } }));
+    onClose();
   };
 
   const handleSendCV = async () => {
@@ -502,6 +503,7 @@ export default function AdDetailsModal({
 
       toast.success("CV sent successfully.");
       window.dispatchEvent(new CustomEvent("open-chat-modal", { detail: { ad, otherUser: ad.user } }));
+      onClose();
     } catch (error) {
       console.error("Error sending CV:", error);
       toast.error(error instanceof Error ? error.message : "Unable to send CV right now.");
