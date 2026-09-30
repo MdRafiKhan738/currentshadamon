@@ -202,57 +202,6 @@ export default function DashboardClient() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [feedAdsCategories, setFeedAdsCategories] = useState<any[]>([]);
-  const [investmentPosts, setInvestmentPosts] = useState<any[]>([]);
-
-  // Load the same active investment/business-owner posts used by the
-  // Shadamon Invest homepage. These are shown in the Dashboard feed
-  // No Ads Yet area when there are no regular marketplace ads.
-  useEffect(() => {
-    let cancelled = false;
-
-    const loadInvestmentPosts = async () => {
-      try {
-        const [investorRes, ownerRes] = await Promise.all([
-          fetch(
-            `${API_BASE_URL}/api/ads/public/all?postRole=investor&limit=12`,
-            { cache: "no-store" },
-          ).then((res) => res.json()),
-          fetch(
-            `${API_BASE_URL}/api/ads/public/all?postRole=business_owner&limit=12`,
-            { cache: "no-store" },
-          ).then((res) => res.json()),
-        ]);
-
-        if (cancelled) return;
-
-        const combined = [
-          ...(investorRes?.success ? investorRes.data || [] : []),
-          ...(ownerRes?.success ? ownerRes.data || [] : []),
-        ]
-          .filter(
-            (post, index, list) =>
-              post?._id &&
-              list.findIndex((item) => item?._id === post._id) === index,
-          )
-          .sort(
-            (a, b) =>
-              new Date(b.createdAt || 0).getTime() -
-              new Date(a.createdAt || 0).getTime(),
-          );
-
-        setInvestmentPosts(combined);
-      } catch (error) {
-        console.error("Failed to load active investment posts:", error);
-        if (!cancelled) setInvestmentPosts([]);
-      }
-    };
-
-    loadInvestmentPosts();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   const [isMerchantsModalOpen, setIsMerchantsModalOpen] = useState(false);
 
@@ -720,10 +669,6 @@ export default function DashboardClient() {
         if (filters.sort) params.append("sort", filters.sort);
         if (filters.search) params.append("search", filters.search);
         params.append("status", "active");
-        const selectedPostRole = searchParams.get("role") || searchParams.get("cat");
-        if (selectedPostRole === "investor" || selectedPostRole === "business_owner") {
-          params.append("postRole", selectedPostRole);
-        }
 
         const shouldFetchMeta = !append && !hasFetchedMetaRef.current;
         const metaPromises: Promise<any>[] = [];
@@ -944,10 +889,6 @@ export default function DashboardClient() {
     try {
       // 1. Fetch All Ads for global state
       const allAdsParams = new URLSearchParams();
-      const allAdsRole = searchParams.get("role") || searchParams.get("cat");
-      if (allAdsRole === "investor" || allAdsRole === "business_owner") {
-        allAdsParams.set("postRole", allAdsRole);
-      }
       const allAdsRes = await fetch(
         `${API_BASE_URL}/api/ads/public/all?${allAdsParams.toString()}`,
       ).then((res) => res.json());
@@ -1667,21 +1608,6 @@ export default function DashboardClient() {
           !filters.search &&
           filters.promoteTag === "All" && <LatestFreeAdPromo />}
 
-        {investmentPosts.length > 0 && (
-          <div className="space-y-4">
-            {investmentPosts.map((post) => (
-              <InvestmentPostCard
-                key={post._id}
-                post={post}
-                onOpen={() => {
-                  const params = new URLSearchParams(searchParams.toString());
-                  params.set("ad", post._id);
-                  router.push("/dashboard?" + params.toString(), { scroll: false });
-                }}
-              />
-            ))}
-          </div>
-        )}
 
         {loading ? (
           <div className="text-center py-20 pb-40">
