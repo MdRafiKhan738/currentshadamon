@@ -278,7 +278,7 @@ export default function InvestmentPostFormModal({
       setImages([]);
       setPriceValues({});
       setSelectedSubLocation("");
-      setBusinessStatus("active");
+      setBusinessStatus("running");
       setPassword("");
       setBusinessName("");
       setAdditionalMobile("");
