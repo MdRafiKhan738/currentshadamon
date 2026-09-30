@@ -6,6 +6,8 @@ import { getImageUrl } from '../utils/imageUrl';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
+const LEGACY_API_BASE = 'https://api.shadamon.com';
+
 function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
@@ -14,11 +16,17 @@ interface AdDisplayProps {
     positionId: number;
     className?: string;
 }
-// new vercel test
+
 const AdDisplay: React.FC<AdDisplayProps> = ({ positionId, className }) => {
     const { settings, fetchAdPositions } = useSettings();
     const adPositions = settings.adPositions || [];
     const [loaded, setLoaded] = React.useState(false);
+
+    const legacySrc = (path?: string) => {
+        const raw = String(path || '');
+        if (!raw || raw.startsWith('http') || raw.startsWith('data:') || raw.startsWith('blob:')) return '';
+        return LEGACY_API_BASE + (raw.startsWith('/') ? raw : '/' + raw);
+    };
 
 
     useEffect(() => {
@@ -29,7 +37,7 @@ const AdDisplay: React.FC<AdDisplayProps> = ({ positionId, className }) => {
         }
     }, [adPositions.length, fetchAdPositions]);
 
-    const ad = adPositions.find((p: any) => p.positionId === positionId);
+    const ad = adPositions.find(p => p.positionId === positionId);
 
     if (!loaded) return null;
     if (!ad || ad.status === 'No') return null;
@@ -61,9 +69,13 @@ const AdDisplay: React.FC<AdDisplayProps> = ({ positionId, className }) => {
             >
                 {ad.imageDesk ? (
                     <img 
-                        src={getImageUrl(ad.imageDesk)} 
+                        src={getImageUrl(ad.imageDesk)}
                         alt={ad.placeName}
                         className="w-full h-full object-contain"
+                        onError={(e) => {
+                            const fallback = legacySrc(ad.imageDesk);
+                            if (fallback && e.currentTarget.src !== fallback) e.currentTarget.src = fallback;
+                        }}
                     />
                 ) : null}
             </div>
@@ -79,17 +91,25 @@ const AdDisplay: React.FC<AdDisplayProps> = ({ positionId, className }) => {
             >
                 {ad.imageMob ? (
                     <img 
-                        src={getImageUrl(ad.imageMob)} 
+                        src={getImageUrl(ad.imageMob)}
                         alt={ad.placeName}
                         className="w-full h-full object-contain"
+                        onError={(e) => {
+                            const fallback = legacySrc(ad.imageMob);
+                            if (fallback && e.currentTarget.src !== fallback) e.currentTarget.src = fallback;
+                        }}
                     />
                 ) : (
                     // Fallback to desk image if mob image is missing
                     ad.imageDesk ? (
                         <img 
-                            src={getImageUrl(ad.imageDesk)} 
+                            src={getImageUrl(ad.imageDesk)}
                             alt={ad.placeName}
                             className="w-full h-full object-contain"
+                            onError={(e) => {
+                                const fallback = legacySrc(ad.imageDesk);
+                                if (fallback && e.currentTarget.src !== fallback) e.currentTarget.src = fallback;
+                            }}
                         />
                     ) : null
                 )}
