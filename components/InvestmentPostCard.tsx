@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
   ArrowUpRight,
   BadgeCheck,
@@ -9,14 +9,9 @@ import {
   MessageCircle,
   Phone,
   UserPlus,
-  UserRound,
-  UserRoundCheck,
 } from "lucide-react";
-import Cookies from "js-cookie";
-import toast from "react-hot-toast";
 
 import { getImageUrl } from "../utils/imageUrl";
-import { API_BASE_URL } from "../utils/apiConfig";
 import { formatInvestmentAmount } from "../utils/formatInvestmentAmount";
 import { useLanguage } from "../app/context/LanguageContext";
 
@@ -87,43 +82,6 @@ export default function InvestmentPostCard({
   post: MarketplacePost;
   onOpen: () => void;
 }) {
-  const [inviteStatus, setInviteStatus] = useState<"none" | "pending" | "accepted" | "rejected" | "cancelled">("none");
-  const [inviteId, setInviteId] = useState<string | null>(null);
-  const { language } = useLanguage();
-  useEffect(() => {
-    let cancelled = false;
-    const token = Cookies.get("token");
-    if (!token || !post?._id) {
-      setInviteStatus("none");
-      return;
-    }
-
-    fetch(`${API_BASE_URL}/api/invites?adId=${encodeURIComponent(post._id)}`, {
-      headers: { Authorization: "Bearer " + token },
-      cache: "no-store",
-    })
-      .then((res) => res.json())
-      .then((result) => {
-        if (cancelled || !result?.success) return;
-        const sent = Array.isArray(result.sent) ? result.sent : [];
-        const current = sent.find(
-          (invite: any) => String(invite.adId?._id || invite.adId) === String(post._id),
-        );
-        if (current) {
-          setInviteId(String(current._id));
-          setInviteStatus(current.status || "pending");
-        } else {
-          setInviteId(null);
-          setInviteStatus("none");
-        }
-      })
-      .catch(() => {});
-
-    return () => {
-      cancelled = true;
-    };
-  }, [post?._id]);
-
   const values = post.priceBoxValues || post.features?.priceBoxValues || {};
   const fields = useMemo(() => {
     const source = post.priceBoxFields || post.features?.priceBoxFields || [];
@@ -281,46 +239,24 @@ export default function InvestmentPostCard({
 
               <div className="flex w-full items-center justify-between gap-2">
                 <div className="flex items-center gap-1">
-                  <button
-                    type="button"
-                    onClick={invite}
-                    className={cn(
-                      "flex h-8 w-8 items-center justify-center rounded-md border",
-                      inviteStatus === "pending" || inviteStatus === "accepted"
-                        ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                        : "border-slate-200 bg-white text-slate-700",
-                    )}
-                    disabled={inviteStatus === "pending" || inviteStatus === "accepted"}
-                    aria-label={inviteStatus === "pending" || inviteStatus === "accepted" ? "Invited" : "Invite"}
-                  >
-                    {inviteStatus === "pending" || inviteStatus === "accepted" ? (
-                      <UserRoundCheck className="h-4 w-4" />
-                    ) : (
-                      <UserPlus className="h-4 w-4" />
-                    )}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      window.dispatchEvent(new CustomEvent("open-message-modal", { detail: { ad: post, otherUser: post.user } }));
-                    }}
+                  <div
                     className="flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-700"
-                    aria-label={language === "bn" ? "মেসেজ" : "Message"}
+                    aria-hidden="true"
+                  >
+                    <UserPlus className="h-4 w-4" />
+                  </div>
+                  <div
+                    className="flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-700"
+                    aria-hidden="true"
                   >
                     <MessageCircle className="h-4 w-4" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onOpen();
-                    }}
+                  </div>
+                  <div
                     className="flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-700"
-                    aria-label={language === "bn" ? "কল" : "Call"}
+                    aria-hidden="true"
                   >
                     <Phone className="h-4 w-4" />
-                  </button>
+                  </div>
                 </div>
                 <button
                   type="button"
