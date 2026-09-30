@@ -103,7 +103,7 @@ export default function InvestmentPostFormModal({
   const [selectedSubCategory, setSelectedSubCategory] = useState<SubCategory | null>(null);
   const [selectedLocation, setSelectedLocation] = useState("");
   const [selectedSubLocation, setSelectedSubLocation] = useState("");
-  const [businessStatus, setBusinessStatus] = useState<"active" | "new" | "closed">("active");
+  const [businessStatus, setBusinessStatus] = useState<"running" | "new" | "closed">("running");
   const [headline, setHeadline] = useState("");
   const [description, setDescription] = useState("");
   const [phone, setPhone] = useState(initialMobile);
@@ -114,6 +114,7 @@ export default function InvestmentPostFormModal({
   const [submitting, setSubmitting] = useState(false);
   const [userName, setUserName] = useState("");
   const [businessName, setBusinessName] = useState("");
+  const [additionalMobile, setAdditionalMobile] = useState("");
   const [password, setPassword] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showExistingAccountLogin, setShowExistingAccountLogin] = useState(false);
@@ -196,6 +197,7 @@ export default function InvestmentPostFormModal({
           setIsAuthenticated(true);
           setUserName(meRes.data.name || "");
           setBusinessName(meRes.data.storeName || meRes.data.businessName || meRes.data.name || "");
+          setAdditionalMobile(Array.isArray(meRes.data.additionalMobiles) ? String(meRes.data.additionalMobiles[0] || "") : "");
           if (!initialMobile && meRes.data.mobile) setPhone(meRes.data.mobile);
         } else {
           setIsAuthenticated(false);
@@ -275,7 +277,9 @@ export default function InvestmentPostFormModal({
       setSelectedSubLocation("");
       setBusinessStatus("active");
       setPassword("");
-      setBusinessName("");    }
+      setBusinessName("");
+      setAdditionalMobile("");
+    }
   }, [isOpen]);
 
   if (!isOpen) return null;
@@ -386,6 +390,7 @@ export default function InvestmentPostFormModal({
         const profile = new FormData();
         profile.append("name", userName.trim());
         profile.append("storeName", businessName.trim() || userName.trim());
+        profile.append("additionalMobiles", JSON.stringify(additionalMobile.trim() ? [additionalMobile.replace(/\s+/g, "")] : []));
         await fetch(API_BASE_URL + "/api/user/update", {
           method: "PUT",
           headers: { Authorization: "Bearer " + token },
@@ -404,7 +409,14 @@ export default function InvestmentPostFormModal({
       formData.append("name", userName.trim());
       formData.append("hidePhone", "false");
       formData.append("phoneTypes", JSON.stringify(["call"]));
-      formData.append("additionalPhones", JSON.stringify([]));
+      formData.append(
+        "additionalPhones",
+        JSON.stringify(
+          additionalMobile.trim()
+            ? [{ number: additionalMobile.replace(/\s+/g, ""), types: ["whatsapp"] }]
+            : [],
+        ),
+      );
       formData.append("postRole", postRole);
       if (postRole === "business_owner") formData.append("businessStatus", businessStatus);
       formData.append(
@@ -594,7 +606,7 @@ export default function InvestmentPostFormModal({
                     {postRole === "business_owner" ? (
                       <select
                         value={businessStatus}
-                        onChange={(event) => setBusinessStatus(event.target.value as "active" | "new" | "closed")}
+                        onChange={(event) => setBusinessStatus(event.target.value as "running" | "new" | "closed")}
                         className="rounded border border-emerald-200 bg-emerald-50 px-2 py-1 text-[9px] font-semibold text-emerald-700 outline-none"
                       >
                         <option value="active">{language === "bn" ? "সক্রিয় ব্যবসা" : "Active Business"}</option>
@@ -754,6 +766,7 @@ export default function InvestmentPostFormModal({
                   setIsAuthenticated(true);
                   setUserName(me.name || me.storeName || userName);
                   setBusinessName(me.storeName || me.businessName || me.name || businessName);
+                  setAdditionalMobile(Array.isArray(me.additionalMobiles) ? String(me.additionalMobiles[0] || "") : additionalMobile);
                   setPhone(me.mobile || phone);
                   setShowExistingAccountLogin(false);
                   // Keep the post modal mounted until the dashboard confirms the new
@@ -814,7 +827,7 @@ export default function InvestmentPostFormModal({
                         onChange={(event) => setBusinessStatus(event.target.value as "active" | "new" | "closed")}
                         className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold text-emerald-700 outline-none"
                       >
-                        <option value="active">Active Business</option>
+                        <option value="running">Active Business</option>
                         <option value="new">New Business</option>
                         <option value="closed">Close Business</option>
                       </select>
