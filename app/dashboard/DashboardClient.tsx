@@ -505,12 +505,14 @@ export default function DashboardClient() {
     try {
       const scroller = document.getElementById("main-dashboard-scroller");
       if (scroller) {
-        sessionStorage.setItem(
-          PENDING_AD_SCROLL_KEY,
-          String(scroller.scrollTop),
-        );
+        sessionStorage.setItem(PENDING_AD_SCROLL_KEY, String(scroller.scrollTop));
       }
     } catch {}
+
+    // The card already contains everything needed for the detail modal.
+    // Open it immediately instead of making the user wait for the second
+    // /public/:id request before seeing anything.
+    window.dispatchEvent(new CustomEvent("open-ad-detail-immediate", { detail: { ad } }));
     router.push(getAdUrl(ad), { scroll: false });
   };
 
