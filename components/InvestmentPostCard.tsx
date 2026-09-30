@@ -69,12 +69,6 @@ function postedAgo(value?: string) {
   return `${Math.floor(seconds / 86400)}d ago`;
 }
 
-function roleLabel(post: MarketplacePost) {
-  if (post.postRole === "business_owner") return "Active Business";
-  if (post.postRole === "investor") return "Investor";
-  return "";
-}
-
 export default function InvestmentPostCard({
   post,
   onOpen,
