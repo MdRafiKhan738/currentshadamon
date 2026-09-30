@@ -99,7 +99,7 @@ function PackageCard({
       </div>
 
       {/* heading */}
-      <div className="px-8 pt-0.5">
+      <div className="px-5 pt-0.5">
         {isBoth ? (
           <>
             <div className="text-[12px] font-medium leading-tight text-slate-700">
@@ -108,7 +108,7 @@ function PackageCard({
             <h3 className="mt-1 text-[15px] font-bold leading-tight text-slate-900">{item.name}</h3>
           </>
         ) : (
-          <h3 className="text-[14px] font-bold leading-[1.25] text-slate-900">{item.name}</h3>
+          <h3 className="text-[14px] mt-2 font-bold leading-[1.25] text-slate-900">{item.name}</h3>
         )}
         <div className="mt-1.5 text-[12px] font-medium text-slate-700">{item.validDays} Days</div>
       </div>
