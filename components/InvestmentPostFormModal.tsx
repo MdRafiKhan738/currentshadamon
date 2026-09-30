@@ -522,11 +522,11 @@ export default function InvestmentPostFormModal({
           ) : (
             <>
               <div className="relative overflow-y-auto px-3 pb-3 pt-2">
-                <div className="grid grid-cols-[1fr_1fr_auto] items-center gap-1.5 border-b border-slate-200 pb-2 text-[9px]">
+                <div className="grid grid-cols-[1fr_1fr_auto] items-center gap-2 border-b border-slate-200 pb-2 text-[13px]">
                   <button
                     type="button"
                     onClick={() => setShowCategoryPicker((value) => !value)}
-                    className="rounded border border-slate-300 px-2 py-1 text-left font-semibold text-slate-700"
+                    className="min-w-0 truncate rounded border border-slate-300 px-2.5 py-1.5 text-left text-[13px] font-bold text-slate-800"
                   >
                     {selectedCategory?.name || "Category"} · {selectedSubCategory?.name || "Subcategory"}
                   </button>
@@ -712,19 +712,16 @@ export default function InvestmentPostFormModal({
 
                 <div className="mt-3 rounded border border-slate-300">
                   <div className="flex items-center gap-2 border-b border-slate-200 bg-white px-2.5 py-1.5">
-                    <span className={postRole === "investor" ? "rounded-full bg-violet-100 px-2 py-1 text-[9px] font-bold text-violet-700" : "rounded-full bg-emerald-100 px-2 py-1 text-[9px] font-bold text-emerald-700"}>
+                    <span className={postRole === "investor" ? "rounded-full bg-violet-100 px-2.5 py-1.5 text-[12px] font-bold text-violet-700" : "rounded-full bg-emerald-100 px-2.5 py-1.5 text-[12px] font-bold text-emerald-700"}>
                       {postRole === "investor"
                         ? (language === "bn" ? "আমি বিনিয়োগ করতে চাই" : "I wanna invest")
                         : (language === "bn" ? "আমার ব্যবসায় বিনিয়োগ দরকার" : "I need investment")}
-                    </span>
-                    <span className="text-[9px] text-slate-400">
-                      {language === "bn" ? "ক্যাটাগরি স্বয়ংক্রিয়ভাবে নির্বাচিত" : "Category auto-selected"}
                     </span>
                     {postRole === "business_owner" ? (
                       <select
                         value={businessStatus}
                         onChange={(event) => setBusinessStatus(event.target.value as "running" | "new" | "closed")}
-                        className="rounded border border-emerald-200 bg-emerald-50 px-2 py-1 text-[9px] font-semibold text-emerald-700 outline-none"
+                        className="rounded border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-[12px] font-semibold text-emerald-700 outline-none"
                       >
                         <option value="running">{language === "bn" ? "সক্রিয় ব্যবসা" : "Active Business"}</option>
                         <option value="new">{language === "bn" ? "নতুন ব্যবসা" : "New Business"}</option>
