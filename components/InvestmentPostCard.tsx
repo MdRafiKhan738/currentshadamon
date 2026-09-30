@@ -1,19 +1,19 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import {
-  ArrowUpRight,
-  BadgeCheck,
-  CalendarDays,
-  MapPin,
-  MessageCircle,
-  Phone,
-  UserPlus,
-} from "lucide-react";
+import { BadgeCheck, MessageCircle, Phone, UserPlus } from "lucide-react";
 
 import { getImageUrl } from "../utils/imageUrl";
 import { formatInvestmentAmount } from "../utils/formatInvestmentAmount";
 import { useLanguage } from "../app/context/LanguageContext";
+
+type PriceBoxField = {
+  key: string;
+  label?: string;
+  labelBn?: string;
+  inputType?: "text" | "number";
+  order?: number;
+};
 
 type MarketplacePost = {
   _id: string;
@@ -29,22 +29,10 @@ type MarketplacePost = {
   price?: number;
   expectedReturn?: number;
   priceBoxValues?: Record<string, unknown>;
-  priceBoxFields?: Array<{
-    key: string;
-    label?: string;
-    labelBn?: string;
-    inputType?: "text" | "number";
-    order?: number;
-  }>;
+  priceBoxFields?: PriceBoxField[];
   features?: {
     priceBoxValues?: Record<string, unknown>;
-    priceBoxFields?: Array<{
-      key: string;
-      label?: string;
-      labelBn?: string;
-      inputType?: "text" | "number";
-      order?: number;
-    }>;
+    priceBoxFields?: PriceBoxField[];
     priceBoxEnabled?: boolean;
     priceBoxName?: string;
   };
@@ -70,6 +58,10 @@ function postedAgo(value?: string) {
   return `${Math.floor(seconds / 86400)}d ago`;
 }
 
+function cn(...values: Array<string | false | null | undefined>) {
+  return values.filter(Boolean).join(" ");
+}
+
 export default function InvestmentPostCard({
   post,
   onOpen,
@@ -78,44 +70,63 @@ export default function InvestmentPostCard({
   onOpen: () => void;
 }) {
   const { language } = useLanguage();
+  const bn = language === "bn";
+
   const values = post.priceBoxValues || post.features?.priceBoxValues || {};
   const fields = useMemo(() => {
     const source = post.priceBoxFields || post.features?.priceBoxFields || [];
     return [...source].sort((a, b) => (a.order || 0) - (b.order || 0));
   }, [post.priceBoxFields, post.features?.priceBoxFields]);
 
+  // Put the "return / profit" field first so it becomes the purple box.
   const returnFieldIndex = fields.findIndex((field) =>
-    /return|expected/i.test(String(field.label || field.labelBn || field.key)),
+    /return|expected|profit|percent|roi/i.test(String(field.label || field.labelBn || field.key)),
   );
-  const orderedFields = returnFieldIndex >= 0
-    ? [fields[returnFieldIndex], ...fields.filter((_, index) => index !== returnFieldIndex)]
-    : fields;
+  const orderedFields =
+    returnFieldIndex >= 0
+      ? [fields[returnFieldIndex], ...fields.filter((_, index) => index !== returnFieldIndex)]
+      : fields;
   const visibleFields = orderedFields.slice(0, 3);
   const hasPriceBox = visibleFields.length > 0;
+
   const rawImagePath = String(post.images?.[0] || "");
   const [image, setImage] = useState(() => getImageUrl(rawImagePath));
-  const isRemoteImage = rawImagePath.startsWith("http") || rawImagePath.startsWith("data:") || rawImagePath.startsWith("blob:");
-  const legacyImage = !isRemoteImage && rawImagePath
-    ? "https://api.shadamon.com" + (rawImagePath.startsWith("/") ? rawImagePath : "/" + rawImagePath)
-    : "";
+  const isRemoteImage =
+    rawImagePath.startsWith("http") || rawImagePath.startsWith("data:") || rawImagePath.startsWith("blob:");
+  const legacyImage =
+    !isRemoteImage && rawImagePath
+      ? "https://api.shadamon.com" + (rawImagePath.startsWith("/") ? rawImagePath : "/" + rawImagePath)
+      : "";
+
   const name = post.user?.name || post.user?.storeName || "Member";
-  const verified = Boolean(post.user?.mVerified || (post.user?.verifiedBy && post.user.verifiedBy !== "Not Verified"));
+  const verified = Boolean(
+    post.user?.mVerified || (post.user?.verifiedBy && post.user.verifiedBy !== "Not Verified"),
+  );
+
   const statusText =
     post.postRole === "business_owner"
       ? post.businessStatus === "new"
-        ? (language === "bn" ? "নতুন ব্যবসা" : "New Business")
+        ? bn ? "নতুন ব্যবসা" : "New Business"
         : post.businessStatus === "closed" || post.businessStatus === "inactive"
-          ? (language === "bn" ? "ব্যবসা বন্ধ" : "Close Business")
-          : (language === "bn" ? "সক্রিয় ব্যবসা" : "Active Business")
-      : (language === "bn" ? "বিনিয়োগকারী" : "Investor");
-  const displayDate = post.updatedAt && post.adType?.toLowerCase() === "promoted" ? post.updatedAt : post.createdAt;
+          ? bn ? "ব্যবসা বন্ধ" : "Close Business"
+          : bn ? "সক্রিয় ব্যবসা" : "Active Business"
+      : bn ? "সক্রিয় ব্যবসা" : "Active Business";
 
-  const priceText = (field: any, index = 0) => {
+  const roleText =
+    post.postRole === "business_owner"
+      ? bn ? "ব্যবসায়ী" : "Business Owner"
+      : bn ? "বিনিয়োগকারী" : "Investor";
+
+  const locationText = [post.subLocation, post.location].filter(Boolean).join(", ") || (bn ? "বাংলাদেশ" : "Bangladesh");
+
+  const displayDate =
+    post.updatedAt && post.adType?.toLowerCase() === "promoted" ? post.updatedAt : post.updatedAt || post.createdAt;
+
+  const priceText = (field: PriceBoxField, index = 0) => {
     const value = values[field.key];
     const fieldName = String(field.label || field.labelBn || field.key || "").toLowerCase();
-    const formatted = field.inputType === "text"
-      ? String(value ?? "—")
-      : formatInvestmentAmount(value as any);
+    const formatted =
+      field.inputType === "text" ? String(value ?? "—") : formatInvestmentAmount(value as any);
     if (index === 0 || /return|expected|profit|percentage|percent|roi/.test(fieldName)) {
       const raw = String(value ?? "").trim();
       if (raw && !raw.endsWith("%")) return formatted + "%";
@@ -123,18 +134,22 @@ export default function InvestmentPostCard({
     return formatted;
   };
 
+  const fieldLabel = (field: PriceBoxField) =>
+    bn ? field.labelBn || field.label || field.key : field.label || field.key;
+
   return (
     <article
       onClick={onOpen}
-      className="group w-full cursor-pointer overflow-hidden rounded-[10px] border border-[#dfe7ee] bg-white shadow-[0_1px_3px_rgba(15,23,42,0.08)] transition-shadow hover:shadow-[0_6px_18px_rgba(15,23,42,0.09)]"
+      className="group w-full cursor-pointer overflow-hidden rounded-[14px] border border-[#e3e8f0] bg-[#f7f8fc] p-2 shadow-[0_1px_3px_rgba(15,23,42,0.06)] transition-shadow hover:shadow-[0_6px_18px_rgba(15,23,42,0.09)]"
     >
-      <div className="grid min-h-[246px] grid-cols-[142px_minmax(0,1fr)] sm:grid-cols-[220px_minmax(0,1fr)]">
-        <div className="relative min-h-[246px] overflow-hidden bg-[#f1f4f6]">
+      <div className="grid grid-cols-[38%_minmax(0,1fr)] gap-3">
+        {/* Image */}
+        <div className="relative min-h-[150px] overflow-hidden rounded-[10px] bg-[#e9edf2]">
           {image ? (
             <img
               src={image || undefined}
               alt={post.headline}
-              className="h-full w-full object-cover"
+              className="absolute inset-0 h-full w-full object-cover"
               loading="lazy"
               onError={() => {
                 if (legacyImage && image !== legacyImage) setImage(legacyImage);
@@ -147,106 +162,87 @@ export default function InvestmentPostCard({
           )}
         </div>
 
-        <div className="min-w-0 bg-white px-3.5 py-3 sm:px-4">
-          <div className="flex items-center gap-2 text-[12px] font-semibold text-black">
-            <span className="h-2 w-2 shrink-0 rounded-full bg-[#7c3aed]" />
-            <span>{statusText}</span>
-            <span className="text-slate-300">•</span>
-            <span className="inline-flex items-center gap-1 truncate">
-              <MapPin className="h-3.5 w-3.5 shrink-0 text-slate-500" />
-              {post.location || (language === "bn" ? "বাংলাদেশ" : "Bangladesh")}
-            </span>
+        {/* Details */}
+        <div className="flex min-w-0 flex-col py-0.5 pr-1">
+          <div className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-800">
+            <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#4f46e5]" />
+            <span className="truncate">{statusText}</span>
           </div>
 
-          <h3 className="mt-1.5 line-clamp-2 text-[20px] font-bold leading-[1.08] tracking-[-0.02em] text-slate-900">
+          <h3 className="mt-1 line-clamp-2 text-[17px] font-extrabold leading-[1.1] tracking-[-0.01em] text-slate-900">
             {post.headline}
           </h3>
 
+          {/* Metrics */}
           {hasPriceBox ? (
-            <div className="mt-3 grid grid-cols-3 gap-2">
-              {visibleFields.map((field, index) => (
-                <div
-                  key={field.key}
-                  className={cn(
-                    "min-w-0 rounded-[7px] border px-2.5 py-2.5",
-                    index === 0
-                      ? "border-[#7b2dfc] bg-[#7b2dfc] text-white"
-                      : "border-slate-200 bg-white",
-                  )}
-                >
-                  <div className={cn("truncate text-[18px] font-extrabold", index === 0 ? "text-white" : "text-slate-900")}>
-                    {priceText(field, index)}
+            <div className="mt-2.5 flex items-stretch gap-3">
+              {visibleFields.map((field, index) =>
+                index === 0 ? (
+                  <div
+                    key={field.key}
+                    className="flex min-w-[46px] max-w-[30%] shrink-0 flex-col justify-center rounded-[8px] bg-[#7b2dfc] px-2 py-1.5 text-white"
+                  >
+                    <div className="truncate text-[13px] font-extrabold leading-none">
+                      {priceText(field, index)}
+                    </div>
+                    <div className="mt-1 truncate text-[8px] font-semibold uppercase leading-none text-white/80">
+                      {fieldLabel(field)}
+                    </div>
                   </div>
-                  <div className={cn("mt-1 truncate text-[10px] font-semibold", index === 0 ? "text-white/80" : "text-slate-500")}>
-                    {language === "bn"
-                      ? (field.labelBn || field.label || field.key)
-                      : (field.label || field.key)}
+                ) : (
+                  <div key={field.key} className="min-w-0 flex-1">
+                    <div className="truncate text-[14px] font-extrabold leading-tight text-slate-900">
+                      {priceText(field, index)}
+                    </div>
+                    <div className="mt-0.5 truncate text-[10px] font-medium text-slate-400">
+                      {fieldLabel(field)}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ),
+              )}
             </div>
           ) : post.price !== undefined ? (
-            <div className="mt-3 grid grid-cols-1">
-              <div className="rounded-[7px] border border-slate-200 bg-white px-2.5 py-2.5">
-                <div className="text-[9px] font-medium text-slate-400">Price</div>
-                <div className="mt-1 text-[14px] font-extrabold text-slate-900">৳ {Number(post.price || 0).toLocaleString()}</div>
+            <div className="mt-2.5">
+              <div className="text-[14px] font-extrabold text-slate-900">
+                ৳ {Number(post.price || 0).toLocaleString()}
               </div>
+              <div className="mt-0.5 text-[10px] font-medium text-slate-400">{bn ? "মূল্য" : "Price"}</div>
             </div>
           ) : null}
 
-          <div className="mt-3 border-t border-slate-100 pt-2.5">
-            <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0">
-                <div className="flex items-center gap-1 text-[12px] font-bold text-slate-900"><span className="truncate">{name}</span></div>
-                <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[11px] text-slate-500">
-                  <span className="font-extrabold text-slate-700">{language === "bn" ? "পোস্ট করেছেন" : "Post by"}</span>
-                  <span className="font-bold text-slate-900">{name}</span>
-                  {verified ? <BadgeCheck className="h-3.5 w-3.5 text-[#12a87c]" /> : null}
-                  <CalendarDays className="h-3.5 w-3.5" />
-                  <span className="font-extrabold text-slate-600">{language === "bn" ? "আপলোড: " : "Uploaded at: "}{postedAgo(displayDate)}</span>
-                </div>
-                {post.subLocation ? <div className="mt-1 text-[15px] font-bold text-slate-600">{post.location} · {post.subLocation}</div> : null}
-                {/* <div className="mt-1 text-[13px] font-bold text-slate-700">{badge}</div> */}
-              </div>
+          {/* Poster */}
+          <div className="mt-2.5">
+            <div className="flex items-center gap-1 text-[10px] text-slate-500">
+              <span className="font-semibold">{bn ? "পোস্ট করেছেন" : "Post By"}</span>
+              <span className="truncate font-bold text-slate-900">{name}</span>
+              {verified ? <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-[#12a87c]" /> : null}
+            </div>
+            <div className="mt-0.5 flex items-center gap-2 text-[10px] text-slate-500">
+              <span className="font-semibold text-slate-600">{roleText}</span>
+              <span className="truncate">{locationText}</span>
+            </div>
+          </div>
 
-              <div className="flex w-full items-center justify-between gap-2">
-                <div className="flex items-center gap-1">
-                  <div
-                    className="flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-700"
-                    aria-hidden="true"
-                  >
-                    <UserPlus className="h-4 w-4" />
-                  </div>
-                  <div
-                    className="flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-700"
-                    aria-hidden="true"
-                  >
-                    <MessageCircle className="h-4 w-4" />
-                  </div>
-                  <div
-                    className="flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-700"
-                    aria-hidden="true"
-                  >
-                    <Phone className="h-4 w-4" />
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={(e) => { e.stopPropagation(); onOpen(); }}
-                  className="flex h-8 w-8 items-center justify-center rounded-md bg-[#111827] text-white"
-                  aria-label="Open post"
+          {/* Actions + updated */}
+          <div className="mt-auto flex items-end justify-between gap-2 pt-2.5">
+            <div className="flex items-center gap-1.5">
+              {[UserPlus, MessageCircle, Phone].map((Icon, i) => (
+                <div
+                  key={i}
+                  aria-hidden="true"
+                  className="flex h-8 w-8 items-center justify-center rounded-[8px] border border-slate-200 bg-white text-slate-800"
                 >
-                  <ArrowUpRight className="h-4 w-4" />
-                </button>
-              </div>
+                  <Icon className="h-4 w-4" />
+                </div>
+              ))}
+            </div>
+            <div className="text-right text-[9px] font-medium leading-tight text-slate-400">
+              <div>{bn ? "আপডেট" : "Updated"}</div>
+              <div>{postedAgo(displayDate)}</div>
             </div>
           </div>
         </div>
       </div>
     </article>
   );
-}
-
-function cn(...values: Array<string | false | null | undefined>) {
-  return values.filter(Boolean).join(" ");
 }
