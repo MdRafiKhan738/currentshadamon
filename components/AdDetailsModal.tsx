@@ -432,6 +432,84 @@ export default function AdDetailsModal({
     window.dispatchEvent(new CustomEvent("open-chat-modal", { detail: { ad } }));
   };
 
+  const handleSendCV = async () => {
+    const token = Cookies.get("token");
+    if (!token) {
+      window.dispatchEvent(new CustomEvent("open-mobile-entry-modal", {
+        detail: { reason: "send_cv", ad },
+      }));
+      onClose();
+      return;
+    }
+
+    const adOwnerId = typeof ad.user === "object" ? ad.user?._id : ad.user;
+    if (!adOwnerId) {
+      toast.error("This post owner could not be identified.");
+      return;
+    }
+
+    const userName = currentUser?.name || currentUser?.storeName || "User";
+    const userPhone = currentUser?.mobile || currentUser?.phone || "Not provided";
+    const userEmail = currentUser?.email || "Not provided";
+    const userGender = currentUser?.gender || "Not specified";
+    const userLocation = currentUser?.location || "Not specified";
+    const userEducation = currentUser?.education || "Not specified";
+    const userProfession = currentUser?.profession || currentUser?.currentJob || "Not specified";
+    const userDob = currentUser?.dob || "Not specified";
+    const userAbout = currentUser?.aboutYourself || "Not provided";
+    const userExperience = currentUser?.professionalExperience || currentUser?.jobExperience || "Not provided";
+
+    const message = [
+      `Interest in Ad: "${ad.headline}"`,
+      "",
+      "--- CV DETAILS ---",
+      `Name: ${userName}`,
+      `DOB: ${userDob}`,
+      `Gender: ${userGender}`,
+      "",
+      `Location: ${userLocation}`,
+      "",
+      `Education: ${userEducation}`,
+      `Profession: ${userProfession}`,
+      `Experience: ${userExperience}`,
+      "",
+      "About Myself:",
+      userAbout,
+      "",
+      "Contact Info:",
+      `Phone: ${userPhone}`,
+      `Email: ${userEmail}`,
+      "",
+      "I have sent my CV for your review.",
+    ].join("\n");
+
+    try {
+      const unlocked = await unlockPostConnection();
+      if (!unlocked) return;
+
+      const formData = new FormData();
+      formData.append("receiverId", String(adOwnerId));
+      formData.append("adId", String(ad._id));
+      formData.append("text", message);
+      formData.append("messageType", "cv");
+
+      const response = await fetch(API_BASE_URL + "/api/messages", {
+        method: "POST",
+        headers: { Authorization: "Bearer " + token },
+        body: formData,
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "Failed to send CV. Please try again.");
+      }
+
+      toast.success("CV sent successfully.");
+      window.dispatchEvent(new CustomEvent("open-chat-modal", { detail: { ad, otherUser: ad.user } }));
+    } catch (error) {
+      console.error("Error sending CV:", error);
+      toast.error(error instanceof Error ? error.message : "Unable to send CV right now.");
+    }
+  };
   const handleInvite = async () => {
     const token = Cookies.get("token");
     if (!token) {
@@ -1143,11 +1221,11 @@ export default function AdDetailsModal({
                         String(ad.user?._id || ad.user) !== String(currentUserId) && (
                           <button
                             onClick={handleInvite}
-                            disabled={inviteStatus === "accepted"}
+                            disabled={inviteStatus === "pending" || inviteStatus === "accepted"}
                             className={inviteStatus !== "none" ? "min-w-[112px] flex-1 h-10 whitespace-nowrap border border-emerald-200 bg-emerald-50 text-emerald-700 text-xs px-2 rounded-md flex items-center justify-center gap-1" : "min-w-[112px] flex-1 h-10 whitespace-nowrap border border-violet-200 bg-violet-50 text-violet-700 text-xs px-1 rounded-md hover:bg-violet-100 transition-colors flex items-center justify-center gap-1"}
                           >
                             <UserPlus className="w-3.5 h-3.5" />
-                            {inviteStatus === "pending" ? "Invited • Cancel" : inviteStatus === "accepted" ? "Accepted" : "Invite"}
+                            {inviteStatus !== "none" ? "Invited" : "Invite"}
                           </button>
                         )}
 
@@ -1179,142 +1257,13 @@ export default function AdDetailsModal({
                       </button>
 
                       {ad.postRole && String(ad.user?._id || ad.user) !== String(currentUserId) && (
-                        <button onClick={() => setProposalOpen(true)} className="min-w-[120px] flex-1 h-10 whitespace-nowrap border border-emerald-200 bg-emerald-50 text-emerald-700 text-xs px-3 rounded-md hover:bg-emerald-100 transition-colors">Send Proposal</button>
-                      )}
-
-                      {/* Send CV Button - Only if requested */}
-                      {otherButtons.includes("Send CV") && (
                         <button
-                          onClick={async () => {
-                            const token = Cookies.get("token");
-                            if (!token) {
-                              window.dispatchEvent(
-                                new CustomEvent("open-mobile-entry-modal", {
-                                  detail: { reason: "send_cv", ad: ad },
-                                }),
-                              );
-                              onClose();
-                              return;
-                            }
-
-                            const adOwnerId =
-                              typeof ad.user === "object"
-                                ? ad.user?._id
-                                : ad.user;
-
-                            const missingMobile =
-                              !currentUser?.mobile && !currentUser?.phone;
-                            if (
-                              !currentUser?.gender ||
-                              !currentUser?.location ||
-                              !currentUser?.education ||
-                              !currentUser?.profession ||
-                              missingMobile ||
-                              !currentUser?.email ||
-                              !currentUser?.dob ||
-                              !currentUser?.aboutYourself ||
-                              !currentUser?.professionalExperience
-                            ) {
-                              window.dispatchEvent(
-                                new CustomEvent("init-send-cv", {
-                                  detail: { ad },
-                                }),
-                              );
-                              onClose();
-                              return;
-                            }
-
-                            const userName = currentUser?.name || "User";
-                            const userPhone =
-                              currentUser?.phone ||
-                              currentUser?.mobile ||
-                              "Not provided";
-                            const userEmail =
-                              currentUser?.email || "Not provided";
-                            const userGender =
-                              currentUser?.gender || "Not specified";
-                            const userLocation =
-                              currentUser?.location || "Not specified";
-                            const userEducation =
-                              currentUser?.education || "Not specified";
-                            const userProfession =
-                              currentUser?.profession || "Not specified";
-
-                            const userDob = currentUser?.dob || "Not specified";
-                            const userAbout =
-                              currentUser?.aboutYourself || "Not provided";
-                            const userExperience =
-                              currentUser?.professionalExperience ||
-                              "Not provided";
-
-                            const message = `Interest in Ad: "${ad.headline}"
-
---- CV DETAILS ---
-Name: ${userName}
-DOB: ${userDob}
-Gender: ${userGender}
-
-Location: ${userLocation}
-
-Education: ${userEducation}
-Profession: ${userProfession}
-Experience: ${userExperience}
-
-About Myself:
-${userAbout}
-
-Contact Info:
-Phone: ${userPhone}
-Email: ${userEmail}
-
-I have sent my CV for your review.`;
-
-                            try {
-                              const formData = new FormData();
-                              formData.append("receiverId", adOwnerId);
-                              formData.append("adId", ad._id);
-                              formData.append("text", message);
-
-                              const res = await fetch(
-                                `${API_BASE_URL}/api/messages`,
-                                {
-                                  method: "POST",
-                                  headers: { Authorization: `Bearer ${token}` },
-                                  body: formData,
-                                },
-                              );
-
-                              const data = await res.json();
-                              if (data.success) {
-                                // Open chat modal immediately
-                                window.dispatchEvent(
-                                  new CustomEvent("open-chat-modal", {
-                                    detail: { ad },
-                                  }),
-                                );
-                                // Optionally close this modal
-                                // onClose();
-                              } else {
-                                alert(
-                                  data.message ||
-                                    "Failed to send CV. Please try again.",
-                                );
-                              }
-                            } catch (err) {
-                              console.error("Error sending CV:", err);
-                              alert(
-                                "An error occurred while sending your information.",
-                              );
-                            }
-                          }}
+                          onClick={handleSendCV}
                           className="flex-1 h-10 bg-[#1A202C] border border-[#1A202C] text-white text-xs px-2 rounded-md hover:bg-black transition-colors flex items-center justify-center"
                         >
                           <span className="whitespace-nowrap">Send CV</span>
                         </button>
                       )}
-                    </>
-                  );
-                })()}
                 <div className="shrink-0 flex items-center justify-end pl-0.5 relative">
                   <button
                     ref={optionsButtonRef}
