@@ -37,7 +37,7 @@ const AdDisplay: React.FC<AdDisplayProps> = ({ positionId, className }) => {
     const adPositions: AdPosition[] = Array.isArray(settings.adPositions) ? settings.adPositions : [];
     const [loaded, setLoaded] = React.useState(false);
 
-    const legacySrc = (path?: string) => {
+    const legacySrc = (path?: string | null) => {
         const raw = String(path || '');
         if (!raw || raw.startsWith('http') || raw.startsWith('data:') || raw.startsWith('blob:')) return '';
         return LEGACY_API_BASE + (raw.startsWith('/') ? raw : '/' + raw);
