@@ -485,6 +485,9 @@ export default function AdDetailsModal({
     ].join("\n");
 
     try {
+      const unlocked = await unlockPostConnection();
+      if (!unlocked) return;
+
       const formData = new FormData();
       formData.append("receiverId", String(adOwnerId));
       formData.append("adId", String(ad._id));
