@@ -392,11 +392,10 @@ export default function DashboardClient() {
           me.usedConnects ??
           0,
         );
-        const availableConnects = Number(
-          me.connectsBalance ??
-          me.activePackage?.creditsRemaining ??
-          me.availableConnects ??
-          0,
+        const availableConnects = Math.max(
+          Number(me.connectsBalance || 0),
+          Number(me.activePackage?.creditsRemaining || 0),
+          Number(me.availableConnects || 0),
         );
 
         setDashboardSummary({
