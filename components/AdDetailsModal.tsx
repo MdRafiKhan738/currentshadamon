@@ -2285,18 +2285,6 @@ Shadamon.com-এর নিরাপত্তা ব্যবস্থা
 • ব্যবহারকারীর গোপনীয়তা রক্ষা করা হয়, তবে প্রতারণা বা অপরাধমূলক কার্যক্রমের ক্ষেত্রে আমরা আইন প্রয়োগকারীর সঙ্গে সহযোগিতা করি।`}
       />
 
-      {proposalOpen && (
-        <div className="fixed inset-0 z-[1200] flex items-center justify-center bg-black/50 p-3" onMouseDown={() => setProposalOpen(false)}>
-          <section className="w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl" onMouseDown={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between gap-3">
-              <div><h2 className="text-base font-bold text-slate-900">Send Investment Proposal</h2><p className="mt-1 text-xs text-slate-500">Your first connection to this post uses one connect. After that, message, proposal and number access are unlocked for this post.</p></div>
-              <button onClick={() => setProposalOpen(false)} className="rounded-full p-2 hover:bg-slate-100"><X className="h-5 w-5" /></button>
-            </div>
-            <textarea value={proposalMessage} onChange={e => setProposalMessage(e.target.value)} maxLength={3000} placeholder="Introduce yourself, investment amount, terms and next steps…" className="mt-4 min-h-32 w-full rounded-xl border border-slate-200 p-3 text-sm outline-none focus:border-emerald-500" />
-            <button disabled={proposalSending} onClick={sendProposal} className="mt-3 h-10 w-full rounded-xl bg-emerald-700 text-sm font-bold text-white hover:bg-emerald-800 disabled:opacity-60">{proposalSending ? "Sending…" : "Send Proposal"}</button>
-          </section>
-        </div>
-      )}
 
       <ReportModal
         isOpen={isReportModalOpen}
