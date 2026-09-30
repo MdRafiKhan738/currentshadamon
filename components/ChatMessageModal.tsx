@@ -408,6 +408,7 @@ export default function ChatMessageModal({ isOpen, onClose, onBack, ad, otherUse
                             {messages.map((msg, index) => {
                                 const senderId = typeof msg.sender === 'object' ? msg.sender?._id : msg.sender;
                                 const isMe = currentUser && senderId === currentUser._id;
+                                const isCvMessage = Boolean(msg.text && msg.text.includes("--- CV DETAILS ---"));
 
                                 // Only show status for the last message sent by me
                                 const isLastMeMessage = index === messages.findLastIndex(m => {
@@ -452,6 +453,11 @@ export default function ChatMessageModal({ isOpen, onClose, onBack, ad, otherUse
                                                         )}
                                                     >
                                                         <img src={getImageUrl(msg.image)} alt="attachment" className="w-full h-auto" />
+                                                    </div>
+                                                )}
+                                                {isCvMessage && (
+                                                    <div className="mb-2 rounded-md border border-dashed border-slate-400 bg-white/70 px-2 py-1 text-[11px] font-extrabold text-slate-700">
+                                                        CV Sent
                                                     </div>
                                                 )}
                                                 {msg.text && (
