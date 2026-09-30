@@ -724,6 +724,14 @@ export default function DashboardLayoutClient({
     };
   }, [isPublicInvestmentEntry]);
 
+  useEffect(() => {
+    const handleImmediateAdDetail = (event: Event) => {
+      const customEvent = event as CustomEvent<{ ad?: any }>;
+      if (customEvent.detail?.ad) openAdDetail(customEvent.detail.ad);
+    };
+    window.addEventListener("open-ad-detail-immediate", handleImmediateAdDetail);
+    return () => window.removeEventListener("open-ad-detail-immediate", handleImmediateAdDetail);
+  }, []);
   // Mobile Sidebar State
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
