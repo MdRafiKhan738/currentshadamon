@@ -12,6 +12,21 @@ function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
+interface AdPosition {
+    _id?: string;
+    positionId: number;
+    placeName: string;
+    deskWidth?: string | number;
+    deskHeight?: string | number;
+    mobWidth?: string | number;
+    mobHeight?: string | number;
+    link?: string;
+    endDate?: string;
+    status?: 'Yes' | 'No';
+    imageDesk?: string | null;
+    imageMob?: string | null;
+}
+
 interface AdDisplayProps {
     positionId: number;
     className?: string;
@@ -19,7 +34,7 @@ interface AdDisplayProps {
 
 const AdDisplay: React.FC<AdDisplayProps> = ({ positionId, className }) => {
     const { settings, fetchAdPositions } = useSettings();
-    const adPositions = settings.adPositions || [];
+    const adPositions: AdPosition[] = Array.isArray(settings.adPositions) ? settings.adPositions : [];
     const [loaded, setLoaded] = React.useState(false);
 
     const legacySrc = (path?: string) => {
@@ -37,7 +52,7 @@ const AdDisplay: React.FC<AdDisplayProps> = ({ positionId, className }) => {
         }
     }, [adPositions.length, fetchAdPositions]);
 
-    const ad = adPositions.find(p => p.positionId === positionId);
+    const ad = adPositions.find((p: AdPosition) => p.positionId === positionId);
 
     if (!loaded) return null;
     if (!ad || ad.status === 'No') return null;
