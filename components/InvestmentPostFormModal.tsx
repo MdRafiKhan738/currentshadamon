@@ -711,13 +711,8 @@ export default function InvestmentPostFormModal({
                 </div>
 
                 <div className="mt-3 rounded border border-slate-300">
-                  <div className="flex items-center gap-2 border-b border-slate-200 bg-white px-2.5 py-1.5">
-                    <span className={postRole === "investor" ? "rounded-full bg-violet-100 px-2.5 py-1.5 text-[12px] font-bold text-violet-700" : "rounded-full bg-emerald-100 px-2.5 py-1.5 text-[12px] font-bold text-emerald-700"}>
-                      {postRole === "investor"
-                        ? (language === "bn" ? "আমি বিনিয়োগ করতে চাই" : "I wanna invest")
-                        : (language === "bn" ? "আমার ব্যবসায় বিনিয়োগ দরকার" : "I need investment")}
-                    </span>
-                    {postRole === "business_owner" && selectedCategory ? (
+                  {postRole === "business_owner" && selectedCategory ? (
+                    <div className="flex items-center border-b border-slate-200 bg-white px-2.5 py-1.5">
                       <select
                         value={businessStatus}
                         onChange={(event) => setBusinessStatus(event.target.value as "running" | "new" | "closed")}
@@ -727,8 +722,8 @@ export default function InvestmentPostFormModal({
                         <option value="new">{language === "bn" ? "নতুন ব্যবসা" : "New Business"}</option>
                         <option value="closed">{language === "bn" ? "ব্যবসা বন্ধ" : "Close Business"}</option>
                       </select>
-                    ) : null}
-                  </div>
+                    </div>
+                  ) : null}
 
                   <input
                     value={headline}
