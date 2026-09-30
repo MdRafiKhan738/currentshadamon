@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   ArrowUpRight,
   BadgeCheck,
@@ -91,7 +91,12 @@ export default function InvestmentPostCard({
     : fields;
   const visibleFields = orderedFields.slice(0, 3);
   const hasPriceBox = visibleFields.length > 0;
-  const image = getImageUrl(post.images?.[0]);
+  const rawImagePath = String(post.images?.[0] || "");
+  const [image, setImage] = useState(() => getImageUrl(rawImagePath));
+  const isRemoteImage = rawImagePath.startsWith("http") || rawImagePath.startsWith("data:") || rawImagePath.startsWith("blob:");
+  const legacyImage = !isRemoteImage && rawImagePath
+    ? "https://api.shadamon.com" + (rawImagePath.startsWith("/") ? rawImagePath : "/" + rawImagePath)
+    : "";
   const name = post.user?.name || post.user?.storeName || "Member";
   const verified = Boolean(post.user?.mVerified || (post.user?.verifiedBy && post.user.verifiedBy !== "Not Verified"));
   const statusText =
@@ -106,8 +111,15 @@ export default function InvestmentPostCard({
 
   const priceText = (field: any) => {
     const value = values[field.key];
-    if (field.inputType === "text") return String(value ?? "—");
-    return formatInvestmentAmount(value as any);
+    const fieldName = String(field.label || field.labelBn || field.key || "").toLowerCase();
+    const formatted = field.inputType === "text"
+      ? String(value ?? "—")
+      : formatInvestmentAmount(value as any);
+    if (/return|expected|profit|percentage|percent|roi/.test(fieldName)) {
+      const raw = String(value ?? "").trim();
+      if (raw && !raw.endsWith("%")) return formatted + "%";
+    }
+    return formatted;
   };
 
   return (
@@ -119,10 +131,13 @@ export default function InvestmentPostCard({
         <div className="relative min-h-[246px] overflow-hidden bg-[#f1f4f6]">
           {image ? (
             <img
-              src={image}
+              src={image || undefined}
               alt={post.headline}
               className="h-full w-full object-cover"
               loading="lazy"
+              onError={() => {
+                if (legacyImage && image !== legacyImage) setImage(legacyImage);
+              }}
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-xs font-semibold text-slate-400">
