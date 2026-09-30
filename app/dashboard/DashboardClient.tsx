@@ -63,6 +63,7 @@ import Image from "next/image";
 import LatestFreeAdPromo from "../../components/LatestFreeAdPromo";
 import AdDisplay from "../../components/AdDisplay";
 import InvestmentPostCard from "../../components/InvestmentPostCard";
+import LegacyFeedAdCard from "../../components/LegacyFeedAdCard";
 import DashboardOverview from "../../components/DashboardOverview";
 
 import FilterModal, { FilterState } from "../../components/FilterModal";
@@ -1790,22 +1791,38 @@ export default function DashboardClient() {
                       {chunk.blocks.map((block, blockIndex) => {
                         return (
                           <React.Fragment key={blockIndex}>
-                            {block.bigAd && (
-                              <InvestmentPostCard
-                                post={block.bigAd}
-                                onOpen={() => openAdFromFeed(block.bigAd)}
-                              />
-                            )}
+                            {block.bigAd &&
+                              (block.bigAd.postRole ? (
+                                <InvestmentPostCard
+                                  post={block.bigAd}
+                                  onOpen={() => openAdFromFeed(block.bigAd)}
+                                />
+                              ) : (
+                                <LegacyFeedAdCard
+                                  ad={block.bigAd}
+                                  variant="big"
+                                  onOpen={() => openAdFromFeed(block.bigAd)}
+                                />
+                              ))}
 
                             {block.smallAds.length > 0 && (
                               <div className="flex flex-col gap-2 bg-transparent lg:bg-white rounded-lg pb-2">
-                                {block.smallAds.map((ad) => (
-                                  <InvestmentPostCard
-                                    key={ad._id}
-                                    post={ad}
-                                    onOpen={() => openAdFromFeed(ad)}
-                                  />
-                                ))}
+                                {block.smallAds.map((ad) =>
+                                  ad.postRole ? (
+                                    <InvestmentPostCard
+                                      key={ad._id}
+                                      post={ad}
+                                      onOpen={() => openAdFromFeed(ad)}
+                                    />
+                                  ) : (
+                                    <LegacyFeedAdCard
+                                      key={ad._id}
+                                      ad={ad}
+                                      variant="small"
+                                      onOpen={() => openAdFromFeed(ad)}
+                                    />
+                                  ),
+                                )}
                               </div>
                             )}
 
