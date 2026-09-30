@@ -324,18 +324,32 @@ export default function DashboardClient() {
   }, []);
 
   useEffect(() => {
-    const token = Cookies.get("token");
-    if (!token) return;
-
-    const headers = { Authorization: `Bearer ${token}` };
-
     const loadDashboardSummary = async () => {
+      const token = Cookies.get("token");
+      if (!token) {
+        setDashboardSummary({
+          pendingProposals: 0,
+          acceptedProposals: 0,
+          pendingInvitations: 0,
+          acceptedInvitations: 0,
+          profileVisitors: 0,
+          packageName: "Free",
+          packageType: "",
+          packageValidTill: "",
+          usedConnects: 0,
+          availableConnects: 0,
+          pendingVerification: 0,
+        });
+        return;
+      }
+
+      const headers = { Authorization: `Bearer ${token}` };
       try {
         const [meRes, proposalsRes, invitesRes, adsRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/api/user/me`, { headers }),
-          fetch(`${API_BASE_URL}/api/proposals`, { headers }),
-          fetch(`${API_BASE_URL}/api/invites`, { headers }),
-          fetch(`${API_BASE_URL}/api/ads/me`, { headers }),
+          fetch(`${API_BASE_URL}/api/user/me`, { headers, cache: "no-store" }),
+          fetch(`${API_BASE_URL}/api/proposals`, { headers, cache: "no-store" }),
+          fetch(`${API_BASE_URL}/api/invites`, { headers, cache: "no-store" }),
+          fetch(`${API_BASE_URL}/api/ads/me`, { headers, cache: "no-store" }),
         ]);
 
         const me = meRes.ok ? await meRes.json() : {};
@@ -346,6 +360,19 @@ export default function DashboardClient() {
           ? proposals.data
           : [...(proposals.received || []), ...(proposals.sent || [])];
 
+        const usedConnects = Number(
+          me.creditsUsed ??
+          me.activePackage?.usedCredits ??
+          me.usedConnects ??
+          0,
+        );
+        const availableConnects = Number(
+          me.connectsBalance ??
+          me.activePackage?.creditsRemaining ??
+          me.availableConnects ??
+          0,
+        );
+
         setDashboardSummary({
           pendingProposals: allProposals.filter((item: any) => item.status === "pending").length,
           acceptedProposals: allProposals.filter((item: any) => item.status === "accepted").length,
@@ -355,8 +382,8 @@ export default function DashboardClient() {
           packageName: me.activePackage?.name || me.merchantType || "Free",
           packageType: me.activePackage?.type || "",
           packageValidTill: me.activePackage?.validTill || me.validityDate || "",
-          usedConnects: Number(me.creditsUsed || me.activePackage?.usedCredits || 0),
-          availableConnects: Number(me.connectsBalance || me.activePackage?.creditsRemaining || 0),
+          usedConnects,
+          availableConnects,
           pendingVerification: Array.isArray(myAds.data)
             ? myAds.data.filter((item: any) => ["review", "pending"].includes(item.status)).length
             : 0,
@@ -377,7 +404,6 @@ export default function DashboardClient() {
       window.removeEventListener("package-updated", refreshSummary);
     };
   }, []);
-
   useEffect(() => {
     const el = scrollContainerRef.current;
     if (el) {
