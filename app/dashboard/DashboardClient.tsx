@@ -110,10 +110,37 @@ interface ActiveAd {
   description: string;
   images: string[];
   price?: number;
+  minInvestment?: number;
+  maxInvestment?: number;
+  expectedProfit?: number;
+  expectedReturn?: number;
+  investmentReturnType?: string;
   category: string;
   subCategory?: string;
   location: string;
   subLocation?: string;
+  postRole?: "investor" | "business_owner";
+  businessStatus?: "new" | "running" | "closed" | "active" | "inactive";
+  priceBoxValues?: Record<string, unknown>;
+  priceBoxFields?: Array<{
+    key: string;
+    label?: string;
+    labelBn?: string;
+    inputType?: "text" | "number";
+    order?: number;
+  }>;
+  features?: {
+    priceBoxValues?: Record<string, unknown>;
+    priceBoxFields?: Array<{
+      key: string;
+      label?: string;
+      labelBn?: string;
+      inputType?: "text" | "number";
+      order?: number;
+    }>;
+    priceBoxEnabled?: boolean;
+    priceBoxName?: string;
+  };
   user: {
     _id: string;
     name: string;
@@ -126,6 +153,7 @@ interface ActiveAd {
 
   deliveryCount: number;
   createdAt: string;
+  updatedAt?: string;
   adType: "Free" | "Promoted";
   promoteTag?: string;
   promoteType?: "call_msg" | "traffic";
