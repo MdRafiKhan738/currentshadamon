@@ -730,31 +730,6 @@ export default function InvestmentPostFormModal({
                     ) : null}
                   </div>
 
-                  <select
-                    value={selectedLocation}
-                    onChange={(event) => { setSelectedLocation(event.target.value); setSelectedSubLocation(""); }}
-                    className="w-full border-b border-slate-200 bg-white px-2.5 py-2 text-[11px] font-semibold outline-none"
-                    required
-                  >
-                    <option value="">লোকেশন নির্বাচন করুন *</option>
-                    {locations.map((location) => <option key={location._id} value={location.name}>{location.name}</option>)}
-                  </select>
-
-                  <select
-                    value={selectedSubLocation}
-                    onChange={(event) => setSelectedSubLocation(event.target.value)}
-                    className="w-full border-b border-slate-200 bg-white px-2.5 py-2 text-[11px] outline-none"
-                    required
-                    disabled={!selectedLocation}
-                  >
-                    <option value="">সাব-লোকেশন নির্বাচন করুন *</option>
-                    {subLocations.filter((item) => {
-                      const parent = typeof item.location === "object" ? item.location?._id : item.location;
-                      const selected = locations.find((location) => location.name === selectedLocation);
-                      return !parent || parent === selected?._id;
-                    }).map((item) => <option key={item._id} value={item.name}>{item.name}</option>)}
-                  </select>
-
                   <input
                     value={headline}
                     onChange={(event) => setHeadline(event.target.value)}
