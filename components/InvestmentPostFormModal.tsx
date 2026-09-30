@@ -918,7 +918,7 @@ export default function InvestmentPostFormModal({
                     {postRole === "business_owner" ? (
                       <select
                         value={businessStatus}
-                        onChange={(event) => setBusinessStatus(event.target.value as "active" | "new" | "closed")}
+                        onChange={(event) => setBusinessStatus(event.target.value as "running" | "new" | "closed")}
                         className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold text-emerald-700 outline-none"
                       >
                         <option value="running">Active Business</option>
