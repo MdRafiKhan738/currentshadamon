@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Bell, BellRing, Check, Eye, FileText, LockKeyhole, LogOut, Settings } from "lucide-react";
+import { Bell, Check, CircleDot, Copy, LockKeyhole, LogOut, Settings, ShieldCheck } from "lucide-react";
 import Cookies from "js-cookie";
 import { API_BASE_URL } from "../utils/apiConfig";
 import { useLanguage } from "../app/context/LanguageContext";
@@ -33,9 +33,17 @@ type DashboardUser = {
   verifiedBy?: string;
 };
 
-export default function DashboardOverview({ summary, user }: { summary: DashboardSummary; user?: DashboardUser | null }) {
+export default function DashboardOverview({
+  summary,
+  user,
+}: {
+  summary: DashboardSummary;
+  user?: DashboardUser | null;
+}) {
   const { language } = useLanguage();
+  const bn = language === "bn";
   const [loadedUser, setLoadedUser] = useState<DashboardUser | null>(user || null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -58,34 +66,57 @@ export default function DashboardOverview({ summary, user }: { summary: Dashboar
       .catch(() => {});
   }, [user]);
 
-  const profileName = loadedUser?.name || loadedUser?.storeName || (language === "bn" ? "সদস্য" : "Member");
-  const profileLine = loadedUser?.email || loadedUser?.storeName || "Profile";
+  const profileName = loadedUser?.name || loadedUser?.storeName || "Shadamon.com Support";
+  const userId = loadedUser?._id || "";
   const accountType = loadedUser?.merchantType || "Free";
   const mobile = loadedUser?.mobile || "—";
   const photo = getImageUrl(loadedUser?.photo || undefined) || "";
+  const verified = Boolean(loadedUser?.mVerified);
 
   const dispatchAccount = (activeTab: "Profile" | "Post" | "Settings" | "Activity") => {
     window.dispatchEvent(new CustomEvent("open-account-modal", { detail: { activeTab } }));
   };
 
-  const verifyLabel = loadedUser?.mVerified
-    ? (language === "bn" ? "ভেরিফাইড" : "Verified")
-    : (language === "bn" ? "ভেরিফাই" : "Verify");
+  const copyId = async () => {
+    if (!userId) return;
+    try {
+      await navigator.clipboard.writeText(userId);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      /* clipboard unavailable */
+    }
+  };
 
   const validTo = summary.packageValidTill
-    ? new Date(summary.packageValidTill).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" })
+    ? new Date(summary.packageValidTill).toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      })
     : "";
 
+  const packageName = summary.packageName || "";
+  const isPremium = Boolean(packageName) && packageName.toLowerCase() !== "free";
+
+  const statCell = (value: number | string, label: React.ReactNode) => (
+    <div className="px-3 first:pl-0">
+      <div className="text-[18px] font-bold leading-none text-slate-900">{value}</div>
+      <div className="mt-1.5 text-[12px] font-medium leading-[1.2] text-slate-500">{label}</div>
+    </div>
+  );
+
   return (
-    <section className="w-full overflow-hidden rounded-[6px] border border-[#dfe3e8] bg-white shadow-sm">
-      <div className="border-b border-[#e1e4e8] bg-white px-4 pb-5 pt-5">
-        <div className="flex flex-col items-center text-center">
+    <section className="w-full bg-white px-3 pb-4 pt-3">
+      {/* Profile card */}
+      <div className="rounded-[10px] border border-[#e2e6ec] bg-white p-3 shadow-sm">
+        <div className="flex justify-center">
           <div className="relative">
-            <div className="h-[92px] w-[92px] overflow-hidden rounded-full border-4 border-white bg-[#2f9b86] shadow-md ring-1 ring-slate-200">
+            <div className="h-[104px] w-[104px] overflow-hidden rounded-full bg-[#2f9b86] ring-1 ring-slate-200">
               {photo ? (
                 <img src={photo} alt="" className="h-full w-full object-cover" />
               ) : (
-                <div className="flex h-full w-full items-center justify-center text-[16px] font-bold text-white">
+                <div className="flex h-full w-full items-center justify-center text-[22px] font-bold text-white">
                   {profileName.slice(0, 2).toUpperCase()}
                 </div>
               )}
@@ -93,104 +124,128 @@ export default function DashboardOverview({ summary, user }: { summary: Dashboar
             <button
               type="button"
               onClick={() => dispatchAccount("Profile")}
-              className="absolute bottom-0 right-0 flex h-7 w-7 items-center justify-center rounded-full bg-[#f51f47] text-[18px] font-bold text-white shadow"
+              className="absolute bottom-0.5 right-0.5 flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-[#f51f47] text-[18px] font-bold leading-none text-white shadow"
               aria-label="Edit profile photo"
             >
               +
             </button>
           </div>
-
-          <div className="mt-3 text-[20px] font-extrabold text-slate-900">{profileName}</div>
-          <div className="mt-1 max-w-full truncate px-3 text-[14px] font-medium text-slate-500">{profileLine}</div>
-          <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
-            <div className="flex items-center gap-2 rounded-full border border-[#dce3ea] bg-white px-3 py-2">
-              <span className="text-[13px] font-semibold text-slate-700">{mobile}</span>
-              <Bell className="h-4 w-4 text-slate-400" />
-            </div>
-            <div className="rounded-full bg-slate-100 px-3 py-2 text-[13px] font-bold text-slate-700">
-              {accountType}
-            </div>
-            <button
-              type="button"
-              onClick={() => dispatchAccount("Profile")}
-              className={"rounded-full px-3 py-2 text-[13px] font-bold text-white " + (loadedUser?.mVerified ? "bg-[#2e9c85]" : "bg-[#ef294b]")}
-            >
-              {verifyLabel}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div className="border-b border-[#e2e5e8] bg-white px-4 py-4">
-        <div className="text-[15px] font-extrabold text-slate-800">
-          {language === "bn" ? "অ্যাকাউন্ট অ্যাক্টিভিটি" : "Account Activity"}
         </div>
 
-        <div className="mt-3 grid grid-cols-3 divide-x divide-[#e7eaee]">
-          <div className="px-3 text-center">
-            <div className="text-[20px] font-extrabold text-slate-900">{summary.pendingInvitations}</div>
-            <div className="mt-1 text-[13px] font-semibold leading-4 text-slate-500">{language === "bn" ? "অপেক্ষমাণ আমন্ত্রণ" : <>Pending<br />Invitations</>}</div>
+        <div className="mt-4 flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <div className="truncate text-[13px] font-bold text-slate-900">{profileName}</div>
+            {userId ? (
+              <div className="mt-1 flex items-center gap-1.5 text-[11px] font-medium text-slate-500">
+                <span className="truncate">{userId}</span>
+                <button type="button" onClick={copyId} aria-label="Copy ID" className="shrink-0 text-slate-500">
+                  {copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+                </button>
+              </div>
+            ) : null}
           </div>
-          <div className="px-3 text-center">
-            <div className="text-[20px] font-extrabold text-slate-900">{summary.acceptedInvitations}</div>
-            <div className="mt-1 text-[13px] font-semibold leading-4 text-slate-500">{language === "bn" ? "গৃহীত আমন্ত্রণ" : <>Accepted<br />Invitations</>}</div>
-          </div>
-          <div className="px-3 text-center">
-            <div className="text-[20px] font-extrabold text-slate-900">{summary.profileVisitors}</div>
-            <div className="mt-1 text-[13px] font-semibold leading-4 text-slate-500">{language === "bn" ? "মোট ভিজিটর" : <>Total<br />Visitors</>}</div>
-          </div>
-        </div>
-      </div>
-
-      <div className="border-b border-[#e2e5e8] bg-white px-4 py-4">
-        <div className="flex items-center gap-2 text-[15px] font-extrabold text-slate-800">
-          <LockKeyhole className="h-4 w-4" />
-          <span>{language === "bn" ? "কানেক্ট" : "Connects"}</span>
-        </div>
-
-        <div className="mt-3 grid grid-cols-2 gap-3">
-          <div className="rounded-[10px] border border-slate-200 bg-slate-50 px-4 py-4 text-center">
-            <div className="text-[28px] font-extrabold leading-none text-slate-900">{Number(summary.usedConnects || 0)}</div>
-            <div className="mt-2 text-[14px] font-bold text-slate-600">{language === "bn" ? "ব্যবহৃত কানেক্ট" : "Used Connect"}</div>
-          </div>
-          <div className="rounded-[10px] border border-emerald-200 bg-emerald-50 px-4 py-4 text-center">
-            <div className="text-[28px] font-extrabold leading-none text-slate-900">{Number(summary.availableConnects || 0)}</div>
-            <div className="mt-2 flex items-center justify-center gap-1 text-[14px] font-bold text-slate-600">
-              {language === "bn" ? "অব্যবহৃত কানেক্ট" : "Unused Connect"}
-              <LockKeyhole className="h-4 w-4 text-[#ef294b]" />
-            </div>
+          <div className="shrink-0 text-right">
+            <div className="text-[12px] font-medium text-[#8f95c4]">{bn ? "অ্যাকাউন্ট টাইপ" : "Account Type"}</div>
+            <div className="mt-0.5 text-[12px] font-semibold text-slate-600">{accountType}</div>
           </div>
         </div>
 
-        <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 text-[13px]">
-          <div className="flex items-center justify-between gap-2">
-            <span className="font-semibold text-slate-500">{language === "bn" ? "প্যাকেজ" : "Package"}</span>
-            <span className="truncate font-bold text-slate-800">{summary.packageName || "Free"}</span>
+        <div className="mt-3 flex items-center gap-2.5">
+          <div className="flex min-w-0 flex-1 items-center justify-between rounded-[6px] border border-[#d9dee5] bg-white px-3 py-2.5">
+            <span className="truncate text-[13px] font-medium text-slate-800">{mobile}</span>
+            <CircleDot className="h-4 w-4 shrink-0 text-slate-400" />
           </div>
-          <div className="flex items-center justify-between gap-2">
-            <span className="font-semibold text-slate-500">{language === "bn" ? "টাইপ" : "Type"}</span>
-            <span className="font-bold text-slate-800">{summary.packageType || "—"}</span>
-          </div>
-          <div className="col-span-2 flex items-center justify-between gap-2 border-t border-slate-100 pt-2">
-            <span className="font-semibold text-slate-500">{language === "bn" ? "মেয়াদ শেষ" : "Valid to"}</span>
-            <span className="font-bold text-slate-800">{validTo || "—"}</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-white px-4 py-4">
-        <div className="border-b border-[#e5e7eb] pb-2 text-[15px] font-extrabold text-slate-800">
-          {language === "bn" ? "অ্যাকাউন্ট সেটিংস" : "Account Settings"}
-        </div>
-
-        <div className="divide-y divide-[#eef0f2]">
-          <button type="button" onClick={() => dispatchAccount("Settings")} className="flex w-full items-center gap-3 py-3 text-left text-[14px] font-semibold text-slate-600">
-            <BellRing className="h-4 w-4 text-slate-600" />
-            {language === "bn" ? "নোটিফিকেশন" : "Notifications"}
+          <button
+            type="button"
+            onClick={() => dispatchAccount("Profile")}
+            className={
+              "flex shrink-0 items-center gap-1.5 rounded-[6px] px-4 py-2.5 text-[13px] font-bold text-white shadow-sm " +
+              (verified ? "bg-[#2e9c85]" : "bg-[#f0294b]")
+            }
+          >
+            <ShieldCheck className="h-4 w-4" />
+            {verified ? (bn ? "ভেরিফাইড" : "Verified") : bn ? "ভেরিফাই" : "Verify"}
           </button>
-          <button type="button" onClick={() => dispatchAccount("Settings")} className="flex w-full items-center gap-3 py-3 text-left text-[14px] font-semibold text-slate-600">
-            <Settings className="h-4 w-4 text-slate-600" />
-            {language === "bn" ? "অ্যাকাউন্ট সেটিংস" : "Account Settings"}
+        </div>
+      </div>
+
+      {/* Account Activity */}
+      <div className="mt-4">
+        <div className="text-[14px] font-bold text-slate-900">{bn ? "অ্যাকাউন্ট অ্যাক্টিভিটি" : "Account Activity"}</div>
+
+        <div className="mt-2 border-t border-[#e3e6ea]">
+          <div className="grid grid-cols-3 divide-x divide-[#e3e6ea] py-3">
+            {statCell(
+              summary.pendingInvitations,
+              bn ? "অপেক্ষমাণ আমন্ত্রণ" : <>Pending<br />Invitations</>,
+            )}
+            {statCell(
+              summary.acceptedInvitations,
+              bn ? "গৃহীত আমন্ত্রণ" : <>Accepted<br />Invitations</>,
+            )}
+            {statCell(summary.profileVisitors, bn ? "মোট ভিজিটর" : <>Total<br />Visitors</>)}
+          </div>
+
+          <div className="grid grid-cols-[1.35fr_1fr_1fr] divide-x divide-[#e3e6ea] border-t border-[#e3e6ea] py-3">
+            <div className="flex items-start justify-between gap-2 pr-2">
+              <div className="min-w-0">
+                {isPremium ? (
+                  <>
+                    <div className="truncate text-[13px] font-bold text-[#2f9a80]">{packageName}</div>
+                    <div className="mt-1 text-[11px] font-medium leading-[1.25] text-slate-400">
+                      {bn ? "মেয়াদ শেষ" : "Valid to"} {validTo || "—"}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-[13px] font-bold text-slate-800">
+                      {bn ? "শুধুমাত্র " : "Only "}
+                      <span className="text-[#2f9a80]">PREMIUM</span>
+                    </div>
+                    <div className="mt-1 text-[11px] font-medium leading-[1.25] text-slate-400">
+                      {bn ? "সদস্যরা এই সুযোগ পাবেন।" : "Members Access this opportunity."}
+                    </div>
+                  </>
+                )}
+              </div>
+              {!isPremium ? <LockKeyhole className="mt-1 h-4 w-4 shrink-0 text-[#ef294b]" /> : null}
+            </div>
+            <div className="px-3">
+              <div className="text-[18px] font-bold leading-none text-slate-900">{Number(summary.usedConnects || 0)}</div>
+              <div className="mt-1.5 text-[12px] font-medium leading-[1.2] text-slate-500">
+                {bn ? "ব্যবহৃত কানেক্ট" : <>Used<br />Connect</>}
+              </div>
+            </div>
+            <div className="px-3">
+              <div className="text-[18px] font-bold leading-none text-slate-900">{Number(summary.availableConnects || 0)}</div>
+              <div className="mt-1.5 text-[12px] font-medium leading-[1.2] text-slate-500">
+                {bn ? "অব্যবহৃত কানেক্ট" : <>UnUsed<br />Connect</>}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Account Settings */}
+      <div className="mt-4">
+        <div className="text-[14px] font-bold text-slate-900">{bn ? "অ্যাকাউন্ট সেটিংস" : "Account Settings"}</div>
+
+        <div className="mt-2 divide-y divide-[#eceef1] border-t border-[#e3e6ea]">
+          <button
+            type="button"
+            onClick={() => dispatchAccount("Settings")}
+            className="flex w-full items-center gap-3 px-2 py-3 text-left text-[13px] font-medium text-slate-700"
+          >
+            <Bell className="h-4 w-4 text-slate-800" fill="currentColor" />
+            {bn ? "নোটিফিকেশন" : "Notifications"}
+          </button>
+          <button
+            type="button"
+            onClick={() => dispatchAccount("Settings")}
+            className="flex w-full items-center gap-3 px-2 py-3 text-left text-[13px] font-medium text-slate-700"
+          >
+            <Settings className="h-4 w-4 text-slate-800" fill="currentColor" />
+            {bn ? "অ্যাকাউন্ট সেটিংস" : "Account Settings"}
           </button>
           <button
             type="button"
@@ -198,19 +253,13 @@ export default function DashboardOverview({ summary, user }: { summary: Dashboar
               Cookies.remove("token");
               window.location.href = "/dashboard";
             }}
-            className="flex w-full items-center gap-3 py-3 text-left text-[14px] font-semibold text-slate-600"
+            className="flex w-full items-center gap-3 px-2 py-3 text-left text-[13px] font-medium text-slate-700"
           >
-            <LogOut className="h-4 w-4 text-slate-600" />
-            {language === "bn" ? "লগ আউট" : "Log out"}
+            <LogOut className="h-4 w-4 text-slate-800" />
+            {bn ? "লগ আউট" : "Log out"}
           </button>
         </div>
       </div>
-
-      {summary.pendingVerification > 0 || summary.pendingProposals > 0 || summary.acceptedProposals > 0 ? (
-        <div className="hidden" aria-hidden="true">
-          <FileText /><Check /><Eye />
-        </div>
-      ) : null}
     </section>
   );
 }
