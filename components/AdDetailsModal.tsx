@@ -489,7 +489,7 @@ export default function AdDetailsModal({
       formData.append("receiverId", String(adOwnerId));
       formData.append("adId", String(ad._id));
       formData.append("text", message);
-      formData.append("messageType", "cv");
+      formData.append("messageType", "text");
 
       const response = await fetch(API_BASE_URL + "/api/messages", {
         method: "POST",
