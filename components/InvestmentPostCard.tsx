@@ -82,6 +82,7 @@ export default function InvestmentPostCard({
   post: MarketplacePost;
   onOpen: () => void;
 }) {
+  const { language } = useLanguage();
   const values = post.priceBoxValues || post.features?.priceBoxValues || {};
   const fields = useMemo(() => {
     const source = post.priceBoxFields || post.features?.priceBoxFields || [];
@@ -99,7 +100,6 @@ export default function InvestmentPostCard({
   const image = getImageUrl(post.images?.[0]);
   const name = post.user?.name || post.user?.storeName || "Member";
   const verified = Boolean(post.user?.mVerified || (post.user?.verifiedBy && post.user.verifiedBy !== "Not Verified"));
-  const badge = roleLabel(post);
   const statusText =
     post.postRole === "business_owner"
       ? post.businessStatus === "new"
