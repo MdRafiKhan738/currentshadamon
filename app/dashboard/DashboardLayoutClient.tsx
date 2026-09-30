@@ -1543,6 +1543,14 @@ export default function DashboardLayoutClient({
           </header>
         </div>
 
+        {/* Pos 2: Bottom of Header - preserved from legacy Shadamon */}
+        {settings.adPositions && settings.adPositions.length > 0 && (
+          <AdDisplay
+            positionId={2}
+            className="bg-white border-b border-slate-100"
+          />
+        )}
+
         <div className="max-w-[1090px] mx-auto px-0 lg:px-2 pt-0 lg:pt-4">
           {children}
         </div>
