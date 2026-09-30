@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import Cookies from "js-cookie";
-import { ArrowLeft, Check, ImagePlus, Loader2, MapPin, Pencil, Plus, X } from "lucide-react";
+import { ArrowLeft, Check, ChevronRight, ImagePlus, Loader2, MapPin, Pencil, Plus, Search, X } from "lucide-react";
 import toast from "react-hot-toast";
 import { API_BASE_URL } from "../utils/apiConfig";
 import LoginModal from "./LoginModal";
@@ -110,6 +110,9 @@ export default function InvestmentPostFormModal({
   const [images, setImages] = useState<File[]>([]);
   const [priceValues, setPriceValues] = useState<Record<string, string>>({});
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
+  const [showLocationPicker, setShowLocationPicker] = useState(false);
+  const [locationPickerSearch, setLocationPickerSearch] = useState("");
+  const [locationPickerStep, setLocationPickerStep] = useState<"district" | "area">("district");
   const [loadingData, setLoadingData] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [userName, setUserName] = useState("");
@@ -480,20 +483,22 @@ export default function InvestmentPostFormModal({
 
   if (referenceDesign) {
     const renderPriceField = (field: PriceField) => (
-      <label key={field.key} className="block rounded-md border border-slate-300 bg-white px-3 py-2">
-        <span className="block truncate text-[9px] font-medium text-slate-500">
-          {field.label || field.labelBn || field.key}
-        </span>
+      <div key={field.key} className="min-w-0 px-2 py-1.5">
         <input
           type={field.inputType === "text" ? "text" : "number"}
           value={priceValues[field.key] || ""}
           onChange={(event) =>
             setPriceValues((previous) => ({ ...previous, [field.key]: event.target.value }))
           }
-          placeholder={field.placeholder || field.placeholderBn || ""}
-          className="mt-1 w-full bg-transparent text-sm font-semibold text-slate-900 outline-none placeholder:text-slate-300"
+          placeholder={
+            language === "bn"
+              ? field.placeholderBn || field.placeholder || field.labelBn || field.label || field.key
+              : field.placeholder || field.label || field.key
+          }
+          className="w-full bg-transparent text-[14px] font-semibold text-slate-900 outline-none placeholder:text-slate-400"
+          aria-label={field.label || field.key}
         />
-      </label>
+      </div>
     );
 
     return (
@@ -525,15 +530,20 @@ export default function InvestmentPostFormModal({
                   >
                     {selectedCategory?.name || "Category"} · {selectedSubCategory?.name || "Subcategory"}
                   </button>
-                  <div className="rounded border border-slate-300 px-2 py-1 text-slate-500">
-                    {selectedLocation || "ঢাকা, বাংলাদেশ"}
+                  <div className="min-w-0 truncate text-center text-[12px] font-semibold text-slate-700">
+                    {selectedLocation || (language === "bn" ? "লোকেশন" : "District")}
+                    {selectedSubLocation ? ", " + selectedSubLocation : ""}
                   </div>
                   <button
                     type="button"
-                    onClick={() => setShowCategoryPicker((value) => !value)}
-                    className="rounded border border-slate-300 bg-white px-2 py-1 font-bold text-slate-700 hover:bg-slate-50"
+                    onClick={() => {
+                      setLocationPickerSearch("");
+                      setLocationPickerStep(selectedLocation ? "area" : "district");
+                      setShowLocationPicker(true);
+                    }}
+                    className="shrink-0 rounded border border-slate-300 bg-white px-3 py-1 font-bold text-slate-700 hover:bg-slate-50"
                   >
-                    {language === "bn" ? "পরিবর্তন করুন" : "Change"}
+                    {language === "bn" ? "পরিবর্তন" : "Change"}
                   </button>
                 </div>
 
@@ -609,7 +619,7 @@ export default function InvestmentPostFormModal({
                         onChange={(event) => setBusinessStatus(event.target.value as "running" | "new" | "closed")}
                         className="rounded border border-emerald-200 bg-emerald-50 px-2 py-1 text-[9px] font-semibold text-emerald-700 outline-none"
                       >
-                        <option value="active">{language === "bn" ? "সক্রিয় ব্যবসা" : "Active Business"}</option>
+                        <option value="running">{language === "bn" ? "সক্রিয় ব্যবসা" : "Active Business"}</option>
                         <option value="new">{language === "bn" ? "নতুন ব্যবসা" : "New Business"}</option>
                         <option value="closed">{language === "bn" ? "ব্যবসা বন্ধ" : "Close Business"}</option>
                       </select>
@@ -644,14 +654,14 @@ export default function InvestmentPostFormModal({
                   <input
                     value={headline}
                     onChange={(event) => setHeadline(event.target.value)}
-                    placeholder={postRole === "investor" ? "Want to invest 50 Lacs" : "Need investment for my business"}
+                    placeholder={language === "bn" ? "শিরোনাম / Headline" : "Headline / শিরোনাম"}
                     className="w-full border-b border-slate-200 bg-white px-2.5 py-2.5 text-sm font-semibold outline-none placeholder:text-slate-300"
                     required
                   />
                   <textarea
                     value={description}
                     onChange={(event) => setDescription(event.target.value)}
-                    placeholder="আপনার পোস্টের বিস্তারিত লিখুন..."
+                    placeholder={language === "bn" ? "বর্ণনা / Description" : "Description / বর্ণনা"}
                     rows={5}
                     className="w-full resize-none bg-white px-2.5 py-2.5 text-[11px] leading-5 outline-none placeholder:text-slate-300"
                     required
@@ -671,8 +681,9 @@ export default function InvestmentPostFormModal({
                     value={phone}
                     onChange={(event) => setPhone(event.target.value.replace(/\D/g, "").slice(0, 11))}
                     inputMode="numeric"
-                    placeholder={language === "bn" ? "মোবাইল নম্বর" : "Mobile number"}
-                    className="w-full border-b border-slate-200 px-3 py-2.5 text-[11px] outline-none"
+                    placeholder={language === "bn" ? "মোবাইল নম্বর / Mobile number" : "Mobile number / মোবাইল নম্বর"}
+                    className="w-full border-b border-slate-200 px-3 py-3 text-[13px] font-semibold outline-none placeholder:text-slate-400 disabled:bg-slate-50 disabled:text-slate-500"
+                    disabled={isAuthenticated}
                     required
                   />
 
@@ -705,18 +716,22 @@ export default function InvestmentPostFormModal({
                     </>
                   ) : null}
 
-                  <div className="flex items-center gap-2 px-2 py-1.5">
+                  <div className="flex items-center gap-2 border-t border-slate-200 px-2 py-2">
                     <input
-                      type="text"
+                      value={additionalMobile}
+                      onChange={(event) => setAdditionalMobile(event.target.value.replace(/\D/g, "").slice(0, 11))}
+                      inputMode="numeric"
                       placeholder={language === "bn" ? "অতিরিক্ত নম্বর / WhatsApp" : "Additional number / WhatsApp"}
-                      className="min-w-0 flex-1 text-[10px] outline-none"
+                      className="min-w-0 flex-1 text-[12px] outline-none placeholder:text-slate-400"
                     />
-                    <select className="rounded border border-slate-200 px-1.5 py-1 text-[9px] text-slate-600">
-                      <option>WhatsApp</option>
-                      <option>Call</option>
-                    </select>
-                    <button type="button" className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-slate-300 text-slate-500">
-                      <Plus className="h-3.5 w-3.5" />
+                    <span className="rounded border border-slate-200 px-2 py-1 text-[10px] text-slate-500">WhatsApp</span>
+                    <button
+                      type="button"
+                      onClick={() => setAdditionalMobile("")}
+                      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-slate-300 text-slate-500"
+                      aria-label="Clear additional number"
+                    >
+                      <X className="h-3.5 w-3.5" />
                     </button>
                   </div>
                 </div>
