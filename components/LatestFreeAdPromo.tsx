@@ -99,7 +99,7 @@ export default function LatestFreeAdPromo() {
                             />
                             <img
                                 src={mainImage}
-                                className="relative z-10 w-full h-full object-cover"
+                                className="relative z-10 w-full h-full object-contain"
                                 alt="Preview"
                                 loading="lazy"
                             />
@@ -110,11 +110,11 @@ export default function LatestFreeAdPromo() {
                         </div>
                     )}
 
-                    <div className="absolute bottom-4 left-4 right-4 flex items-end z-20 min-w-0">
-                        <div className="w-1 bg-white mr-2 self-stretch shrink-0 rounded-full" />
-                        <div className="min-w-0 max-w-[82%] flex-1 text-white drop-shadow-md overflow-hidden">
-                            <h2 className="w-full text-[16px] sm:text-[17px] leading-[1.25] font-semibold truncate whitespace-nowrap overflow-hidden">{latestAd.headline}</h2>
-                            <p className="text-[13px] mt-1 font-medium">৳ {latestAd.price || '0.00'}</p>
+                    <div className="absolute bottom-4 left-4 right-4 flex items-end z-20">
+                        <div className="w-1 bg-white mr-2 self-stretch shrink-0" />
+                        <div className="min-w-0 flex-1 text-white drop-shadow-md">
+                            <h2 className="w-full text-[17px] sm:text-[18px] leading-tight font-medium truncate">{latestAd.headline}</h2>
+                            <p className="text-[14px] mt-0">৳ {latestAd.price || '0.00'}</p>
                         </div>
                     </div>
                 </div>
@@ -122,8 +122,8 @@ export default function LatestFreeAdPromo() {
                 {/* 3. Promotion Footer */}
                 <div className="px-5 py-2 flex items-center justify-between">
                     <div className="flex flex-col">
-                        <span className="text-[13px] text-slate-600">Want More Customer?</span>
-                        <span className="text-[13px] text-slate-900 font-medium">Promote this Post</span>
+                        <span className="text-[12px] text-slate-600">Want More Customer?</span>
+                        <span className="text-[14px] text-slate-900 font-medium">Promote this Post</span>
                     </div>
                     <button
                         onClick={handlePromoteClick}
