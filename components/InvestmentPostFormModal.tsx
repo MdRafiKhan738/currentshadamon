@@ -213,33 +213,40 @@ export default function InvestmentPostFormModal({
             (item) => item._id === initialCategory || item.name === initialCategory,
           );
 
+        const hasPresetIntent = Boolean(initialRole || initialCategory || initialSubCategory);
         const roleCategory =
           requestedCategory ||
-          nextCategories.find((item) => categoryMatchesRole(item, normalizeRole(initialRole)));
+          (hasPresetIntent
+            ? nextCategories.find((item) => categoryMatchesRole(item, normalizeRole(initialRole)))
+            : null);
 
-        if (!roleCategory) {
-          toast.error(`The ${roleLabel} category is not configured in admin yet.`);
+        if (roleCategory) {
+          const requestedSub =
+            initialSubCategory &&
+            roleCategory.subcategories.find(
+              (item) => item._id === initialSubCategory || item.name === initialSubCategory,
+            );
+
+          const nextSub = requestedSub || roleCategory.subcategories[0] || null;
+          setSelectedCategory(roleCategory);
+          setSelectedSubCategory(nextSub);
+          const detectedRole = categoryRole(roleCategory);
+          if (detectedRole) setPostRole(detectedRole);
+        } else {
           setSelectedCategory(null);
           setSelectedSubCategory(null);
-          return;
+          if (hasPresetIntent) {
+            toast.error(`The ${roleLabel} category is not configured in admin yet.`);
+            return;
+          }
         }
 
-        const requestedSub =
-          initialSubCategory &&
-          roleCategory.subcategories.find(
-            (item) => item._id === initialSubCategory || item.name === initialSubCategory,
-          );
-
-        const nextSub = requestedSub || roleCategory.subcategories[0] || null;
-
-        setSelectedCategory(roleCategory);
-        setSelectedSubCategory(nextSub);
-        const detectedRole = categoryRole(roleCategory);
-        if (detectedRole) setPostRole(detectedRole);
-        if (!selectedLocation && meRes?.success && meRes.data?.lastPostLocation) {
+        // Direct dashboard entry must choose a fresh location instead of silently
+        // reusing the account's previous post location.
+        if (isInvestHomeEntry && !selectedLocation && meRes?.success && meRes.data?.lastPostLocation) {
           setSelectedLocation(meRes.data.lastPostLocation);
         }
-        if (!selectedSubLocation && meRes?.success && meRes.data?.lastPostSubLocation) {
+        if (isInvestHomeEntry && !selectedSubLocation && meRes?.success && meRes.data?.lastPostSubLocation) {
           setSelectedSubLocation(meRes.data.lastPostSubLocation);
         }
       } catch (error) {
@@ -483,7 +490,7 @@ export default function InvestmentPostFormModal({
 
   if (referenceDesign) {
     const renderPriceField = (field: PriceField) => (
-      <div key={field.key} className="min-w-0 px-2 py-1.5">
+      <div key={field.key} className="min-w-0 px-2 py-2.5">
         <input
           type={field.inputType === "text" ? "text" : "number"}
           value={priceValues[field.key] || ""}
@@ -492,12 +499,15 @@ export default function InvestmentPostFormModal({
           }
           placeholder={
             language === "bn"
-              ? field.placeholderBn || field.placeholder || field.labelBn || field.label || field.key
-              : field.placeholder || field.label || field.key
+              ? field.placeholderBn || field.placeholder || field.key
+              : field.placeholder || field.key
           }
           className="w-full bg-transparent text-[14px] font-semibold text-slate-900 outline-none placeholder:text-slate-400"
           aria-label={field.label || field.key}
         />
+        <div className="mt-1 truncate text-[10px] font-semibold text-slate-500">
+          {language === "bn" ? (field.labelBn || field.label || field.key) : (field.label || field.key)}
+        </div>
       </div>
     );
 
@@ -550,35 +560,25 @@ export default function InvestmentPostFormModal({
                 {showCategoryPicker ? (
                   <div className="mt-2 grid gap-1.5 rounded border border-slate-200 bg-slate-50 p-2 sm:grid-cols-2">
                     {categories.map((category) => (
-                      <div key={category._id} className="rounded border border-slate-200 bg-white p-2">
-                        <div className="mb-1 text-[9px] font-bold text-slate-700">
-                          {language === "bn"
-                            ? (category.categoryNameBn || category.name)
-                            : category.name}
-                        </div>
-                        {category.subcategories.map((sub) => (
-                          <button
-                            key={sub._id}
-                            type="button"
-                            onClick={() => handleSelectSubCategory(category, sub)}
-                            className={
-                              "flex w-full items-center justify-between rounded px-2 py-1.5 text-left text-[9px] font-semibold " +
-                              (selectedSubCategory?._id === sub._id
-                                ? "bg-slate-900 text-white"
-                                : "text-slate-700 hover:bg-slate-100")
-                            }
-                          >
-                            <span>
-                              {language === "bn"
-                                ? (sub.subCategoryNameBn || sub.name)
-                                : sub.name}
-                            </span>
-                            {selectedSubCategory?._id === sub._id ? (
-                              <Check className="h-3 w-3" />
-                            ) : null}
-                          </button>
-                        ))}
-                      </div>
+                      <button
+                        key={category._id}
+                        type="button"
+                        onClick={() => {
+                          const nextSub = [...category.subcategories].sort(
+                            (a, b) => (a.order || 0) - (b.order || 0),
+                          )[0] || null;
+                          setSelectedCategory(category);
+                          setSelectedSubCategory(nextSub);
+                          const detectedRole = categoryRole(category);
+                          if (detectedRole) setPostRole(detectedRole);
+                          setPriceValues({});
+                          setShowCategoryPicker(false);
+                        }}
+                        className="flex w-full items-center justify-between rounded border border-slate-200 bg-white px-3 py-3 text-left text-[13px] font-bold text-slate-800 hover:bg-slate-50"
+                      >
+                        <span>{language === "bn" ? (category.categoryNameBn || category.name) : category.name}</span>
+                        <ChevronRight className="h-4 w-4 text-slate-500" />
+                      </button>
                     ))}
                   </div>
                 ) : null}
@@ -717,11 +717,11 @@ export default function InvestmentPostFormModal({
                         ? (language === "bn" ? "আমি বিনিয়োগ করতে চাই" : "I wanna invest")
                         : (language === "bn" ? "আমার ব্যবসায় বিনিয়োগ দরকার" : "I need investment")}
                     </span>
-                    {postRole === "business_owner" ? (
+                    {postRole === "business_owner" && selectedCategory ? (
                       <select
                         value={businessStatus}
                         onChange={(event) => setBusinessStatus(event.target.value as "running" | "new" | "closed")}
-                        className="rounded border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-[12px] font-semibold text-emerald-700 outline-none"
+                        className="rounded border border-slate-300 bg-white px-2.5 py-1.5 text-[12px] font-semibold text-black outline-none"
                       >
                         <option value="running">{language === "bn" ? "সক্রিয় ব্যবসা" : "Active Business"}</option>
                         <option value="new">{language === "bn" ? "নতুন ব্যবসা" : "New Business"}</option>
