@@ -396,7 +396,7 @@ export default function AdDetailsModal({
   const unlockPostConnection = async () => {
     const token = Cookies.get("token");
     if (!token) {
-      window.dispatchEvent(new CustomEvent("open-mobile-entry-modal", { detail: { reason: actionType, ad } }));
+      window.dispatchEvent(new CustomEvent("open-mobile-entry-modal", { detail: { reason: "message", ad } }));
       onClose();
       return false;
     }
