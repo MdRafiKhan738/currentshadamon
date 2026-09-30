@@ -177,6 +177,11 @@ export default function InvestmentPostCard({
                   <div className={cn("truncate text-[18px] font-extrabold", index === 0 ? "text-white" : "text-slate-900")}>
                     {priceText(field, index)}
                   </div>
+                  <div className={cn("mt-1 truncate text-[10px] font-semibold", index === 0 ? "text-white/80" : "text-slate-500")}>
+                    {language === "bn"
+                      ? (field.labelBn || field.label || field.key)
+                      : (field.label || field.key)}
+                  </div>
                 </div>
               ))}
             </div>
