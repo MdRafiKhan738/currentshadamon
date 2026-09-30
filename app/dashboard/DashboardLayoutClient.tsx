@@ -689,11 +689,38 @@ export default function DashboardLayoutClient({
       setupRealtime();
       fetchUnreadCount();
     };
+
+    const handleDashboardLoginSuccess = async () => {
+      try {
+        const token = Cookies.get("token");
+        if (!token) return;
+        const res = await fetch(
+          API_BASE_URL + "/api/user/me",
+          { headers: { Authorization: "Bearer " + token }, cache: "no-store" },
+        );
+        const raw = await res.json().catch(() => ({}));
+        const me = raw?.user || raw?.data?.user || raw?.data || raw;
+        if (res.ok && me?._id) {
+          setUser(me);
+          setTempMobile(me.mobile || "");
+          setInitialMobile(me.mobile || "");
+          setIsPostAdModalOpen(false);
+          setSidebarPostRole(undefined);
+          setIsPostChoiceOpen(false);
+          window.dispatchEvent(new Event("auth-change"));
+        }
+      } catch (error) {
+        console.error("Dashboard login handoff failed:", error);
+      }
+    };
+
     window.addEventListener("auth-change", handleAuthChange);
+    window.addEventListener("dashboard-login-success", handleDashboardLoginSuccess);
 
     return () => {
       cancelled = true;
       window.removeEventListener("auth-change", handleAuthChange);
+      window.removeEventListener("dashboard-login-success", handleDashboardLoginSuccess);
     };
   }, [isPublicInvestmentEntry]);
 
@@ -1679,6 +1706,7 @@ export default function DashboardLayoutClient({
           initialRole={requestedInvestmentRole || sidebarPostRole}
           initialCategory={requestedCategory}
           initialSubCategory={requestedSubCategory}
+          referenceDesign
           onSuccess={(newAd) => {
             setIsPostAdModalOpen(false);
             setAdToEdit(null);
