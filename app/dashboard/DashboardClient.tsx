@@ -1600,8 +1600,6 @@ export default function DashboardClient() {
               <ArrowRight className="w-5 h-5" strokeWidth={2.5} />
             </button>
           </div>
-        <AdDisplay positionId={2} className="bg-white rounded-lg overflow-hidden" />
-
         </div>
 
         {!filters.category &&
