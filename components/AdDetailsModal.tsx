@@ -115,9 +115,6 @@ export default function AdDetailsModal({
   const [categories, setCategories] = useState<any[]>([]);
   const [locations, setLocations] = useState<any[]>([]);
   const [subLocations, setSubLocations] = useState<any[]>([]);
-  const [proposalMessage, setProposalMessage] = useState("");
-  const [proposalOpen, setProposalOpen] = useState(false);
-  const [proposalSending, setProposalSending] = useState(false);
   const [inviteStatus, setInviteStatus] = useState<"none" | "pending" | "accepted">("none");
 
   const [actionButtons, setActionButtons] = useState<string[]>([
@@ -396,7 +393,7 @@ export default function AdDetailsModal({
     setShowOptionsPopup(false);
   };
 
-  const unlockPostConnection = async (actionType: "message" | "proposal") => {
+  const unlockPostConnection = async () => {
     const token = Cookies.get("token");
     if (!token) {
       window.dispatchEvent(new CustomEvent("open-mobile-entry-modal", { detail: { reason: actionType, ad } }));
@@ -409,7 +406,7 @@ export default function AdDetailsModal({
       const response = await fetch(API_BASE_URL + "/api/connects/unlock-post", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
-        body: JSON.stringify({ adId: ad._id, actionType }),
+        body: JSON.stringify({ adId: ad._id, actionType: "message" }),
       });
       const result = await response.json().catch(() => ({}));
       if (response.ok && result.success) {
@@ -430,34 +427,9 @@ export default function AdDetailsModal({
   };
 
   const handleChatClick = async () => {
-    const unlocked = await unlockPostConnection("message");
+    const unlocked = await unlockPostConnection();
     if (!unlocked) return;
     window.dispatchEvent(new CustomEvent("open-chat-modal", { detail: { ad } }));
-  };
-
-  const sendProposal = async () => {
-    if (!proposalMessage.trim()) return toast.error("Write a proposal message first.");
-    const unlocked = await unlockPostConnection("proposal");
-    if (!unlocked) return;
-    const token = Cookies.get("token");
-    if (!token) return;
-    setProposalSending(true);
-    try {
-      const response = await fetch(API_BASE_URL + "/api/proposals", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
-        body: JSON.stringify({ adId: ad._id, message: proposalMessage.trim(), proposalType: "investment" }),
-      });
-      const result = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(result.message || "Unable to send proposal");
-      toast.success("Proposal sent successfully.");
-      setProposalMessage("");
-      setProposalOpen(false);
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Unable to send proposal.");
-    } finally {
-      setProposalSending(false);
-    }
   };
 
   const handleInvite = async () => {
@@ -467,62 +439,27 @@ export default function AdDetailsModal({
       onClose();
       return;
     }
+    if (inviteStatus === "pending" || inviteStatus === "accepted") return;
     const receiverId = typeof ad.user === "object" ? ad.user?._id : ad.user;
     if (!receiverId || String(receiverId) === String(currentUserId)) return;
-
     try {
-      if (inviteStatus === "pending") {
-        const existing = await fetch(
-          API_BASE_URL + "/api/invites?adId=" + encodeURIComponent(ad._id),
-          {
-            headers: { Authorization: "Bearer " + token },
-            cache: "no-store",
-          },
-        ).then((response) => response.json());
-
-        const sent = Array.isArray(existing?.sent) ? existing.sent : [];
-        const current = sent.find(
-          (invite: any) =>
-            String(invite.adId?._id || invite.adId) === String(ad._id),
-        );
-
-        if (current?._id) {
-          const cancelResponse = await fetch(
-            API_BASE_URL + "/api/invites/" + current._id,
-            {
-              method: "PATCH",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: "Bearer " + token,
-              },
-              body: JSON.stringify({ status: "cancelled" }),
-            },
-          );
-          const cancelResult = await cancelResponse.json().catch(() => ({}));
-          if (!cancelResponse.ok) {
-            throw new Error(cancelResult.message || "Unable to cancel invitation.");
-          }
-          setInviteStatus("none");
-          window.dispatchEvent(new Event("refresh-dashboard"));
-          toast.success("Invitation cancelled.");
-          return;
-        }
-      }
-
       const response = await fetch(API_BASE_URL + "/api/invites/send", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + token,
+        },
         body: JSON.stringify({ receiverId, adId: ad._id }),
       });
       const result = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(result.message || "Unable to send invite.");
       setInviteStatus("pending");
+      window.dispatchEvent(new Event("refresh-dashboard"));
       toast.success("Invite sent.");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Unable to send invite.");
     }
   };
-
   const nextImage = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (hasImages) {
@@ -544,7 +481,7 @@ export default function AdDetailsModal({
       ? `${window.location.origin}/dashboard?ad=${ad?._id}`
       : "";
   const handleRevealPhone = async () => {
-    if (showPhone) return;
+    if (showPhone || revealingPhone) return;
 
     const adId = ad?._id;
     if (!adId) return;
