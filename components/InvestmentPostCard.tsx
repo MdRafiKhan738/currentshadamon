@@ -165,25 +165,7 @@ export default function InvestmentPostCard({
       return;
     }
 
-    if (inviteStatus === "pending" && inviteId) {
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/invites/${inviteId}`, {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + token,
-          },
-          body: JSON.stringify({ status: "cancelled" }),
-        });
-        const result = await response.json().catch(() => ({}));
-        if (!response.ok) throw new Error(result.message || "Unable to cancel invitation.");
-        setInviteStatus("none");
-        setInviteId(null);
-        window.dispatchEvent(new Event("refresh-dashboard"));
-        toast.success(language === "bn" ? "আমন্ত্রণ বাতিল হয়েছে।" : "Invitation cancelled.");
-      } catch (error) {
-        toast.error(error instanceof Error ? error.message : "Unable to cancel invitation.");
-      }
+    if (inviteStatus === "pending" || inviteStatus === "accepted") {
       return;
     }
 
@@ -267,10 +249,7 @@ export default function InvestmentPostCard({
                       : "border-slate-200 bg-white",
                   )}
                 >
-                  <div className={cn("truncate text-[9px] font-medium", index === 0 ? "text-white/90" : "text-slate-400")}>
-                    {field.label || field.labelBn || field.key}
-                  </div>
-                  <div className={cn("mt-1 truncate text-[14px] font-extrabold", index === 0 ? "text-white" : "text-slate-900")}>
+                  <div className={cn("truncate text-[18px] font-extrabold", index === 0 ? "text-white" : "text-slate-900")}>
                     {priceText(field)}
                   </div>
                 </div>
@@ -311,7 +290,8 @@ export default function InvestmentPostCard({
                         ? "border-emerald-200 bg-emerald-50 text-emerald-700"
                         : "border-slate-200 bg-white text-slate-700",
                     )}
-                    aria-label={inviteStatus === "pending" ? "Cancel invitation" : "Invite"}
+                    disabled={inviteStatus === "pending" || inviteStatus === "accepted"}
+                    aria-label={inviteStatus === "pending" || inviteStatus === "accepted" ? "Invited" : "Invite"}
                   >
                     {inviteStatus === "pending" || inviteStatus === "accepted" ? (
                       <UserRoundCheck className="h-4 w-4" />
