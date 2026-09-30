@@ -99,7 +99,7 @@ function PackageCard({
       </div>
 
       {/* heading */}
-      <div className="px-5 pt-0.5">
+      <div className="px-8 pt-0.5">
         {isBoth ? (
           <>
             <div className="text-[12px] font-medium leading-tight text-slate-700">
