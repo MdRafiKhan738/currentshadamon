@@ -55,7 +55,6 @@ function cn(...inputs: ClassValue[]) {
 }
 import { API_BASE_URL } from "../../utils/apiConfig";
 import { useLanguage } from "../context/LanguageContext";
-import { timeAgo } from "../../utils/timeAgo";
 import { getImageUrl } from "../../utils/imageUrl";
 import { getNonHighlightLabels, hasHighlightLabel } from "../../utils/labels";
 import { INFO_PAGE_ROUTES } from "@/utils/infoContent";
