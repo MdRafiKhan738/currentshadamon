@@ -1206,76 +1206,61 @@ export default function AdDetailsModal({
 
               {/* Action Buttons Row */}
               <div className="flex flex-row flex-wrap items-stretch gap-2 relative">
-                {(() => {
-                  const otherButtons = actionButtons.filter(
-                    (b) => b !== "Chat" && b !== "Message",
-                  );
+                {ad.postRole && String(ad.user?._id || ad.user) !== String(currentUserId) && (
+                  <button
+                    onClick={handleInvite}
+                    disabled={inviteStatus === "pending" || inviteStatus === "accepted"}
+                    className={inviteStatus !== "none"
+                      ? "min-w-[112px] flex-1 h-10 whitespace-nowrap border border-emerald-200 bg-emerald-50 text-emerald-700 text-xs px-2 rounded-md flex items-center justify-center gap-1 opacity-80"
+                      : "min-w-[112px] flex-1 h-10 whitespace-nowrap border border-violet-200 bg-violet-50 text-violet-700 text-xs px-1 rounded-md hover:bg-violet-100 transition-colors flex items-center justify-center gap-1"}
+                  >
+                    <UserPlus className="w-3.5 h-3.5" />
+                    {inviteStatus !== "none" ? "Invited" : "Invite"}
+                  </button>
+                )}
 
-                  return (
-                    <>
-                      {/* Invite is free and does not consume a connect. */}
-                      {ad.postRole &&
-                        String(ad.user?._id || ad.user) !== String(currentUserId) && (
-                          <button
-                            onClick={handleInvite}
-                            disabled={inviteStatus === "pending" || inviteStatus === "accepted"}
-                            className={inviteStatus !== "none" ? "min-w-[112px] flex-1 h-10 whitespace-nowrap border border-emerald-200 bg-emerald-50 text-emerald-700 text-xs px-2 rounded-md flex items-center justify-center gap-1" : "min-w-[112px] flex-1 h-10 whitespace-nowrap border border-violet-200 bg-violet-50 text-violet-700 text-xs px-1 rounded-md hover:bg-violet-100 transition-colors flex items-center justify-center gap-1"}
-                          >
-                            <UserPlus className="w-3.5 h-3.5" />
-                            {inviteStatus !== "none" ? "Invited" : "Invite"}
-                          </button>
-                        )}
+                {!ad.postRole && actionButtons.includes("Call") &&
+                  !(ad.hidePhone === true || ad.hidePhone === "true" || !ad.phone || String(ad.phone) === "undefined") && (
+                    <button
+                      onClick={() => {
+                        if (!showPhone) handleRevealPhone();
+                        else if (primaryPhone) window.location.href = "tel:" + primaryPhone;
+                      }}
+                      disabled={revealingPhone}
+                      className="min-w-[96px] flex-1 h-10 whitespace-nowrap bg-[#1A202C] text-white text-xs px-3 rounded-md hover:bg-slate-800 transition-colors disabled:opacity-60"
+                    >
+                      {revealingPhone ? "Revealing..." : "Call"}
+                    </button>
+                  )}
 
-                      {/* Call Button - Only if requested and phone available */}
-                      {otherButtons.includes("Call") &&
-                        !(
-                          ad.hidePhone === true ||
-                          ad.hidePhone === "true" ||
-                          !ad.phone ||
-                          String(ad.phone) === "undefined"
-                        ) && (
-                          <button
-                            onClick={() => {
-                          if (!showPhone) handleRevealPhone();
-                          else setShowPhone(false);
-                        }}
-                            className="min-w-[96px] flex-1 h-10 whitespace-nowrap bg-[#1A202C] text-white text-xs px-3 rounded-md hover:bg-slate-800 transition-colors"
-                          >
-                            Call
-                          </button>
-                        )}
+                <button
+                  className="min-w-[96px] flex-1 h-10 whitespace-nowrap bg-[#1A202C] text-white text-xs px-3 rounded-md hover:bg-black transition-colors"
+                  onClick={handleChatClick}
+                  disabled={false}
+                >
+                  Chat
+                </button>
 
-                      {/* Chat Button - ALWAYS SHOW */}
-                      <button
-                        className="min-w-[96px] flex-1 h-10 whitespace-nowrap bg-[#1A202C] text-white text-xs px-3 rounded-md hover:bg-black transition-colors"
-                        onClick={handleChatClick}
-                      >
-                        Chat
-                      </button>
+                {ad.postRole && String(ad.user?._id || ad.user) !== String(currentUserId) && (
+                  <button
+                    onClick={handleSendCV}
+                    className="flex-1 h-10 bg-[#1A202C] border border-[#1A202C] text-white text-xs px-2 rounded-md hover:bg-black transition-colors flex items-center justify-center"
+                  >
+                    <span className="whitespace-nowrap">Send CV</span>
+                  </button>
+                )}
 
-                      {ad.postRole && String(ad.user?._id || ad.user) !== String(currentUserId) && (
-                        <button
-                          onClick={handleSendCV}
-                          className="flex-1 h-10 bg-[#1A202C] border border-[#1A202C] text-white text-xs px-2 rounded-md hover:bg-black transition-colors flex items-center justify-center"
-                        >
-                          <span className="whitespace-nowrap">Send CV</span>
-                        </button>
-                      )}
                 <div className="shrink-0 flex items-center justify-end pl-0.5 relative">
                   <button
                     ref={optionsButtonRef}
                     onClick={() => setShowOptionsPopup(!showOptionsPopup)}
                     className="w-10 h-10 rounded-md border border-slate-400 bg-white flex items-center justify-center"
                   >
-                    <SquareArrowOutUpRight
-                      className="w-5 h-5 stroke-[1.8]"
-                      color="#64748b"
-                    />
+                    <SquareArrowOutUpRight className="w-5 h-5 stroke-[1.8]" color="#64748b" />
                   </button>
                 </div>
               </div>
             </div>
-
             <div className="mb-4">
               {/* Tabs Header */}
               <div className="flex items-center justify-between mb-2">
