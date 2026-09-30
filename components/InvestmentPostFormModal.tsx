@@ -521,7 +521,7 @@ export default function InvestmentPostFormModal({
             </div>
           ) : (
             <>
-              <div className="overflow-y-auto px-3 pb-3 pt-2">
+              <div className="relative overflow-y-auto px-3 pb-3 pt-2">
                 <div className="grid grid-cols-[1fr_1fr_auto] items-center gap-1.5 border-b border-slate-200 pb-2 text-[9px]">
                   <button
                     type="button"
@@ -580,6 +580,113 @@ export default function InvestmentPostFormModal({
                         ))}
                       </div>
                     ))}
+                  </div>
+                ) : null}
+
+                {showLocationPicker ? (
+                  <div className="absolute inset-0 z-30 flex flex-col bg-white">
+                    <div className="flex h-11 shrink-0 items-center gap-2 border-b border-slate-200 px-3">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (locationPickerStep === "area") {
+                            setLocationPickerStep("district");
+                            setLocationPickerSearch("");
+                          } else {
+                            setShowLocationPicker(false);
+                          }
+                        }}
+                        className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-slate-50"
+                        aria-label="Back"
+                      >
+                        <ArrowLeft className="h-4 w-4 text-slate-700" />
+                      </button>
+                      <span className="text-[14px] font-semibold text-slate-800">
+                        {locationPickerStep === "district"
+                          ? (language === "bn" ? "লোকেশন নির্বাচন করুন / Pick a Location" : "Pick a Location")
+                          : (selectedLocation || (language === "bn" ? "এলাকা নির্বাচন করুন" : "Select Area"))}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setShowLocationPicker(false)}
+                        className="ml-auto rounded-full p-1 text-slate-600 hover:bg-slate-50"
+                        aria-label="Close location picker"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+
+                    <div className="border-b border-slate-200 px-2 py-2">
+                      <div className="flex items-center gap-2 rounded-md border border-[#d8e2ef] px-3 py-2">
+                        <Search className="h-4 w-4 text-slate-700" />
+                        <input
+                          value={locationPickerSearch}
+                          onChange={(event) => setLocationPickerSearch(event.target.value)}
+                          placeholder={language === "bn" ? "লোকেশন খুঁজুন / Search for a location" : "Search for a location"}
+                          className="w-full text-[13px] outline-none placeholder:text-slate-400"
+                          autoFocus
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto">
+                      {locationPickerStep === "district" ? (
+                        locations
+                          .filter((location) => {
+                            const query = locationPickerSearch.trim().toLowerCase();
+                            if (!query) return true;
+                            return [location.name, location.locationNameBn || ""]
+                              .join(" ")
+                              .toLowerCase()
+                              .includes(query);
+                          })
+                          .map((location) => (
+                            <button
+                              type="button"
+                              key={location._id}
+                              onClick={() => {
+                                setSelectedLocation(location.name);
+                                setSelectedSubLocation("");
+                                setLocationPickerSearch("");
+                                setLocationPickerStep("area");
+                              }}
+                              className="flex w-full items-center gap-3 border-b border-slate-200 px-4 py-3 text-left hover:bg-slate-50"
+                            >
+                              <span className="h-2 w-2 shrink-0 rounded-full bg-[#91a5bf]" />
+                              <span className="min-w-0 flex-1 text-[15px] text-slate-800">
+                                {language === "bn" ? (location.locationNameBn || location.name) : location.name}
+                              </span>
+                              <ChevronRight className="h-4 w-4 text-slate-600" />
+                            </button>
+                          ))
+                      ) : (
+                        subLocations
+                          .filter((item) => {
+                            const parent = typeof item.location === "object" ? item.location?._id : item.location;
+                            const selected = locations.find((location) => location.name === selectedLocation);
+                            const query = locationPickerSearch.trim().toLowerCase();
+                            const matchesParent = !parent || parent === selected?._id;
+                            const matchesSearch = !query || item.name.toLowerCase().includes(query);
+                            return matchesParent && matchesSearch;
+                          })
+                          .map((item) => (
+                            <button
+                              type="button"
+                              key={item._id}
+                              onClick={() => {
+                                setSelectedSubLocation(item.name);
+                                setLocationPickerSearch("");
+                                setShowLocationPicker(false);
+                              }}
+                              className="flex w-full items-center gap-3 border-b border-slate-200 px-4 py-3 text-left hover:bg-slate-50"
+                            >
+                              <span className="h-2 w-2 shrink-0 rounded-full bg-[#91a5bf]" />
+                              <span className="min-w-0 flex-1 text-[15px] text-slate-800">{item.name}</span>
+                              <ChevronRight className="h-4 w-4 text-slate-600" />
+                            </button>
+                          ))
+                      )}
+                    </div>
                   </div>
                 ) : null}
 
